@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>aa36b4d0-b44e-4e8b-a743-20ad103996af</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>XSharpPowerTools.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ResultsDataGrid.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\SearchTextBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ToolWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\VsThemeDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\CodeBrowserCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\CommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\FindNamespaceCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\DocumentHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\WpfScreen.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml.cs">
+      <DependentUpon>HelpTextControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\IResultsDataGridParent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ResultsDataGrid.xaml.cs">
+      <DependentUpon>ResultsDataGrid.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\SearchTextBox.xaml.cs">
+      <DependentUpon>SearchTextBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ToolWindowControl.xaml.cs">
+      <DependentUpon>ToolWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\BaseWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserResultsToolWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserWindow.xaml.cs">
+      <DependentUpon>CodeBrowserWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml.cs">
+      <DependentUpon>FindNamespaceWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)XSharpPowerToolsPackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)XSModel.cs" />
+  </ItemGroup>
+</Project>
