@@ -1,0 +1,180 @@
+﻿<local:BaseWindow
+    x:Class="XSharpPowerTools.View.Windows.CodeBrowserWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:XSharpPowerTools.View.Windows"
+    xmlns:controls="clr-namespace:XSharpPowerTools.View.Controls"
+    xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"    
+    toolkit:Themes.UseVsTheme="True"
+    mc:Ignorable="d"
+    Title="X# Code Browser"
+    SizeToContent="WidthAndHeight"
+    WindowStyle="None"
+    ResizeMode="NoResize"
+    Loaded="Window_Loaded"
+    MouseDown="Window_MouseDown"
+    PreviewKeyDown="Window_PreviewKeyDown">
+
+    <local:BaseWindow.Resources>
+        <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
+    </local:BaseWindow.Resources>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="0" CaptionHeight="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+    
+    <Border Style="{StaticResource ResourceKey=WindowBorder}">
+        <Grid 
+            x:Name="ContainingGrid"
+            Height="Auto"
+            Width="Auto"
+            HorizontalAlignment="Center" 
+            VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="30" />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style TargetType="{x:Type RowDefinition}">
+                            <Setter Property="Height" Value="0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
+                                    <Setter Property="Height" Value="Auto" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+                </RowDefinition>
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style TargetType="{x:Type RowDefinition}">
+                            <Setter Property="Height" Value="Auto" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
+                                    <Setter Property="Height" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+                </RowDefinition>
+                <RowDefinition>
+                    <RowDefinition.Style>
+                        <Style TargetType="{x:Type RowDefinition}">
+                            <Setter Property="Height" Value="5" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
+                                    <Setter Property="Height" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </RowDefinition.Style>
+                </RowDefinition>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="890"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="5"/>
+            </Grid.ColumnDefinitions>
+            <Label
+                Content="X# Code Browser"
+                Grid.Row="0"
+                Margin="0,3,0,0"
+                Grid.Column="1"
+                FontWeight="DemiBold"/>
+            <controls:SearchTextBox
+                x:Name="SearchTextBox"
+                Grid.Row="1"
+                Grid.Column="1"
+                Height="20"
+                Margin="0,5,0,0"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Top"
+                TextChanged="SearchTextBox_TextChanged"
+                TabIndex="0"/>
+            <Button
+                x:Name="HelpButton"
+                Grid.Row="1"
+                Grid.Column="3"
+                Height="20"
+                Width="20"
+                Content="?"
+                FontWeight="Bold"
+                IsTabStop="False"
+                Click="HelpButton_Click"
+                VerticalAlignment="Center"
+                Style="{StaticResource GenericButton}"
+                TabIndex="1"/>
+            <Button
+                x:Name="ResultsViewButton"
+                Grid.Row="1"
+                Grid.Column="5"
+                Height="20"
+                Width="20"
+                IsTabStop="False"
+                Click="ResultsViewButton_Click"
+                VerticalAlignment="Center"
+                TabIndex="2"
+                FontWeight="ExtraBold"
+                Style="{StaticResource GenericButton}"
+                ToolTip="Save results to seperate view (Ctrl + Return)"
+                FontFamily="Segoe MDL2 Assets"
+                Content="&#xE094;"/>
+            <controls:HelpTextControl
+                x:Name="HelpControl"
+                Grid.Column="1"
+                Grid.ColumnSpan="5"
+                Grid.Row="2"
+                Visibility="Collapsed"/>
+            <Label
+                x:Name="NoResultsLabel"
+                Grid.Column="1"
+                Grid.ColumnSpan="5"
+                Grid.Row="3"
+                Content="No results found"
+                Visibility="Collapsed"
+                HorizontalAlignment="Center"/>
+            <controls:ResultsDataGrid
+                x:Name="ResultsDataGrid"
+                Margin="0,0,0,0"
+                Grid.Row="4"
+                Grid.Column="1"
+                Grid.ColumnSpan="5"
+                Width="Auto"
+                ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Header=" Member"
+                        Binding="{Binding MemberName}"/>
+                    <DataGridTextColumn
+                        Header=" Type"
+                        Binding="{Binding TypeName}"/>
+                    <DataGridTextColumn
+                        Header=" Kind"
+                        Binding="{Binding KindName}"
+                        ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
+                        CanUserResize="False"/>
+                    <DataGridTextColumn
+                        Header=" File"
+                        Binding="{Binding RelativePath}">
+                        <DataGridTextColumn.CellStyle>
+                            <Style TargetType="DataGridCell" BasedOn="{StaticResource ResourceKey=GenericDataGridCell}">
+                                <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Content.Text}"/>
+                                <Setter Property="ToolTipService.ShowDuration" Value="5000"/>
+                                <Setter Property="ToolTipService.BetweenShowDelay" Value="1500"/>
+                                <Setter Property="ToolTipService.InitialShowDelay" Value="1500"/>
+                            </Style>
+                        </DataGridTextColumn.CellStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </controls:ResultsDataGrid>
+        </Grid>
+    </Border>
+    
+</local:BaseWindow>

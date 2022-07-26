@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.6
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "XSharpPowerTools.Shared", "XSharpPowerTools.Shared\XSharpPowerTools.Shared.shproj", "{AA36B4D0-B44E-4E8B-A743-20AD103996AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSharpPowerTools.2019", "XSharpPowerTools.2019\XSharpPowerTools.2019.csproj", "{96C0B5FE-F4E7-4539-8366-97A5135033A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSharpPowerTools.2022", "XSharpPowerTools.2022\XSharpPowerTools.2022.csproj", "{045EF8C2-6206-4B2E-9470-BDDBA203258D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Debug|x86.ActiveCfg = Debug|x86
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Debug|x86.Build.0 = Debug|x86
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Release|x86.ActiveCfg = Release|x86
+		{96C0B5FE-F4E7-4539-8366-97A5135033A2}.Release|x86.Build.0 = Release|x86
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Debug|x86.ActiveCfg = Debug|x86
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Debug|x86.Build.0 = Debug|x86
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Release|x86.ActiveCfg = Release|x86
+		{045EF8C2-6206-4B2E-9470-BDDBA203258D}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0E4102FB-F865-4EE9-85CD-675FC60508E4}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		XSharpPowerTools.Shared\XSharpPowerTools.Shared.projitems*{045ef8c2-6206-4b2e-9470-bddba203258d}*SharedItemsImports = 4
+		XSharpPowerTools.Shared\XSharpPowerTools.Shared.projitems*{96c0b5fe-f4e7-4539-8366-97a5135033a2}*SharedItemsImports = 4
+		XSharpPowerTools.Shared\XSharpPowerTools.Shared.projitems*{aa36b4d0-b44e-4e8b-a743-20ad103996af}*SharedItemsImports = 13
+	EndGlobalSection
+EndGlobal
