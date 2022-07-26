@@ -152,6 +152,7 @@ namespace XSharpPowerTools.View.Windows
             try
             {
                 SearchTextBox.Focus();
+                SearchTextBox.SelectAll();
             }
             catch (Exception)
             { }
@@ -160,10 +161,8 @@ namespace XSharpPowerTools.View.Windows
         private void HelpButton_Click(object sender, RoutedEventArgs e) =>
             HelpControl.Visibility = HelpControl.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
 
-        protected override void OnTextChanged()
-        {
+        protected override void OnTextChanged() => 
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChange");
-        }
 
         private async Task DoSearchAsync()
         {
