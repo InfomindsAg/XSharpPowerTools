@@ -241,7 +241,7 @@ namespace XSharpPowerTools
                         command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $className  ESCAPE '\'";
                         command.Parameters.AddWithValue("$className", className.Trim().ToLower());
                     }
-                    command.CommandText += " ORDER BY LENGTH(TRIM(Name)), TRIM(Name) LIMIT 100";
+                    command.CommandText += " ORDER BY LENGTH(TRIM(TypeName)), TRIM(TypeName) LIMIT 100";
 
                     var reader = await command.ExecuteReaderAsync();
 
