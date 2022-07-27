@@ -33,6 +33,8 @@ namespace XSharpPowerTools
         public string KindName => Kind switch
         {
             1 => "Class",
+            3 => "Constructor",
+            4 => "Destructor",
             5 => "Method",
             6 => "Access",
             7 => "Assign",
@@ -139,7 +141,7 @@ namespace XSharpPowerTools
                 				         WHERE Kind = 1
                 				         AND LOWER(Sourcecode) LIKE '%class%'
                                          AND LOWER(TRIM(FileName))=$fileName)
-                        AND (Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                        AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
                         AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                         ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
                         LIMIT 100
@@ -225,7 +227,7 @@ namespace XSharpPowerTools
                     @"
                         SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                         FROM ProjectMembers 
-                        WHERE (Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                        WHERE (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
                         AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\'
                     ";
                     command.Parameters.AddWithValue("$memberName", memberName.Trim().ToLower());
