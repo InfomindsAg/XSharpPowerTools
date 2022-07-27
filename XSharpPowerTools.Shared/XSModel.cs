@@ -88,10 +88,12 @@ namespace XSharpPowerTools
                 command.CommandText += @" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM(Name)), TRIM(Name) LIMIT 100";
 
                 searchTerm = searchTerm.Trim().Substring(2).Trim();
+                if (!searchTerm.Contains("\"") && !searchTerm.Contains("*"))
+                    searchTerm = $"%{searchTerm}%";
+                    
                 searchTerm = searchTerm.Replace("_", @"\_");
+                searchTerm = searchTerm.Replace("\"", string.Empty);
                 searchTerm = searchTerm.ToLower().Replace("*", "%");
-                if (!searchTerm.Contains("\""))
-                    searchTerm = "%" + searchTerm + "%";
 
                 command.Parameters.AddWithValue("$memberName", searchTerm);
 
@@ -127,10 +129,12 @@ namespace XSharpPowerTools
                 if (string.IsNullOrWhiteSpace(memberName))
                     return (new(), 0);
 
+                if (!memberName.Contains("\"") && !memberName.Contains("*")) 
+                    memberName = $"%{memberName}%";
+
                 memberName = memberName.Replace("_", @"\_");
+                memberName = memberName.Replace("\"", string.Empty);
                 memberName = memberName.ToLower().Replace("*", "%");
-                if (!memberName.Contains("\""))
-                    memberName = "%" + memberName + "%";
 
                 command.CommandText =
                     @"
@@ -285,7 +289,7 @@ namespace XSharpPowerTools
                         ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
                         LIMIT 100
                     ";
-            command.Parameters.AddWithValue("$typeName", "%" + searchTerm.Trim().ToLower() + "%");
+            command.Parameters.AddWithValue("$typeName", $"%{searchTerm.Trim().ToLower()}%");
 
             var reader = await command.ExecuteReaderAsync();
             var results = new List<NamespaceResultItem>();

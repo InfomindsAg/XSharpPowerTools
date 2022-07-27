@@ -40,13 +40,13 @@ namespace XSharpPowerTools.Helpers
 
             if (className.Contains('"'))
                 className = className.Replace("\"", "");
-            else if (!string.IsNullOrWhiteSpace(className) && !className.Contains("*"))
-                className = "%" + className + "%";
+            else if (!string.IsNullOrWhiteSpace(className) && !className.Contains("%"))
+                className = $"%{className}%";
 
             if (memberName.Contains('"'))
                 memberName = memberName.Replace("\"", "");
-            else if (!string.IsNullOrWhiteSpace(memberName) && !memberName.Contains("*"))
-                memberName = "%" + memberName + "%";
+            else if (!string.IsNullOrWhiteSpace(memberName) && !memberName.Contains("%"))
+                memberName = $"%{memberName}%";
 
             return (className, memberName);
         }
