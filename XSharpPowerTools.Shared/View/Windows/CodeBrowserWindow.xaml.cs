@@ -46,11 +46,11 @@ namespace XSharpPowerTools.View.Windows
 
         private void SetTableColumns(XSModelResultType resultType)
         {
-            ResultsDataGrid.Columns[0].Visibility = resultType == XSModelResultType.Type
+            ResultsDataGrid.Columns[0].Visibility = resultType == XSModelResultType.Procedure
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            ResultsDataGrid.Columns[1].Visibility = resultType == XSModelResultType.Procedure
+            ResultsDataGrid.Columns[1].Visibility = resultType == XSModelResultType.Type
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
@@ -59,8 +59,8 @@ namespace XSharpPowerTools.View.Windows
             ResultsDataGrid.Columns[2].Width = 0;
             ResultsDataGrid.Columns[3].Width = 0;
             ResultsDataGrid.UpdateLayout();
-            ResultsDataGrid.Columns[0].Width = new DataGridLength(3, DataGridLengthUnitType.Star);
-            ResultsDataGrid.Columns[1].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
+            ResultsDataGrid.Columns[0].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
+            ResultsDataGrid.Columns[1].Width = new DataGridLength(3, DataGridLengthUnitType.Star);
             ResultsDataGrid.Columns[2].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
             ResultsDataGrid.Columns[3].Width = new DataGridLength(9, DataGridLengthUnitType.Star);
         }
@@ -152,6 +152,7 @@ namespace XSharpPowerTools.View.Windows
             try
             {
                 SearchTextBox.Focus();
+                SearchTextBox.SelectAll();
             }
             catch (Exception)
             { }
@@ -160,10 +161,8 @@ namespace XSharpPowerTools.View.Windows
         private void HelpButton_Click(object sender, RoutedEventArgs e) =>
             HelpControl.Visibility = HelpControl.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
 
-        protected override void OnTextChanged()
-        {
+        protected override void OnTextChanged() => 
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChange");
-        }
 
         private async Task DoSearchAsync()
         {
@@ -199,17 +198,15 @@ namespace XSharpPowerTools.View.Windows
 
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => 
             {
-                using (var waitCursor = new WithWaitCursor())
-                {
+                using var waitCursor = new WithWaitCursor();
 
-                    if (ResultsDataGrid.SelectedItem != null)
-                        await OpenItemAsync(ResultsDataGrid.SelectedItem as XSModelResultItem);
-                    else
-                        Close();
+                if (ResultsDataGrid.SelectedItem != null)
+                    await OpenItemAsync(ResultsDataGrid.SelectedItem as XSModelResultItem);
+                else
+                    Close();
 
-                    var toolWindowPane = await CodeBrowserResultsToolWindow.ShowAsync();
-                    (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, ResultsDataGrid.ItemsSource as List<XSModelResultItem>);
-                }
+                var toolWindowPane = await CodeBrowserResultsToolWindow.ShowAsync();
+                (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, ResultsDataGrid.ItemsSource as List<XSModelResultItem>);
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
     }

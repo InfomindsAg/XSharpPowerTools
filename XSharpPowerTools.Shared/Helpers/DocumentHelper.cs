@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 
@@ -103,12 +104,47 @@ namespace XSharpPowerTools.Helpers
             }
         }
 
+        public static string GetCaretWord(IEnumerable<ITextSnapshotLine> lines, int? position)
+        {
+            if (!position.HasValue)
+                return string.Empty;
+
+            var caretPosition = position.Value;
+            var caretLine = lines?.FirstOrDefault(q => q.Start.Position <= caretPosition && q.End.Position >= caretPosition);
+            var lineText = caretLine?.GetText();
+
+            if (string.IsNullOrWhiteSpace(lineText))
+                return string.Empty;
+
+            var relativeCaretPosition = caretPosition - caretLine.Start.Position;
+
+            var words = Regex.Split(lineText, @"(\W)");
+
+            var lengthSum = 0;
+            var caretWord = string.Empty;
+            foreach (var word in words) 
+            { 
+                if (lengthSum <= relativeCaretPosition && lengthSum + word.Length >= relativeCaretPosition && !Regex.IsMatch(word, @"\W"))
+                {
+                    caretWord = word;
+                    break;
+                }
+                lengthSum += word.Length;
+            }
+
+            return caretWord;
+        }
+
         public static async Task<string> GetEditorSearchTermAsync()
         {
             var textView = (await VS.Documents.GetActiveDocumentViewAsync())?.TextView;
-            return textView?.Selection == null
-                ? string.Empty
-                : !textView.Selection.IsEmpty ? textView.Selection.VirtualSelectedSpans[0].GetText() : string.Empty;
+
+            if (textView == null)
+                return string.Empty;
+
+            return textView.Selection == null || textView.Selection.IsEmpty
+                ? GetCaretWord(textView.TextBuffer?.CurrentSnapshot?.Lines, textView.Caret?.Position.BufferPosition.Position)
+                : textView.Selection.VirtualSelectedSpans[0].GetText();
         }
 
         public static async Task<string> GetCurrentFileAsync()

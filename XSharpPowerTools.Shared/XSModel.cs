@@ -33,6 +33,8 @@ namespace XSharpPowerTools
         public string KindName => Kind switch
         {
             1 => "Class",
+            3 => "Constructor",
+            4 => "Destructor",
             5 => "Method",
             6 => "Access",
             7 => "Assign",
@@ -86,10 +88,12 @@ namespace XSharpPowerTools
                 command.CommandText += @" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM(Name)), TRIM(Name) LIMIT 100";
 
                 searchTerm = searchTerm.Trim().Substring(2).Trim();
+                if (!searchTerm.Contains("\"") && !searchTerm.Contains("*"))
+                    searchTerm = $"%{searchTerm}%";
+                    
                 searchTerm = searchTerm.Replace("_", @"\_");
+                searchTerm = searchTerm.Replace("\"", string.Empty);
                 searchTerm = searchTerm.ToLower().Replace("*", "%");
-                if (!searchTerm.Contains("\""))
-                    searchTerm = "%" + searchTerm + "%";
 
                 command.Parameters.AddWithValue("$memberName", searchTerm);
 
@@ -125,10 +129,12 @@ namespace XSharpPowerTools
                 if (string.IsNullOrWhiteSpace(memberName))
                     return (new(), 0);
 
+                if (!memberName.Contains("\"") && !memberName.Contains("*")) 
+                    memberName = $"%{memberName}%";
+
                 memberName = memberName.Replace("_", @"\_");
+                memberName = memberName.Replace("\"", string.Empty);
                 memberName = memberName.ToLower().Replace("*", "%");
-                if (!memberName.Contains("\""))
-                    memberName = "%" + memberName + "%";
 
                 command.CommandText =
                     @"
@@ -139,7 +145,7 @@ namespace XSharpPowerTools
                 				         WHERE Kind = 1
                 				         AND LOWER(Sourcecode) LIKE '%class%'
                                          AND LOWER(TRIM(FileName))=$fileName)
-                        AND (Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                        AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
                         AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                         ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
                         LIMIT 100
@@ -225,7 +231,7 @@ namespace XSharpPowerTools
                     @"
                         SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                         FROM ProjectMembers 
-                        WHERE (Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                        WHERE (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
                         AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\'
                     ";
                     command.Parameters.AddWithValue("$memberName", memberName.Trim().ToLower());
@@ -283,7 +289,7 @@ namespace XSharpPowerTools
                         ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
                         LIMIT 100
                     ";
-            command.Parameters.AddWithValue("$typeName", "%" + searchTerm.Trim().ToLower() + "%");
+            command.Parameters.AddWithValue("$typeName", $"%{searchTerm.Trim().ToLower()}%");
 
             var reader = await command.ExecuteReaderAsync();
             var results = new List<NamespaceResultItem>();

@@ -79,10 +79,8 @@ namespace XSharpPowerTools.View.Windows
             }
         }
 
-        protected override void OnTextChanged()
-        {
+        protected override void OnTextChanged() => 
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
-        }
 
         private async Task DoSearchAsync()
         {
@@ -105,6 +103,7 @@ namespace XSharpPowerTools.View.Windows
             try
             {
                 SearchTextBox.Focus();
+                SearchTextBox.SelectAll();
             }
             catch (Exception)
             { }
