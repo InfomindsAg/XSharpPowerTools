@@ -151,18 +151,22 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn
                         Header=" Type"
-                        Binding="{Binding TypeName}"/>
+                        Binding="{Binding TypeName}"
+                        SortMemberPath="TypeName.Length"/>
                     <DataGridTextColumn
                         Header=" Member"
-                        Binding="{Binding MemberName}"/>
+                        Binding="{Binding MemberName}"
+                        SortMemberPath="MemberName.Length"/>
                     <DataGridTextColumn
                         Header=" Kind"
                         Binding="{Binding KindName}"
                         ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
-                        CanUserResize="False"/>
+                        CanUserResize="False"
+                        SortMemberPath="KindName.Length"/>
                     <DataGridTextColumn
                         Header=" File"
-                        Binding="{Binding RelativePath}">
+                        Binding="{Binding RelativePath}"
+                        SortMemberPath="RelativePath.Length">
                         <DataGridTextColumn.CellStyle>
                             <Style TargetType="DataGridCell" BasedOn="{StaticResource ResourceKey=GenericDataGridCell}">
                                 <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Content.Text}"/>

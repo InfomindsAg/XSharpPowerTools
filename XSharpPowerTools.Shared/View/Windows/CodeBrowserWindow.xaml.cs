@@ -1,11 +1,13 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using XSharpPowerTools.Helpers;
 using XSharpPowerTools.View.Controls;
@@ -65,7 +67,7 @@ namespace XSharpPowerTools.View.Windows
             ResultsDataGrid.Columns[3].Width = new DataGridLength(9, DataGridLengthUnitType.Star);
         }
 
-        protected async Task SearchAsync()
+        protected async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
             if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
                 return;
@@ -85,7 +87,7 @@ namespace XSharpPowerTools.View.Windows
                     var searchTerm = SearchTextBox.Text.Trim();
                     ReDoSearch = false;
                     var currentFile = searchTerm.StartsWith("..") || searchTerm.StartsWith("::") ? await DocumentHelper.GetCurrentFileAsync() : null;
-                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, SolutionDirectory, currentFile);
+                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, SolutionDirectory, currentFile, direction, orderBy);
 
                     ResultsDataGrid.ItemsSource = results;
                     ResultsDataGrid.SelectedItem = results.FirstOrDefault();
@@ -208,6 +210,27 @@ namespace XSharpPowerTools.View.Windows
                 var toolWindowPane = await CodeBrowserResultsToolWindow.ShowAsync();
                 (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, ResultsDataGrid.ItemsSource as List<XSModelResultItem>);
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
+        }
+
+        public async Task OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) 
+        {
+            var column = e.Column;
+           
+            var direction = (column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
+            var lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(sender.ItemsSource);
+            var comparer = new CodeBrowserResultComparer(direction, column, DisplayedResultType);
+
+            if (lcv.Count < 100)
+            {
+                lcv.CustomSort = comparer;
+                column.SortDirection = direction;
+            }
+            else
+            {
+                await SearchAsync(direction, comparer.SqlOrderBy);
+                column.SortDirection = direction;
+            }
+            e.Handled = true;
         }
     }
 }

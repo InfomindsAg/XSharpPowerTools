@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using XSharpPowerTools.Helpers;
 using XSharpPowerTools.View.Controls;
@@ -129,5 +130,7 @@ namespace XSharpPowerTools.View.Windows
                 });
             }
         }
+
+        public Task OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) => throw new NotImplementedException();
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -72,5 +73,7 @@ namespace XSharpPowerTools.View.Controls
 
         public void SolutionEvents_OnBeforeCloseSolution() =>
             UpdateToolWindowContents(XSModelResultType.Member, new List<XSModelResultItem>());
+
+        public Task OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) => throw new NotImplementedException();
     }
 }

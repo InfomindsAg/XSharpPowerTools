@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -65,13 +66,15 @@ namespace XSharpPowerTools
         public XSModel(string dbFile) =>
             Connection = GetConnection(dbFile) ?? throw new ArgumentNullException();
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile = null)
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return (new(), 0);
 
             await Connection.OpenAsync();
             var command = Connection.CreateCommand();
+
+            var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
             if (searchTerm.Trim().StartsWith("p ") || searchTerm.Trim().StartsWith("d "))
             {
@@ -85,7 +88,10 @@ namespace XSharpPowerTools
                     ? " (Kind = 9 OR Kind = 10)"
                     : " Kind = 23";
 
-                command.CommandText += @" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM(Name)), TRIM(Name) LIMIT 100";
+                if (string.IsNullOrWhiteSpace(orderBy))
+                    orderBy = "Name";
+
+                command.CommandText += @$" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT 100";
 
                 searchTerm = searchTerm.Trim().Substring(2).Trim();
                 if (!searchTerm.Contains("\"") && !searchTerm.Contains("*"))
@@ -136,8 +142,11 @@ namespace XSharpPowerTools
                 memberName = memberName.Replace("\"", string.Empty);
                 memberName = memberName.ToLower().Replace("*", "%");
 
+                if (string.IsNullOrWhiteSpace(orderBy))
+                    orderBy = "Name";
+
                 command.CommandText =
-                    @"
+                    @$"
                         SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                         FROM ProjectMembers
                         WHERE IdType IN (SELECT Id
@@ -147,7 +156,7 @@ namespace XSharpPowerTools
                                          AND LOWER(TRIM(FileName))=$fileName)
                         AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
                         AND LOWER(Name) LIKE $memberName  ESCAPE '\'
-                        ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
+                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                         LIMIT 100
                     ";
 
@@ -186,13 +195,16 @@ namespace XSharpPowerTools
                 {
                     className = className.Replace("_", @"\_");
 
+                    if (string.IsNullOrWhiteSpace(orderBy))
+                        orderBy = "Name";
+
                     command.CommandText =
-                    @"
+                    @$"
                         SELECT Name, FileName, StartLine, ProjectFileName, Kind, Sourcecode
                         FROM ProjectTypes 
                         WHERE ((Kind = 1 AND LOWER(Sourcecode) LIKE '%class%') OR Kind = 16 OR Kind = 18)
                         AND LOWER(TRIM(Name)) LIKE $className ESCAPE '\'
-                        ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
+                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                         LIMIT 100
                     ";
                     command.Parameters.AddWithValue("$className", className.Trim().ToLower());
@@ -227,6 +239,9 @@ namespace XSharpPowerTools
                     memberName = memberName.Replace("_", @"\_");
                     className = className.Replace("_", @"\_");
 
+                    if (string.IsNullOrWhiteSpace(orderBy))
+                        orderBy = "TypeName";
+
                     command.CommandText =
                     @"
                         SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
@@ -241,7 +256,7 @@ namespace XSharpPowerTools
                         command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $className  ESCAPE '\'";
                         command.Parameters.AddWithValue("$className", className.Trim().ToLower());
                     }
-                    command.CommandText += " ORDER BY LENGTH(TRIM(TypeName)), TRIM(TypeName) LIMIT 100";
+                    command.CommandText += $" ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT 100";
 
                     var reader = await command.ExecuteReaderAsync();
 
