@@ -9,8 +9,6 @@ using System.Windows.Controls;
 
 namespace XSharpPowerTools.Helpers
 {
-    
-
     public class CodeBrowserResultComparer : IComparer
     {
         private readonly ListSortDirection Direction;

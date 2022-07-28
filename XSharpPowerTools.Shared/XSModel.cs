@@ -286,22 +286,32 @@ namespace XSharpPowerTools
             }
         }
 
-        public async Task<List<NamespaceResultItem>> GetContainingNamespaceAsync(string searchTerm)
+        public async Task<List<NamespaceResultItem>> GetContainingNamespaceAsync(string searchTerm, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return null;
+
+            var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
             await Connection.OpenAsync();
             searchTerm = searchTerm.Replace("_", @"\_");
             var command = Connection.CreateCommand();
             command.CommandText =
-                    @"
-                        SELECT DISTINCT Name, Namespace
-                        FROM AssemblyTypes 
-                        WHERE Namespace IS NOT NULL
-                        AND trim(Namespace) != ''
-                        AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\'
-                        ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
+                    @$"
+                        SELECT *
+                        FROM 
+	                        (SELECT DISTINCT Name, Namespace
+		                        FROM AssemblyTypes
+		                        WHERE Namespace IS NOT NULL
+			                        AND trim(Namespace) != ''
+			                        AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\'
+	                        UNION
+	                        SELECT DISTINCT Name, Namespace
+		                        FROM ProjectTypes 
+		                        WHERE Namespace IS NOT NULL
+			                        AND trim(Namespace) != ''
+			                        AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\')
+                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                         LIMIT 100
                     ";
             command.Parameters.AddWithValue("$typeName", $"%{searchTerm.Trim().ToLower()}%");
@@ -318,32 +328,8 @@ namespace XSharpPowerTools
                 results.Add(result);
             }
 
-            command = Connection.CreateCommand();
-            command.CommandText =
-                    @"
-                        SELECT DISTINCT Name, Namespace
-                        FROM ProjectTypes 
-                        WHERE Namespace IS NOT NULL
-                        AND trim(Namespace) != ''
-                        AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\'
-                        ORDER BY LENGTH(TRIM(Name)), TRIM(Name)
-                        LIMIT 100
-                    ";
-            command.Parameters.AddWithValue("$typeName", "%" + searchTerm.Trim().ToLower() + "%");
-
-            reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                var result = new NamespaceResultItem
-                {
-                    TypeName = reader.GetString(0),
-                    Namespace = reader.GetString(1)
-                };
-                results.Add(result);
-            }
-
             Connection.Close();
-            return results.Distinct().ToList();
+            return results;
         }
 
         public async Task<bool> FileContainsUsingAsync(string file, string usingToInsert) 
