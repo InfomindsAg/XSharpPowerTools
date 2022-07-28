@@ -66,7 +66,13 @@ namespace XSharpPowerTools
         public XSModel(string dbFile) =>
             Connection = GetConnection(dbFile) ?? throw new ArgumentNullException();
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
+            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, null, direction, orderBy, limit);
+
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
+            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, direction, orderBy, 100);
+
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction, string orderBy, int limit)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return (new(), 0);
@@ -91,7 +97,7 @@ namespace XSharpPowerTools
                 if (string.IsNullOrWhiteSpace(orderBy))
                     orderBy = "Name";
 
-                command.CommandText += @$" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT 100";
+                command.CommandText += @$" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
 
                 searchTerm = searchTerm.Trim().Substring(2).Trim();
                 if (!searchTerm.Contains("\"") && !searchTerm.Contains("*"))
@@ -157,7 +163,7 @@ namespace XSharpPowerTools
                         AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
                         AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                         ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
-                        LIMIT 100
+                        LIMIT {limit}
                     ";
 
                 command.Parameters.AddWithValue("$memberName", memberName).SqliteType = SqliteType.Text;
@@ -205,7 +211,7 @@ namespace XSharpPowerTools
                         WHERE ((Kind = 1 AND LOWER(Sourcecode) LIKE '%class%') OR Kind = 16 OR Kind = 18)
                         AND LOWER(TRIM(Name)) LIKE $className ESCAPE '\'
                         ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
-                        LIMIT 100
+                        LIMIT {limit}
                     ";
                     command.Parameters.AddWithValue("$className", className.Trim().ToLower());
 
@@ -256,7 +262,7 @@ namespace XSharpPowerTools
                         command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $className  ESCAPE '\'";
                         command.Parameters.AddWithValue("$className", className.Trim().ToLower());
                     }
-                    command.CommandText += $" ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT 100";
+                    command.CommandText += $" ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
 
                     var reader = await command.ExecuteReaderAsync();
 

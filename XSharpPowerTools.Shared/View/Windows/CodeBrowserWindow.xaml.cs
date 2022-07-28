@@ -23,6 +23,7 @@ namespace XSharpPowerTools.View.Windows
         const string FileReference = "vs/XSharpPowerTools/CodeBrowser/";
         readonly string SolutionDirectory;
         XSModelResultType DisplayedResultType;
+        string LastSearchTerm;
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
 
@@ -93,6 +94,7 @@ namespace XSharpPowerTools.View.Windows
                     ResultsDataGrid.SelectedItem = results.FirstOrDefault();
                     SetTableColumns(resultType);
                     DisplayedResultType = resultType;
+                    LastSearchTerm = searchTerm;
 
                     NoResultsLabel.Visibility = results.Count < 1 ? Visibility.Visible : Visibility.Collapsed;
 
@@ -192,7 +194,7 @@ namespace XSharpPowerTools.View.Windows
             if (ResultsDataGrid.Items.Count < 1)
                 return;
 
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => 
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () =>
             {
                 using var waitCursor = new WithWaitCursor();
 
@@ -202,7 +204,13 @@ namespace XSharpPowerTools.View.Windows
                     Close();
 
                 var toolWindowPane = await CodeBrowserResultsToolWindow.ShowAsync();
-                (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, ResultsDataGrid.ItemsSource as List<XSModelResultItem>);
+
+                var items = ResultsDataGrid.ItemsSource as List<XSModelResultItem>;
+                if (items.Count < 100)
+                    (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, items);
+                else
+                     await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, LastSearchTerm, SolutionDirectory);
+
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
 

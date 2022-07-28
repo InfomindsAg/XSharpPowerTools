@@ -19,19 +19,23 @@
             Width="Auto"
             Height="Auto"
             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-            CanUserSortColumns="True"
             MaxHeight="Infinity"
             ItemsSource="{Binding Source={StaticResource CvsResults}}">
             <DataGrid.Resources>
                 <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
             </DataGrid.Resources>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Toggle grouping" Click="ContextMenu_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn
-                        Header=" Member"
-                        Binding="{Binding MemberName}"/>
                 <DataGridTextColumn
                         Header=" Type"
                         Binding="{Binding TypeName}"/>
+                <DataGridTextColumn
+                        Header=" Member"
+                        Binding="{Binding MemberName}"/>
                 <DataGridTextColumn
                         Header=" Kind"
                         Binding="{Binding KindName}"
