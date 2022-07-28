@@ -43,6 +43,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Commands\CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\FindNamespaceCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DocumentHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\FindNamespaceResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CodeBrowserResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />

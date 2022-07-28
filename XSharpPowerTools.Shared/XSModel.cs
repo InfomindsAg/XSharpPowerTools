@@ -293,6 +293,9 @@ namespace XSharpPowerTools
 
             var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
+            if (string.IsNullOrWhiteSpace(orderBy))
+                orderBy = "Name";
+
             await Connection.OpenAsync();
             searchTerm = searchTerm.Replace("_", @"\_");
             var command = Connection.CreateCommand();
