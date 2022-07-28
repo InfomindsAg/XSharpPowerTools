@@ -123,13 +123,13 @@ namespace XSharpPowerTools.View.Windows
             }
             else if (AllowReturn && e.Key == Key.Return)
             {
-                _ = XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async delegate
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () =>
                 {
                     if (ResultsDataGrid.SelectedItem is XSModelResultItem item && item != null)
                         await OpenItemAsync(item);
                     else
                         await SearchAsync();
-                });
+                }).FileAndForget($"{FileReference}Window_PreviewKeyDown");
             }
             else if (e.Key == Key.Down)
             {
@@ -143,14 +143,8 @@ namespace XSharpPowerTools.View.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(SearchTextBox.Text))
-            {
-                _ = XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    await SearchAsync();
-                });
-                SearchTextBox.CaretIndex = int.MaxValue;
-            }
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}Window_Loaded");
+            SearchTextBox.CaretIndex = int.MaxValue;
             try
             {
                 SearchTextBox.Focus();
@@ -227,7 +221,7 @@ namespace XSharpPowerTools.View.Windows
             }
             else
             {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnReturn");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
                 column.SortDirection = direction;
             }
             e.Handled = true;
