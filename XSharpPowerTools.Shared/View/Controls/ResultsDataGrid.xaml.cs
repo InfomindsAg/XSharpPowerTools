@@ -11,7 +11,6 @@ namespace XSharpPowerTools.View.Controls
     /// </summary>
     public partial class ResultsDataGrid : DataGrid
     {
-        const string FileReference = "vs/XSharpPowerTools/ResultsDataGrid/";
         public new IResultsDataGridParent Parent { private get; set; }
 
         public ResultsDataGrid() =>
@@ -47,6 +46,6 @@ namespace XSharpPowerTools.View.Controls
         }
 
         protected void SortHandler(object sender, DataGridSortingEventArgs e) =>
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await Parent?.OnSort(this, e)).FileAndForget($"{FileReference}OnReturn");
+            Parent?.OnSort(this, e);
     }
 }

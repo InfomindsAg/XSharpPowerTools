@@ -74,6 +74,6 @@ namespace XSharpPowerTools.View.Controls
         public void SolutionEvents_OnBeforeCloseSolution() =>
             UpdateToolWindowContents(XSModelResultType.Member, new List<XSModelResultItem>());
 
-        public Task OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) => throw new NotImplementedException();
+        public void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) => throw new NotImplementedException();
     }
 }

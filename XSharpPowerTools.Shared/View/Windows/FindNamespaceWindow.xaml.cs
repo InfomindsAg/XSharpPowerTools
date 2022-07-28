@@ -131,6 +131,6 @@ namespace XSharpPowerTools.View.Windows
             }
         }
 
-        public Task OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) => throw new NotImplementedException();
+        public void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) => throw new NotImplementedException();
     }
 }

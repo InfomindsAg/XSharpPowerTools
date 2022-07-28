@@ -212,7 +212,7 @@ namespace XSharpPowerTools.View.Windows
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
 
-        public async Task OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) 
+        public void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) 
         {
             var column = e.Column;
            
@@ -227,7 +227,7 @@ namespace XSharpPowerTools.View.Windows
             }
             else
             {
-                await SearchAsync(direction, comparer.SqlOrderBy);
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnReturn");
                 column.SortDirection = direction;
             }
             e.Handled = true;
