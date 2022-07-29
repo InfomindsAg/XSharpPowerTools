@@ -179,7 +179,7 @@ namespace XSharpPowerTools
             var results = new List<XSModelResultItem>();
             while (await reader.ReadAsync())
             {
-                if (!reader.GetString(3).Trim().EndsWith("(OrphanedFiles).xsproj"))
+                if (!reader.GetString(3).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
                 {
                     var resultItem = new XSModelResultItem
                     {
@@ -230,7 +230,7 @@ namespace XSharpPowerTools
             var results = new List<XSModelResultItem>();
             while (await reader.ReadAsync())
             {
-                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
+                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
                 {
                     var resultItem = new XSModelResultItem
                     {
@@ -291,7 +291,7 @@ namespace XSharpPowerTools
             var results = new List<XSModelResultItem>();
             while (await reader.ReadAsync())
             {
-                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
+                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
                 {
                     var resultItem = new XSModelResultItem
                     {
@@ -341,7 +341,7 @@ namespace XSharpPowerTools
             var results = new List<XSModelResultItem>();
             while (await reader.ReadAsync())
             {
-                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
+                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
                 {
                     var resultItem = new XSModelResultItem
                     {
