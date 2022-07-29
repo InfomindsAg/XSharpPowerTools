@@ -6,7 +6,7 @@
     <SharedGUID>aa36b4d0-b44e-4e8b-a743-20ad103996af</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>XSharpPowerTools.Shared</Import_RootNamespace>
+    <Import_RootNamespace>XSharpPowerTools</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml">
@@ -43,7 +43,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Commands\CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\FindNamespaceCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DocumentHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\FindNamespaceResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\CodeBrowserResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WpfScreen.cs" />

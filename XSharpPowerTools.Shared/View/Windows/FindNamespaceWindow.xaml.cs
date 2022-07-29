@@ -1,8 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using XSharpPowerTools.Helpers;
 using XSharpPowerTools.View.Controls;
@@ -16,6 +19,8 @@ namespace XSharpPowerTools.View.Windows
     public partial class FindNamespaceWindow : BaseWindow, IResultsDataGridParent
     {
         const string FileReference = "vs/XSharpPowerTools/FindNamespace/";
+        volatile bool SearchActive = false;
+        volatile bool ReDoSearch = false;
 
         public override string SearchTerm
         {
@@ -36,22 +41,38 @@ namespace XSharpPowerTools.View.Windows
                 .Subscribe(_ => OnTextChanged());
         }
 
-        private async Task SearchAsync(string searchTerm)
+        private async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
-            if (string.IsNullOrWhiteSpace(searchTerm))
+            if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
                 return;
 
+            if (SearchActive)
+            {
+                ReDoSearch = SearchActive;
+                return;
+            }
+
             using var waitCursor = new WithWaitCursor();
+            SearchActive = true;
+            try
+            {
+                do
+                {
+                    var searchTerm = SearchTextBox.Text.Trim();
+                    ReDoSearch = false;
+                    var results = await XSModel.GetContainingNamespaceAsync(searchTerm, direction, orderBy);
+                    ResultsDataGrid.ItemsSource = results;
+                    ResultsDataGrid.SelectedItem = results.FirstOrDefault();
 
-            var results = await XSModel.GetContainingNamespaceAsync(searchTerm.Trim());
-            ResultsDataGrid.ItemsSource = results;
-            ResultsDataGrid.SelectedItem = results.FirstOrDefault();
+                    NoResultsLabel.Visibility = results.Count < 1 ? Visibility.Visible : Visibility.Collapsed;
 
-            NoResultsLabel.Visibility = results.Count < 1
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-            AllowReturn = true;
+                } while (ReDoSearch);
+            }
+            finally
+            {
+                SearchActive = false;
+                AllowReturn = true;
+            };
         }
 
         private async Task InsertUsingAsync(NamespaceResultItem item)
@@ -85,21 +106,13 @@ namespace XSharpPowerTools.View.Windows
         private async Task DoSearchAsync()
         {
             await XSharpPowerToolsPackage.Instance.JoinableTaskFactory.SwitchToMainThreadAsync();
-            var searchTerm = SearchTextBox.Text.Trim();
-            if (!string.IsNullOrEmpty(searchTerm))
-                await SearchAsync(searchTerm);
+            await SearchAsync();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(SearchTextBox.Text))
-            {
-                _ = XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    await SearchAsync(SearchTextBox.Text);
-                });
-                SearchTextBox.CaretIndex = int.MaxValue;
-            }
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}Window_Loaded");
+            SearchTextBox.CaretIndex = int.MaxValue;
             try
             {
                 SearchTextBox.Focus();
@@ -115,7 +128,7 @@ namespace XSharpPowerTools.View.Windows
                 DragMove();
         }
 
-        private void SearchTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) =>
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
             AllowReturn = false;
 
         public void OnReturn(object selectedItem)
@@ -128,6 +141,27 @@ namespace XSharpPowerTools.View.Windows
                     await InsertUsingAsync(item);
                 });
             }
+        }
+
+        public void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) 
+        {
+            var column = e.Column;
+
+            var direction = (column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
+            var lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(sender.ItemsSource);
+            var comparer = new FindNamespaceResultComparer(direction, column);
+
+            if (lcv.Count < 100)
+            {
+                lcv.CustomSort = comparer;
+                column.SortDirection = direction;
+            }
+            else
+            {
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnReturn");
+                column.SortDirection = direction;
+            }
+            e.Handled = true;
         }
     }
 }

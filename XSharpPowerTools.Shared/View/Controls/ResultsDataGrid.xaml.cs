@@ -1,4 +1,8 @@
-﻿using System.Windows.Controls;
+﻿using Microsoft.VisualStudio.Shell;
+using System.ComponentModel;
+using System.Windows.Controls;
+using System.Windows.Data;
+using XSharpPowerTools.Helpers;
 
 namespace XSharpPowerTools.View.Controls
 {
@@ -41,5 +45,7 @@ namespace XSharpPowerTools.View.Controls
             ScrollIntoView(SelectedItem);
         }
 
+        protected void SortHandler(object sender, DataGridSortingEventArgs e) =>
+            Parent?.OnSort(this, e);
     }
 }

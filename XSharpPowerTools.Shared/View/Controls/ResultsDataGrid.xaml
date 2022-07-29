@@ -12,10 +12,11 @@
     SelectionMode="Single"
     AutoGenerateColumns="False"
     IsReadOnly="True"
-    CanUserSortColumns="False"
+    CanUserSortColumns="True"
     HeadersVisibility="Column"
     HorizontalScrollBarVisibility="Hidden"
-    KeyboardNavigation.TabNavigation="None">
+    KeyboardNavigation.TabNavigation="None"
+    Sorting="SortHandler">
 
     <DataGrid.Resources>
         <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
