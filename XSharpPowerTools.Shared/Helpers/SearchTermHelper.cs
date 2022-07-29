@@ -21,6 +21,10 @@ namespace XSharpPowerTools.Helpers
                     memberName = ".ctor";
                 else if (keyWords[keyWords.Length - 1].Equals("dtor", StringComparison.OrdinalIgnoreCase))
                     memberName = ".dtor";
+                else if (keyWords[keyWords.Length - 1].Equals("c", StringComparison.OrdinalIgnoreCase) && searchTerm.Substring(searchTerm.LastIndexOf(keyWords[keyWords.Length - 1]) - 2, 2) == "..")
+                    memberName = ".ctor";
+                else if (keyWords[keyWords.Length - 1].Equals("d", StringComparison.OrdinalIgnoreCase) && searchTerm.Substring(searchTerm.LastIndexOf(keyWords[keyWords.Length - 1]) - 2, 2) == "..")
+                    memberName = ".dtor";
                 else
                     memberName = keyWords[keyWords.Length - 1];
                 className = keyWords[keyWords.Length - 2];
@@ -32,6 +36,11 @@ namespace XSharpPowerTools.Helpers
                     memberName = ".ctor";
                 else if (memberName.Equals("dtor", StringComparison.OrdinalIgnoreCase))
                     memberName = ".dtor";
+            }
+            else if (searchTerm.EndsWith("..")) 
+            { 
+                className = searchTerm.Substring(0, searchTerm.Length - 2);
+                memberName = ".ctor";
             }
             else
             {
