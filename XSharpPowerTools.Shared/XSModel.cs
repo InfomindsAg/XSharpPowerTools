@@ -84,7 +84,6 @@ namespace XSharpPowerTools
                 return (new(), 0);
 
             await Connection.OpenAsync();
-            
 
             var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 

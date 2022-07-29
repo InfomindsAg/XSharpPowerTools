@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using XSharpPowerTools.Helpers;
+using Task = System.Threading.Tasks.Task;
 
 namespace XSharpPowerTools.View.Controls
 {
