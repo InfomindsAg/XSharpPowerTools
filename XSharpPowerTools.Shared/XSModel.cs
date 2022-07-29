@@ -92,12 +92,18 @@ namespace XSharpPowerTools
             {
                 searchTerm = searchTerm.Trim().Substring(2).Trim();
                 var results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Function);
+
+                if (results.Count < 1)
+                    results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
+
+                Connection.Close();
                 return (results, XSModelResultType.Procedure);
             }
             else if (searchTerm.Trim().StartsWith("d "))
             {
                 searchTerm = searchTerm.Trim().Substring(2).Trim();
                 var results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
+                Connection.Close();
                 return (results, XSModelResultType.Procedure);
             }
             else if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
@@ -112,14 +118,39 @@ namespace XSharpPowerTools
                 if (string.IsNullOrWhiteSpace(memberName))
                 {
                     var results = await SearchForClassAsync(className, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    var resultType = XSModelResultType.Type;
+
+                    if (results.Count < 1) 
+                    {
+                        results = await SearchForMemberAsync(null, className, orderBy, sqlSortDirection, solutionDirectory, limit);
+                        resultType = XSModelResultType.Member;
+                    }
+                    if (results.Count < 1) 
+                    { 
+                        results = await SearchForKindAsync(className, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Function);
+                        resultType = XSModelResultType.Procedure;
+                    }
+                    if (results.Count < 1)
+                        results = await SearchForKindAsync(className, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
+
                     Connection.Close();
-                    return (results, XSModelResultType.Type);
+                    return (results, resultType);
                 }
                 else
                 {
                     var results = await SearchForMemberAsync(className, memberName, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    var resultType = XSModelResultType.Member;
+
+                    if (results.Count < 1 && string.IsNullOrWhiteSpace(className))
+                    {
+                        results = await SearchForKindAsync(memberName, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Function);
+                        resultType = XSModelResultType.Procedure;
+                    }
+                    if (results.Count < 1 && string.IsNullOrWhiteSpace(className))
+                        results = await SearchForKindAsync(memberName, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
+
                     Connection.Close();
-                    return (results, XSModelResultType.Member);
+                    return (results, resultType);
                 }
             }
         }
@@ -172,7 +203,7 @@ namespace XSharpPowerTools
         private async Task<List<XSModelResultItem>> SearchForMemberAsync(string className, string memberName, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
         {
             memberName = memberName.Replace("_", @"\_");
-            className = className.Replace("_", @"\_");
+            className = className?.Replace("_", @"\_");
 
             if (string.IsNullOrWhiteSpace(orderBy))
                 orderBy = "TypeName";
@@ -180,12 +211,12 @@ namespace XSharpPowerTools
             var command = Connection.CreateCommand();
 
             command.CommandText =
-            @"
-                        SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
-                        FROM ProjectMembers 
-                        WHERE (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
-                        AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\'
-                    ";
+                @"
+                    SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
+                    FROM ProjectMembers 
+                    WHERE (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                    AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\'
+                ";
             command.Parameters.AddWithValue("$memberName", memberName.Trim().ToLower());
 
             if (!string.IsNullOrWhiteSpace(className))
@@ -240,18 +271,18 @@ namespace XSharpPowerTools
 
             command.CommandText =
                 @$"
-                        SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
-                        FROM ProjectMembers
-                        WHERE IdType IN (SELECT Id
-                				            FROM ProjectTypes
-                				            WHERE Kind = 1
-                				            AND LOWER(Sourcecode) LIKE '%class%'
-                                            AND LOWER(TRIM(FileName))=$fileName)
-                        AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
-                        AND LOWER(Name) LIKE $memberName  ESCAPE '\'
-                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
-                        LIMIT {limit}
-                    ";
+                    SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
+                    FROM ProjectMembers
+                    WHERE IdType IN (SELECT Id
+                				        FROM ProjectTypes
+                				        WHERE Kind = 1
+                				        AND LOWER(Sourcecode) LIKE '%class%'
+                                        AND LOWER(TRIM(FileName))=$fileName)
+                    AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                    AND LOWER(Name) LIKE $memberName  ESCAPE '\'
+                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                    LIMIT {limit}
+                ";
 
             command.Parameters.AddWithValue("$memberName", memberName).SqliteType = SqliteType.Text;
             command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower()).SqliteType = SqliteType.Text;
@@ -334,7 +365,7 @@ namespace XSharpPowerTools
         private string GetFilterSqlConditions(FilterableKind kind) => 
             kind switch
             {
-                FilterableKind.Function => "Kind = 9 OR Kind = 10",
+                FilterableKind.Function => "(Kind = 9 OR Kind = 10)",
                 FilterableKind.Define => "Kind = 23",
                 _ => null,
             };
