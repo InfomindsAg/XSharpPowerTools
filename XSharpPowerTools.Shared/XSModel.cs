@@ -16,6 +16,12 @@ namespace XSharpPowerTools
         Procedure
     }
 
+    public enum FilterableKind //later to be expanded for filtering
+    { 
+        Function,
+        Define
+    }
+
     public class XSModelResultItem
     {
         public string SolutionDirectory { get; set; }
@@ -78,119 +84,25 @@ namespace XSharpPowerTools
                 return (new(), 0);
 
             await Connection.OpenAsync();
-            var command = Connection.CreateCommand();
+            
 
             var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
-            if (searchTerm.Trim().StartsWith("p ") || searchTerm.Trim().StartsWith("d "))
+            if (searchTerm.Trim().StartsWith("p "))
             {
-                command.CommandText =
-                @"
-                    SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
-                    FROM ProjectMembers 
-                    WHERE";
-
-                command.CommandText += searchTerm.Trim().StartsWith("p ")
-                    ? " (Kind = 9 OR Kind = 10)"
-                    : " Kind = 23";
-
-                if (string.IsNullOrWhiteSpace(orderBy))
-                    orderBy = "Name";
-
-                command.CommandText += @$" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
-
                 searchTerm = searchTerm.Trim().Substring(2).Trim();
-                if (!searchTerm.Contains("\"") && !searchTerm.Contains("*"))
-                    searchTerm = $"%{searchTerm}%";
-                    
-                searchTerm = searchTerm.Replace("_", @"\_");
-                searchTerm = searchTerm.Replace("\"", string.Empty);
-                searchTerm = searchTerm.ToLower().Replace("*", "%");
-
-                command.Parameters.AddWithValue("$memberName", searchTerm);
-
-                var reader = await command.ExecuteReaderAsync();
-
-                var results = new List<XSModelResultItem>();
-                while (await reader.ReadAsync())
-                {
-                    if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
-                    {
-                        var resultItem = new XSModelResultItem
-                        {
-                            MemberName = reader.GetString(0),
-                            ContainingFile = reader.GetString(1),
-                            Line = reader.GetInt32(2),
-                            TypeName = reader.GetString(3),
-                            Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
-                            Kind = reader.GetInt32(5),
-                            SourceCode = reader.GetString(6),
-                            ResultType = XSModelResultType.Procedure,
-                            SolutionDirectory = solutionDirectory
-                        };
-                        results.Add(resultItem);
-                    }
-                }
-                Connection.Close();
+                var results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Function);
                 return (results, XSModelResultType.Procedure);
-
+            }
+            else if (searchTerm.Trim().StartsWith("d "))
+            {
+                searchTerm = searchTerm.Trim().Substring(2).Trim();
+                var results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
+                return (results, XSModelResultType.Procedure);
             }
             else if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
             {
-                var memberName = searchTerm.Trim().Substring(2).Trim();
-                if (string.IsNullOrWhiteSpace(memberName))
-                    return (new(), 0);
-
-                if (!memberName.Contains("\"") && !memberName.Contains("*")) 
-                    memberName = $"%{memberName}%";
-
-                memberName = memberName.Replace("_", @"\_");
-                memberName = memberName.Replace("\"", string.Empty);
-                memberName = memberName.ToLower().Replace("*", "%");
-
-                if (string.IsNullOrWhiteSpace(orderBy))
-                    orderBy = "Name";
-
-                command.CommandText =
-                    @$"
-                        SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
-                        FROM ProjectMembers
-                        WHERE IdType IN (SELECT Id
-                				         FROM ProjectTypes
-                				         WHERE Kind = 1
-                				         AND LOWER(Sourcecode) LIKE '%class%'
-                                         AND LOWER(TRIM(FileName))=$fileName)
-                        AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
-                        AND LOWER(Name) LIKE $memberName  ESCAPE '\'
-                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
-                        LIMIT {limit}
-                    ";
-
-                command.Parameters.AddWithValue("$memberName", memberName).SqliteType = SqliteType.Text;
-                command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower()).SqliteType = SqliteType.Text;
-
-                var reader = await command.ExecuteReaderAsync();
-
-                var results = new List<XSModelResultItem>();
-                while (await reader.ReadAsync())
-                {
-                    if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
-                    {
-                        var resultItem = new XSModelResultItem
-                        {
-                            MemberName = reader.GetString(0),
-                            ContainingFile = reader.GetString(1),
-                            Line = reader.GetInt32(2),
-                            TypeName = reader.GetString(3),
-                            Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
-                            Kind = reader.GetInt32(5),
-                            SourceCode = reader.GetString(6),
-                            ResultType = XSModelResultType.Member,
-                            SolutionDirectory = solutionDirectory
-                        };
-                        results.Add(resultItem);
-                    }
-                }
+                var results = await SearchInCurrentFileAsync(searchTerm, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
                 Connection.Close();
                 return (results, XSModelResultType.Member);
             }
@@ -199,13 +111,30 @@ namespace XSharpPowerTools
                 var (className, memberName) = SearchTermHelper.EvaluateSearchTerm(searchTerm);
                 if (string.IsNullOrWhiteSpace(memberName))
                 {
-                    className = className.Replace("_", @"\_");
+                    var results = await SearchForClassAsync(className, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    Connection.Close();
+                    return (results, XSModelResultType.Type);
+                }
+                else
+                {
+                    var results = await SearchForMemberAsync(className, memberName, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    Connection.Close();
+                    return (results, XSModelResultType.Member);
+                }
+            }
+        }
 
-                    if (string.IsNullOrWhiteSpace(orderBy))
-                        orderBy = "Name";
+        private async Task<List<XSModelResultItem>> SearchForClassAsync(string className, string orderBy, string sqlSortDirection, string solutionDirectory, int limit) 
+        {
+            className = className.Replace("_", @"\_");
 
-                    command.CommandText =
-                    @$"
+            if (string.IsNullOrWhiteSpace(orderBy))
+                orderBy = "Name";
+
+            var command = Connection.CreateCommand();
+
+            command.CommandText =
+            @$"
                         SELECT Name, FileName, StartLine, ProjectFileName, Kind, Sourcecode
                         FROM ProjectTypes 
                         WHERE ((Kind = 1 AND LOWER(Sourcecode) LIKE '%class%') OR Kind = 16 OR Kind = 18)
@@ -213,84 +142,202 @@ namespace XSharpPowerTools
                         ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                         LIMIT {limit}
                     ";
-                    command.Parameters.AddWithValue("$className", className.Trim().ToLower());
+            command.Parameters.AddWithValue("$className", className.Trim().ToLower());
 
-                    var reader = await command.ExecuteReaderAsync();
+            var reader = await command.ExecuteReaderAsync();
 
-                    var results = new List<XSModelResultItem>();
-                    while (await reader.ReadAsync())
-                    {
-                        if (!reader.GetString(3).Trim().EndsWith("(OrphanedFiles).xsproj"))
-                        {
-                            var resultItem = new XSModelResultItem
-                            {
-                                TypeName = reader.GetString(0),
-                                MemberName = string.Empty,
-                                ContainingFile = reader.GetString(1),
-                                Line = reader.GetInt32(2),
-                                Project = Path.GetFileNameWithoutExtension(reader.GetString(3)),
-                                Kind = reader.GetInt32(4),
-                                SourceCode = reader.GetString(5),
-                                ResultType = XSModelResultType.Type,
-                                SolutionDirectory = solutionDirectory
-                            };
-                            results.Add(resultItem);
-                        }
-                    }
-                    Connection.Close();
-                    return (results, XSModelResultType.Type);
-                }
-                else
+            var results = new List<XSModelResultItem>();
+            while (await reader.ReadAsync())
+            {
+                if (!reader.GetString(3).Trim().EndsWith("(OrphanedFiles).xsproj"))
                 {
-                    memberName = memberName.Replace("_", @"\_");
-                    className = className.Replace("_", @"\_");
+                    var resultItem = new XSModelResultItem
+                    {
+                        TypeName = reader.GetString(0),
+                        MemberName = string.Empty,
+                        ContainingFile = reader.GetString(1),
+                        Line = reader.GetInt32(2),
+                        Project = Path.GetFileNameWithoutExtension(reader.GetString(3)),
+                        Kind = reader.GetInt32(4),
+                        SourceCode = reader.GetString(5),
+                        ResultType = XSModelResultType.Type,
+                        SolutionDirectory = solutionDirectory
+                    };
+                    results.Add(resultItem);
+                }
+            }
+            return results;
+        }
 
-                    if (string.IsNullOrWhiteSpace(orderBy))
-                        orderBy = "TypeName";
+        private async Task<List<XSModelResultItem>> SearchForMemberAsync(string className, string memberName, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
+        {
+            memberName = memberName.Replace("_", @"\_");
+            className = className.Replace("_", @"\_");
 
-                    command.CommandText =
-                    @"
+            if (string.IsNullOrWhiteSpace(orderBy))
+                orderBy = "TypeName";
+
+            var command = Connection.CreateCommand();
+
+            command.CommandText =
+            @"
                         SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                         FROM ProjectMembers 
                         WHERE (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
                         AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\'
                     ";
-                    command.Parameters.AddWithValue("$memberName", memberName.Trim().ToLower());
+            command.Parameters.AddWithValue("$memberName", memberName.Trim().ToLower());
 
-                    if (!string.IsNullOrWhiteSpace(className))
+            if (!string.IsNullOrWhiteSpace(className))
+            {
+                command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $className  ESCAPE '\'";
+                command.Parameters.AddWithValue("$className", className.Trim().ToLower());
+            }
+            command.CommandText += $" ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
+
+            var reader = await command.ExecuteReaderAsync();
+
+            var results = new List<XSModelResultItem>();
+            while (await reader.ReadAsync())
+            {
+                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
+                {
+                    var resultItem = new XSModelResultItem
                     {
-                        command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $className  ESCAPE '\'";
-                        command.Parameters.AddWithValue("$className", className.Trim().ToLower());
-                    }
-                    command.CommandText += $" ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
-
-                    var reader = await command.ExecuteReaderAsync();
-
-                    var results = new List<XSModelResultItem>();
-                    while (await reader.ReadAsync())
-                    {
-                        if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
-                        {
-                            var resultItem = new XSModelResultItem
-                            {
-                                MemberName = reader.GetString(0),
-                                ContainingFile = reader.GetString(1),
-                                Line = reader.GetInt32(2),
-                                TypeName = reader.GetString(3),
-                                Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
-                                Kind = reader.GetInt32(5),
-                                SourceCode = reader.GetString(6),
-                                ResultType = XSModelResultType.Member,
-                                SolutionDirectory = solutionDirectory
-                            };
-                            results.Add(resultItem);
-                        }
-                    }
-                    Connection.Close();
-                    return (results, XSModelResultType.Member);
+                        MemberName = reader.GetString(0),
+                        ContainingFile = reader.GetString(1),
+                        Line = reader.GetInt32(2),
+                        TypeName = reader.GetString(3),
+                        Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
+                        Kind = reader.GetInt32(5),
+                        SourceCode = reader.GetString(6),
+                        ResultType = XSModelResultType.Member,
+                        SolutionDirectory = solutionDirectory
+                    };
+                    results.Add(resultItem);
                 }
             }
+            return results;
         }
+
+        private async Task<List<XSModelResultItem>> SearchInCurrentFileAsync(string searchTerm, string currentFile, string orderBy, string sqlSortDirection, string solutionDirectory, int limit) 
+        {
+            var memberName = searchTerm.Trim().Substring(2).Trim();
+            if (string.IsNullOrWhiteSpace(memberName))
+                return new();
+
+            if (!memberName.Contains("\"") && !memberName.Contains("*"))
+                memberName = $"%{memberName}%";
+
+            memberName = memberName.Replace("_", @"\_");
+            memberName = memberName.Replace("\"", string.Empty);
+            memberName = memberName.ToLower().Replace("*", "%");
+
+            if (string.IsNullOrWhiteSpace(orderBy))
+                orderBy = "Name";
+
+            var command = Connection.CreateCommand();
+
+            command.CommandText =
+                @$"
+                        SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
+                        FROM ProjectMembers
+                        WHERE IdType IN (SELECT Id
+                				            FROM ProjectTypes
+                				            WHERE Kind = 1
+                				            AND LOWER(Sourcecode) LIKE '%class%'
+                                            AND LOWER(TRIM(FileName))=$fileName)
+                        AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                        AND LOWER(Name) LIKE $memberName  ESCAPE '\'
+                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                        LIMIT {limit}
+                    ";
+
+            command.Parameters.AddWithValue("$memberName", memberName).SqliteType = SqliteType.Text;
+            command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower()).SqliteType = SqliteType.Text;
+
+            var reader = await command.ExecuteReaderAsync();
+
+            var results = new List<XSModelResultItem>();
+            while (await reader.ReadAsync())
+            {
+                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
+                {
+                    var resultItem = new XSModelResultItem
+                    {
+                        MemberName = reader.GetString(0),
+                        ContainingFile = reader.GetString(1),
+                        Line = reader.GetInt32(2),
+                        TypeName = reader.GetString(3),
+                        Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
+                        Kind = reader.GetInt32(5),
+                        SourceCode = reader.GetString(6),
+                        ResultType = XSModelResultType.Member,
+                        SolutionDirectory = solutionDirectory
+                    };
+                    results.Add(resultItem);
+                }
+            }
+            return results;
+        }
+
+        private async Task<List<XSModelResultItem>> SearchForKindAsync(string searchTerm, string orderBy, string sqlSortDirection, string solutionDirectory, int limit, FilterableKind kind) 
+        {
+            var command = Connection.CreateCommand();
+
+            command.CommandText =
+                @$"
+                    SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
+                    FROM ProjectMembers 
+                    WHERE {GetFilterSqlConditions(kind)}
+                ";
+
+            if (string.IsNullOrWhiteSpace(orderBy))
+                orderBy = "Name";
+
+            command.CommandText += @$" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
+
+            if (!searchTerm.Contains("\"") && !searchTerm.Contains("*"))
+                searchTerm = $"%{searchTerm}%";
+
+            searchTerm = searchTerm.Replace("_", @"\_");
+            searchTerm = searchTerm.Replace("\"", string.Empty);
+            searchTerm = searchTerm.ToLower().Replace("*", "%");
+
+            command.Parameters.AddWithValue("$memberName", searchTerm);
+
+            var reader = await command.ExecuteReaderAsync();
+
+            var results = new List<XSModelResultItem>();
+            while (await reader.ReadAsync())
+            {
+                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj"))
+                {
+                    var resultItem = new XSModelResultItem
+                    {
+                        MemberName = reader.GetString(0),
+                        ContainingFile = reader.GetString(1),
+                        Line = reader.GetInt32(2),
+                        TypeName = reader.GetString(3),
+                        Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
+                        Kind = reader.GetInt32(5),
+                        SourceCode = reader.GetString(6),
+                        ResultType = XSModelResultType.Procedure,
+                        SolutionDirectory = solutionDirectory
+                    };
+                    results.Add(resultItem);
+                }
+            }
+            return results;
+        }
+
+        private string GetFilterSqlConditions(FilterableKind kind) => 
+            kind switch
+            {
+                FilterableKind.Function => "Kind = 9 OR Kind = 10",
+                FilterableKind.Define => "Kind = 23",
+                _ => null,
+            };
 
         public async Task<List<NamespaceResultItem>> GetContainingNamespaceAsync(string searchTerm, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
