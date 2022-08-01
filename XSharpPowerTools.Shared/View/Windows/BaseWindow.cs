@@ -11,19 +11,9 @@ namespace XSharpPowerTools.View.Windows
         public abstract string SearchTerm { set; }
         protected bool AllowReturn;
 
-        public BaseWindow() 
-        {
-            WindowStartupLocation = System.Windows.WindowStartupLocation.Manual;
+        public BaseWindow() => 
             PreviewKeyDown += BaseWindow_PreviewKeyDown;
-            Loaded += BaseWindow_Loaded;
-        }
 
-        private void BaseWindow_Loaded(object sender, System.Windows.RoutedEventArgs e) 
-        {
-            var wpfScreen = WpfScreen.GetScreenFrom(this);
-            Left = wpfScreen.DeviceBounds.Left + (wpfScreen.DeviceBounds.Width - ActualWidth) / 2;
-            Top = wpfScreen.DeviceBounds.Top + (wpfScreen.DeviceBounds.Height - ActualHeight) / 3;
-        }
 
         private void BaseWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {

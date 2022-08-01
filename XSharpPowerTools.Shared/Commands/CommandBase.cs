@@ -19,6 +19,7 @@ namespace XSharpPowerTools.Commands
         public static async Task ShowBaseWindowAsync(BaseWindow window)
         {
             var solution = await VS.Solutions.GetCurrentSolutionAsync();
+            
             if (solution != null)
             {
                 var solutionDirectory = Path.GetDirectoryName(solution.FullPath);
@@ -29,12 +30,12 @@ namespace XSharpPowerTools.Commands
                     window.SearchTerm = await DocumentHelper.GetEditorSearchTermAsync();
                     try
                     {
-                        window.ShowModal();
+                        await VS.Windows.ShowDialogAsync(window);
                     }
                     finally
                     {
-                        window.Close();
                         window.XSModel.CloseConnection();
+                        window.Close();
                     }
                 }
                 else
