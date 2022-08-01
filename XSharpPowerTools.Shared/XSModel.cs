@@ -24,6 +24,8 @@ namespace XSharpPowerTools
 
     public class XSModelResultItem
     {
+        private static List<int> KindsWithParams = new List<int> { 3, 5, 9, 10 };
+
         public string SolutionDirectory { get; set; }
         public XSModelResultType ResultType { get; set; }
         public string TypeName { get; set; }
@@ -36,6 +38,22 @@ namespace XSharpPowerTools
 
         public string RelativePath =>
             string.IsNullOrWhiteSpace(SolutionDirectory) || !ContainingFile.StartsWith(SolutionDirectory) ? ContainingFile : ContainingFile.Substring(SolutionDirectory.Length + 1);
+
+        public string ParametersCount
+        {
+            get 
+            {
+                if (!KindsWithParams.Contains(Kind) || !SourceCode.Contains("(") || !SourceCode.Contains(")"))
+                    return string.Empty;
+
+                var paramDeclaration = SourceCode.Substring(SourceCode.IndexOf("(") + 1, SourceCode.IndexOf(")") - SourceCode.IndexOf("(") - 1);
+                
+                var paramCount = string.IsNullOrWhiteSpace(paramDeclaration) ? 0 : 1;
+                paramCount += paramDeclaration.Count(q => q == ',');
+
+                return paramCount.ToString();
+            }
+        }
 
         public string KindName => Kind switch
         {

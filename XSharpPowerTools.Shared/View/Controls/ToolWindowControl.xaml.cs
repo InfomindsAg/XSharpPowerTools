@@ -92,21 +92,25 @@ namespace XSharpPowerTools.View.Controls
             ResultsDataGrid.Columns[0].Visibility = resultType == XSModelResultType.Procedure
                 ? Visibility.Collapsed
                 : Visibility.Visible;
-            
-            ResultsDataGrid.Columns[1].Visibility = resultType == XSModelResultType.Type
+
+            var memberSpecificColumnsVisibility = resultType == XSModelResultType.Type
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
+            ResultsDataGrid.Columns[1].Visibility = memberSpecificColumnsVisibility;
+            ResultsDataGrid.Columns[2].Visibility = memberSpecificColumnsVisibility;
 
             ResultsDataGrid.Columns[0].Width = 0;
             ResultsDataGrid.Columns[1].Width = 0;
             ResultsDataGrid.Columns[2].Width = 0;
             ResultsDataGrid.Columns[3].Width = 0;
+            ResultsDataGrid.Columns[4].Width = 0;
             ResultsDataGrid.UpdateLayout();
             ResultsDataGrid.Columns[0].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
-            ResultsDataGrid.Columns[1].Width = new DataGridLength(3, DataGridLengthUnitType.Star);
+            ResultsDataGrid.Columns[1].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
             ResultsDataGrid.Columns[2].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
-            ResultsDataGrid.Columns[3].Width = new DataGridLength(9, DataGridLengthUnitType.Star);
+            ResultsDataGrid.Columns[3].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
+            ResultsDataGrid.Columns[4].Width = new DataGridLength(7, DataGridLengthUnitType.Star);
         }
 
         public void SolutionEvents_OnBeforeCloseSolution() =>

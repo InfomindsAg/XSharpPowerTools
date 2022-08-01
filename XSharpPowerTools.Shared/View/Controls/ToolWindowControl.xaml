@@ -37,6 +37,9 @@
                         Header=" Member"
                         Binding="{Binding MemberName}"/>
                 <DataGridTextColumn
+                        Header=" Params"
+                        Binding="{Binding ParametersCount}"/>
+                <DataGridTextColumn
                         Header=" Kind"
                         Binding="{Binding KindName}"
                         ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"

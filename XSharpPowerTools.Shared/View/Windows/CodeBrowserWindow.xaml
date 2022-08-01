@@ -158,6 +158,9 @@
                         Binding="{Binding MemberName}"
                         SortMemberPath="MemberName.Length"/>
                     <DataGridTextColumn
+                        Header=" Params"
+                        Binding="{Binding ParametersCount}"/>
+                    <DataGridTextColumn
                         Header=" Kind"
                         Binding="{Binding KindName}"
                         ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
