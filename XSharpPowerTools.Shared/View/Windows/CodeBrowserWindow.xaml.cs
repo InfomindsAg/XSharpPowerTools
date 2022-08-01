@@ -87,8 +87,20 @@ namespace XSharpPowerTools.View.Windows
                 {
                     var searchTerm = SearchTextBox.Text.Trim();
                     ReDoSearch = false;
-                    var currentFile = searchTerm.StartsWith("..") || searchTerm.StartsWith("::") ? await DocumentHelper.GetCurrentFileAsync() : null;
-                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, SolutionDirectory, currentFile, direction, orderBy);
+
+                    string currentFile;
+                    int caretPosition;
+                    if (searchTerm.StartsWith("..") || searchTerm.StartsWith("::"))
+                    {
+                        currentFile = await DocumentHelper.GetCurrentFileAsync();
+                        caretPosition = await DocumentHelper.GetCaretPositionAsync();
+                    }
+                    else
+                    {
+                        currentFile = null;
+                        caretPosition = -1;
+                    }
+                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, SolutionDirectory, currentFile, caretPosition, direction, orderBy);
 
                     ResultsDataGrid.ItemsSource = results;
                     ResultsDataGrid.SelectedItem = results.FirstOrDefault();

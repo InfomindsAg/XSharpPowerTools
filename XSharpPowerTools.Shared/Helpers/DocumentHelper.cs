@@ -152,5 +152,12 @@ namespace XSharpPowerTools.Helpers
             var currentDocument = await VS.Documents.GetActiveDocumentViewAsync();
             return currentDocument?.FilePath;
         }
+
+        public static async Task<int> GetCaretPositionAsync()
+        {
+            var textView = (await VS.Documents.GetActiveDocumentViewAsync())?.TextView;
+            var position = textView.Caret?.Position.BufferPosition.Position;
+            return position ?? -1;
+        }
     }
 }

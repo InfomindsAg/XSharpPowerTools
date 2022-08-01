@@ -60,6 +60,7 @@ namespace XSharpPowerTools
     {
         public string TypeName { get; set; }
         public string Namespace { get; set; }
+        public int ProjectId { get; set; }
 
         public override int GetHashCode() =>
             TypeName.GetHashCode() + Namespace.GetHashCode();
@@ -73,12 +74,12 @@ namespace XSharpPowerTools
             Connection = GetConnection(dbFile) ?? throw new ArgumentNullException();
 
         public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
-            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, null, direction, orderBy, limit);
+            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, null, direction, orderBy, limit, -1);
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
-            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, direction, orderBy, 100);
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, int caretPosition, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
+            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, direction, orderBy, 100, caretPosition);
 
-        private async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction, string orderBy, int limit)
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction, string orderBy, int limit, int caretPostion)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return (new(), 0);
@@ -107,7 +108,19 @@ namespace XSharpPowerTools
             }
             else if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
             {
-                var results = await SearchInCurrentFileAsync(searchTerm, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
+                List<XSModelResultItem> results;
+                if (caretPostion < 0)
+                {
+                    results = await SearchInCurrentFileAsync(searchTerm, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
+                }
+                else 
+                {
+                    var classInfo = await GetContaingClassAsync(currentFile, caretPostion);
+                    if (classInfo != null)
+                        results = await SearchInCurrentClassAsync(searchTerm.Trim(), classInfo, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    else
+                        results = await SearchInCurrentFileAsync(searchTerm, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
+                }
                 Connection.Close();
                 return (results, XSModelResultType.Member);
             }
@@ -224,6 +237,71 @@ namespace XSharpPowerTools
                 command.Parameters.AddWithValue("$className", className.Trim().ToLower());
             }
             command.CommandText += $" ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
+
+            var reader = await command.ExecuteReaderAsync();
+
+            var results = new List<XSModelResultItem>();
+            while (await reader.ReadAsync())
+            {
+                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
+                {
+                    var resultItem = new XSModelResultItem
+                    {
+                        MemberName = reader.GetString(0),
+                        ContainingFile = reader.GetString(1),
+                        Line = reader.GetInt32(2),
+                        TypeName = reader.GetString(3),
+                        Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
+                        Kind = reader.GetInt32(5),
+                        SourceCode = reader.GetString(6),
+                        ResultType = XSModelResultType.Member,
+                        SolutionDirectory = solutionDirectory
+                    };
+                    results.Add(resultItem);
+                }
+            }
+            return results;
+        }
+
+        private async Task<List<XSModelResultItem>> SearchInCurrentClassAsync(string searchTerm, NamespaceResultItem classInfo, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
+        {
+            var memberName = searchTerm.Trim().Substring(2).Trim();
+            if (string.IsNullOrWhiteSpace(memberName))
+                return new();
+
+            if (!memberName.Contains("\"") && !memberName.Contains("*"))
+                memberName = $"%{memberName}%";
+
+            memberName = memberName.Replace("_", @"\_");
+            memberName = memberName.Replace("\"", string.Empty);
+            memberName = memberName.ToLower().Replace("*", "%");
+
+            if (string.IsNullOrWhiteSpace(orderBy))
+                orderBy = "Name";
+
+            var command = Connection.CreateCommand();
+
+            command.CommandText =
+                @$"
+                    SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
+                    FROM ProjectMembers
+                    WHERE IdType IN (SELECT Id
+                				        FROM ProjectTypes
+                				        WHERE Kind = 1
+                				        AND LOWER(Sourcecode) LIKE '%class%'
+                                        AND LOWER(TRIM(Name)) = $typeName
+                                        AND LOWER(TRIM(Namespace)) = $namespace
+                                        AND idProject = $projectId)
+                    AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                    AND LOWER(Name) LIKE $memberName  ESCAPE '\'
+                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                    LIMIT {limit}
+                ";
+
+            command.Parameters.AddWithValue("$memberName", memberName).SqliteType = SqliteType.Text;
+            command.Parameters.AddWithValue("$typeName", classInfo.TypeName.Trim().ToLower()).SqliteType = SqliteType.Text;
+            command.Parameters.AddWithValue("$namespace", classInfo.Namespace.Trim().ToLower()).SqliteType = SqliteType.Text;
+            command.Parameters.AddWithValue("$projectId", classInfo.ProjectId).SqliteType = SqliteType.Integer;
 
             var reader = await command.ExecuteReaderAsync();
 
@@ -368,6 +446,36 @@ namespace XSharpPowerTools
                 FilterableKind.Define => "Kind = 23",
                 _ => null,
             };
+
+        private async Task<NamespaceResultItem> GetContaingClassAsync(string currentFile, int caretPosition)
+        {
+            if (string.IsNullOrWhiteSpace(currentFile))
+                return null;
+
+            var command = Connection.CreateCommand();
+            command.CommandText =
+                @"
+                    SELECT Name, Namespace, idProject
+					FROM ProjectTypes
+					WHERE Kind = 1
+                    AND LOWER(TRIM(Sourcecode)) LIKE ""%class%""
+                    AND TRIM(LOWER(FileName)) = $fileName
+                    AND Start < $caretPos AND Stop > $caretPos
+                ";
+            command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
+            command.Parameters.AddWithValue("$caretPos", caretPosition);
+
+            var reader = await command.ExecuteReaderAsync();
+            await reader.ReadAsync();
+            return reader.HasRows
+                ? new NamespaceResultItem
+                {
+                    TypeName = reader.GetString(0),
+                    Namespace = reader.GetString(1),
+                    ProjectId = reader.GetInt32(2)
+                }
+                : null;
+        }
 
         public async Task<List<NamespaceResultItem>> GetContainingNamespaceAsync(string searchTerm, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
