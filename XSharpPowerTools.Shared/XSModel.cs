@@ -96,16 +96,16 @@ namespace XSharpPowerTools
         public XSModel(string dbFile) =>
             Connection = GetConnection(dbFile) ?? throw new ArgumentNullException();
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
-            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, null, direction, orderBy, limit, -1);
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, List<FilterableKind> filters, string solutionDirectory, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
+            await GetSearchTermMatchesAsync(searchTerm, filters, solutionDirectory, null, direction, orderBy, limit, -1);
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, int caretPosition, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
-            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, direction, orderBy, 100, caretPosition);
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, List<FilterableKind> filters, string solutionDirectory, string currentFile, int caretPosition, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
+            await GetSearchTermMatchesAsync(searchTerm, filters, solutionDirectory, currentFile, direction, orderBy, 100, caretPosition);
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, int caretPosition, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
-            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, direction, orderBy, limit, caretPosition);
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, List<FilterableKind> filters, string solutionDirectory, string currentFile, int caretPosition, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
+            await GetSearchTermMatchesAsync(searchTerm, filters, solutionDirectory, currentFile, direction, orderBy, limit, caretPosition);
 
-        private async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction, string orderBy, int limit, int caretPostion)
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, List<FilterableKind> filters, string solutionDirectory, string currentFile, ListSortDirection direction, string orderBy, int limit, int caretPostion)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return (new(), 0);
@@ -137,15 +137,15 @@ namespace XSharpPowerTools
                 List<XSModelResultItem> results;
                 if (caretPostion < 0)
                 {
-                    results = await SearchInCurrentFileAsync(searchTerm, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    results = await SearchInCurrentFileAsync(searchTerm, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
                 }
                 else 
                 {
                     var classInfo = await GetContaingClassAsync(currentFile, caretPostion);
                     if (classInfo != null)
-                        results = await SearchInCurrentClassAsync(searchTerm.Trim(), classInfo, orderBy, sqlSortDirection, solutionDirectory, limit);
+                        results = await SearchInCurrentClassAsync(searchTerm.Trim(), filters, classInfo, orderBy, sqlSortDirection, solutionDirectory, limit);
                     else
-                        results = await SearchInCurrentFileAsync(searchTerm, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
+                        results = await SearchInCurrentFileAsync(searchTerm, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
                 }
                 Connection.Close();
                 return (results, XSModelResultType.Member);
@@ -160,7 +160,7 @@ namespace XSharpPowerTools
 
                     if (results.Count < 1) 
                     {
-                        results = await SearchForMemberAsync(null, className, orderBy, sqlSortDirection, solutionDirectory, limit);
+                        results = await SearchForMemberAsync(null, className, filters, orderBy, sqlSortDirection, solutionDirectory, limit);
                         resultType = XSModelResultType.Member;
                     }
                     if (results.Count < 1) 
@@ -176,7 +176,7 @@ namespace XSharpPowerTools
                 }
                 else
                 {
-                    var results = await SearchForMemberAsync(className, memberName, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    var results = await SearchForMemberAsync(className, memberName, filters, orderBy, sqlSortDirection, solutionDirectory, limit);
                     var resultType = XSModelResultType.Member;
 
                     if (results.Count < 1 && string.IsNullOrWhiteSpace(className))
@@ -238,7 +238,7 @@ namespace XSharpPowerTools
             return results;
         }
 
-        private async Task<List<XSModelResultItem>> SearchForMemberAsync(string className, string memberName, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
+        private async Task<List<XSModelResultItem>> SearchForMemberAsync(string className, string memberName, List<FilterableKind> filters, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
         {
             memberName = memberName.Replace("_", @"\_");
             className = className?.Replace("_", @"\_");
@@ -249,10 +249,10 @@ namespace XSharpPowerTools
             var command = Connection.CreateCommand();
 
             command.CommandText =
-                @"
+                @$"
                     SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                     FROM ProjectMembers 
-                    WHERE (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                    WHERE {GetFilterSql(filters)}
                     AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\'
                 ";
             command.Parameters.AddWithValue("$memberName", memberName.Trim().ToLower());
@@ -289,7 +289,7 @@ namespace XSharpPowerTools
             return results;
         }
 
-        private async Task<List<XSModelResultItem>> SearchInCurrentClassAsync(string searchTerm, NamespaceResultItem classInfo, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
+        private async Task<List<XSModelResultItem>> SearchInCurrentClassAsync(string searchTerm, List<FilterableKind> filters, NamespaceResultItem classInfo, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
         {
             var memberName = searchTerm.Trim().Substring(2).Trim();
             if (string.IsNullOrWhiteSpace(memberName))
@@ -318,7 +318,7 @@ namespace XSharpPowerTools
                                         AND LOWER(TRIM(Name)) = $typeName
                                         AND LOWER(TRIM(Namespace)) = $namespace
                                         AND idProject = $projectId)
-                    AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                    AND {GetFilterSql(filters)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT {limit}
@@ -354,7 +354,7 @@ namespace XSharpPowerTools
             return results;
         }
 
-        private async Task<List<XSModelResultItem>> SearchInCurrentFileAsync(string searchTerm, string currentFile, string orderBy, string sqlSortDirection, string solutionDirectory, int limit) 
+        private async Task<List<XSModelResultItem>> SearchInCurrentFileAsync(string searchTerm, List<FilterableKind> filters, string currentFile, string orderBy, string sqlSortDirection, string solutionDirectory, int limit) 
         {
             var memberName = searchTerm.Trim().Substring(2).Trim();
             if (string.IsNullOrWhiteSpace(memberName))
@@ -381,7 +381,7 @@ namespace XSharpPowerTools
                 				        WHERE Kind = 1
                 				        AND LOWER(Sourcecode) LIKE '%class%'
                                         AND LOWER(TRIM(FileName))=$fileName)
-                    AND (Kind = 3 OR Kind = 4 OR Kind = 5 OR Kind = 6 OR Kind = 7 OR Kind = 8 OR Kind = 11)
+                    AND {GetFilterSql(filters)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT {limit}
@@ -468,19 +468,10 @@ namespace XSharpPowerTools
 
         private string GetFilterSql(List<FilterableKind> kinds) 
         {
-            var sb = new StringBuilder('(');
+            var sb = new StringBuilder().Append('(');
             foreach (var kind in kinds) 
             {
-                sb.Append(kind switch
-                {
-                    FilterableKind.Constructor => "(Kind = 3 OR Kind = 4)",
-                    FilterableKind.Method => "Kind = 5",
-                    FilterableKind.Property => "(Kind = 6 OR Kind = 7 OR Kind = 8)",
-                    FilterableKind.Function => "(Kind = 9 OR Kind = 10)",
-                    FilterableKind.Variable => "Kind = 11",
-                    FilterableKind.Define => "Kind = 23",
-                    _ => null,
-                });
+                sb.Append(GetFilterSqlConditions(kind));
                 sb.Append(" OR ");
             }
             sb.Length = sb.Length - 4;

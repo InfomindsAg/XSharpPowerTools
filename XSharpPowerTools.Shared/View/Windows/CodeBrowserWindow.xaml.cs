@@ -105,7 +105,22 @@ namespace XSharpPowerTools.View.Windows
                         currentFile = null;
                         caretPosition = -1;
                     }
-                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, SolutionDirectory, currentFile, caretPosition, direction, orderBy);
+
+                    var filters = GetFilters();
+                    if (filters.Count < 1) 
+                    {
+                        filters = new List<FilterableKind> 
+                        { 
+                            FilterableKind.Method, 
+                            FilterableKind.Property, 
+                            FilterableKind.Function, 
+                            FilterableKind.Constructor, 
+                            FilterableKind.Variable, 
+                            FilterableKind.Define 
+                        };
+                    }
+
+                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, filters, SolutionDirectory, currentFile, caretPosition, direction, orderBy);
 
                     ResultsDataGrid.ItemsSource = results;
                     ResultsDataGrid.SelectedItem = results.FirstOrDefault();
@@ -226,7 +241,7 @@ namespace XSharpPowerTools.View.Windows
                 if (items.Count < 100)
                     (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, items);
                 else
-                     await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, LastSearchTerm, SolutionDirectory);
+                     await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, GetFilters(), LastSearchTerm, SolutionDirectory);
 
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
@@ -250,6 +265,24 @@ namespace XSharpPowerTools.View.Windows
                 column.SortDirection = direction;
             }
             e.Handled = true;
+        }
+
+        private List<FilterableKind> GetFilters() 
+        { 
+            var filters = new List<FilterableKind>();
+            if (MethodToggleButton.IsChecked.HasValue && MethodToggleButton.IsChecked.Value)
+                filters.Add(FilterableKind.Method);
+            if (PropertyToggleButton.IsChecked.HasValue && PropertyToggleButton.IsChecked.Value)
+                filters.Add(FilterableKind.Property);
+            if (FunctionToggleButton.IsChecked.HasValue && FunctionToggleButton.IsChecked.Value)
+                filters.Add(FilterableKind.Function);
+            if (ConstructorToggleButton.IsChecked.HasValue && ConstructorToggleButton.IsChecked.Value)
+                filters.Add(FilterableKind.Constructor);
+            if (VariableToggleButton.IsChecked.HasValue && VariableToggleButton.IsChecked.Value)
+                filters.Add(FilterableKind.Variable);
+            if (DefineToggleButton.IsChecked.HasValue && DefineToggleButton.IsChecked.Value)
+                filters.Add(FilterableKind.Define);
+            return filters;
         }
     }
 }

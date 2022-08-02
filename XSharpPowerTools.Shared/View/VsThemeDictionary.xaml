@@ -283,6 +283,38 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style x:Key="GenericToggleButton" TargetType="{x:Type ToggleButton}">
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ButtonTextBrushKey}}"/>
+        <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ToolWindowBackgroundBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ComboBoxBorderBrushKey}}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border 
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="1">
+                        <TextBlock 
+                            Text="{TemplateBinding Content}" 
+                            Foreground="{TemplateBinding Foreground}" 
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.CommandBarMouseOverBackgroundBeginBrushKey}}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ComboBoxBorderBrushKey}}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.CommandBarMouseOverBackgroundBeginBrushKey}}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ComboBoxBorderBrushKey}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     <Style x:Key="WindowBorder" TargetType="{x:Type Border}">
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ComboBoxBorderBrushKey}}"/>
         <Setter Property="BorderThickness" Value="1"/>

@@ -88,6 +88,62 @@
                 Margin="0,3,0,0"
                 Grid.Column="1"
                 FontWeight="DemiBold"/>
+            <Grid
+                Grid.Row="0"
+                Grid.Column="1"
+                Grid.ColumnSpan="5"
+                HorizontalAlignment="Right">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ToggleButton
+                    x:Name="MethodToggleButton"
+                    Grid.Column="0"
+                    Content="Method"
+                    Style="{StaticResource GenericToggleButton}"
+                    VerticalAlignment="Center"
+                    Margin="0,0,1,0"/>
+                <ToggleButton
+                    x:Name="PropertyToggleButton"
+                    Grid.Column="1"
+                    Content="Property"
+                    Style="{StaticResource GenericToggleButton}"
+                    VerticalAlignment="Center"
+                    Margin="1,0,1,0"/>
+                <ToggleButton
+                    x:Name="FunctionToggleButton"
+                    Grid.Column="2"
+                    Content="Function"
+                    Style="{StaticResource GenericToggleButton}"
+                    VerticalAlignment="Center"
+                    Margin="1,0,1,0"/>
+                <ToggleButton
+                    x:Name="ConstructorToggleButton"
+                    Grid.Column="3"
+                    Content="Con-/Destructor"
+                    Style="{StaticResource GenericToggleButton}"
+                    VerticalAlignment="Center"
+                    Margin="1,0,1,0"/>
+                <ToggleButton
+                    x:Name="VariableToggleButton"
+                    Grid.Column="4"
+                    Content="Variable"
+                    Style="{StaticResource GenericToggleButton}"
+                    VerticalAlignment="Center"
+                    Margin="1,0,1,0"/>
+                <ToggleButton
+                    x:Name="DefineToggleButton"
+                    Grid.Column="5"
+                    Content="Define"
+                    Style="{StaticResource GenericToggleButton}"
+                    VerticalAlignment="Center"
+                    Margin="1,0,0,0"/>
+            </Grid>
             <controls:SearchTextBox
                 x:Name="SearchTextBox"
                 Grid.Row="1"

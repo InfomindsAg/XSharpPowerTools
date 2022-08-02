@@ -25,6 +25,7 @@ namespace XSharpPowerTools.View.Controls
         private XSModelResultType DisplayedResultType;
         private string SearchTerm;
         private string SolutionDirectory;
+        private List<FilterableKind> Filters;
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
         volatile bool ShouldGroup = true;
@@ -62,11 +63,12 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        public async Task UpdateToolWindowContentsAsync(XSModel xsModel, string searchTerm, string solutionDirectory)
+        public async Task UpdateToolWindowContentsAsync(XSModel xsModel, List<FilterableKind> filters, string searchTerm, string solutionDirectory)
         {
             XSModel = xsModel;
             SearchTerm = searchTerm;
             SolutionDirectory = solutionDirectory;
+            Filters = filters;
 
             List<XSModelResultItem> results;
             XSModelResultType resultType;
@@ -74,11 +76,11 @@ namespace XSharpPowerTools.View.Controls
             {
                 var currentFile = await DocumentHelper.GetCurrentFileAsync();
                 var caretPosition = await DocumentHelper.GetCaretPositionAsync();
-                (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, caretPosition, 2000); //aus DB, max 2000
+                (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, filters, solutionDirectory, currentFile, caretPosition, 2000); //aus DB, max 2000
             }
             else
             {
-                (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, solutionDirectory, 2000); //aus DB, max 2000
+                (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, filters, solutionDirectory, 2000); //aus DB, max 2000
             }
             
             DisplayedResultType = resultType;
@@ -174,11 +176,11 @@ namespace XSharpPowerTools.View.Controls
                     {
                         var currentFile = await DocumentHelper.GetCurrentFileAsync();
                         var caretPosition = await DocumentHelper.GetCaretPositionAsync();
-                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
+                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, Filters, SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
                     }
                     else
                     {
-                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, SolutionDirectory, 2000, direction, orderBy);
+                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, Filters, SolutionDirectory, 2000, direction, orderBy);
                     }
 
                     ResultsDataGrid.ItemsSource = results;
