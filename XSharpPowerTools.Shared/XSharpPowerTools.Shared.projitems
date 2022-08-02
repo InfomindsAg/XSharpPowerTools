@@ -44,11 +44,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Commands\FindNamespaceCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DocumentHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\FindNamespaceResultComparer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CodeBrowserResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\WpfScreen.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml.cs">
       <DependentUpon>HelpTextControl.xaml</DependentUpon>
     </Compile>

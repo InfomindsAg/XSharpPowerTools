@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using XSharpPowerTools.Helpers;
 
@@ -18,7 +19,11 @@ namespace XSharpPowerTools
 
     public enum FilterableKind //later to be expanded for filtering
     { 
+        Method,
+        Property,
         Function,
+        Constructor,
+        Variable,
         Define
     }
 
@@ -96,6 +101,9 @@ namespace XSharpPowerTools
 
         public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, int caretPosition, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
             await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, direction, orderBy, 100, caretPosition);
+
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, int caretPosition, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
+            await GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, direction, orderBy, limit, caretPosition);
 
         private async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, string solutionDirectory, string currentFile, ListSortDirection direction, string orderBy, int limit, int caretPostion)
         {
@@ -411,17 +419,18 @@ namespace XSharpPowerTools
         {
             var command = Connection.CreateCommand();
 
+            if (string.IsNullOrWhiteSpace(orderBy))
+                orderBy = "Name";
+
+
             command.CommandText =
                 @$"
                     SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                     FROM ProjectMembers 
                     WHERE {GetFilterSqlConditions(kind)}
+                    AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' 
+                    ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}
                 ";
-
-            if (string.IsNullOrWhiteSpace(orderBy))
-                orderBy = "Name";
-
-            command.CommandText += @$" AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
 
             if (!searchTerm.Contains("\"") && !searchTerm.Contains("*"))
                 searchTerm = $"%{searchTerm}%";
@@ -457,10 +466,35 @@ namespace XSharpPowerTools
             return results;
         }
 
+        private string GetFilterSql(List<FilterableKind> kinds) 
+        {
+            var sb = new StringBuilder('(');
+            foreach (var kind in kinds) 
+            {
+                sb.Append(kind switch
+                {
+                    FilterableKind.Constructor => "(Kind = 3 OR Kind = 4)",
+                    FilterableKind.Method => "Kind = 5",
+                    FilterableKind.Property => "(Kind = 6 OR Kind = 7 OR Kind = 8)",
+                    FilterableKind.Function => "(Kind = 9 OR Kind = 10)",
+                    FilterableKind.Variable => "Kind = 11",
+                    FilterableKind.Define => "Kind = 23",
+                    _ => null,
+                });
+                sb.Append(" OR ");
+            }
+            sb.Length = sb.Length - 4;
+            return sb.Append(')').ToString();
+        }
+
         private string GetFilterSqlConditions(FilterableKind kind) => 
             kind switch
             {
+                FilterableKind.Constructor => "(Kind = 3 OR Kind = 4)",
+                FilterableKind.Method => "Kind = 5",
+                FilterableKind.Property => "(Kind = 6 OR Kind = 7 OR Kind = 8)",
                 FilterableKind.Function => "(Kind = 9 OR Kind = 10)",
+                FilterableKind.Variable => "Kind = 11",
                 FilterableKind.Define => "Kind = 23",
                 _ => null,
             };

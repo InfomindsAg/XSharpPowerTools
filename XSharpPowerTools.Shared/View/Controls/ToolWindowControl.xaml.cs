@@ -67,7 +67,19 @@ namespace XSharpPowerTools.View.Controls
             XSModel = xsModel;
             SearchTerm = searchTerm;
             SolutionDirectory = solutionDirectory;
-            var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, solutionDirectory, 2000); //aus DB, max 2000
+
+            List<XSModelResultItem> results;
+            XSModelResultType resultType;
+            if (SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::"))
+            {
+                var currentFile = await DocumentHelper.GetCurrentFileAsync();
+                var caretPosition = await DocumentHelper.GetCaretPositionAsync();
+                (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, solutionDirectory, currentFile, caretPosition, 2000); //aus DB, max 2000
+            }
+            else
+            {
+                (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, solutionDirectory, 2000); //aus DB, max 2000
+            }
             
             DisplayedResultType = resultType;
             SetTableColumns(resultType);
@@ -124,7 +136,7 @@ namespace XSharpPowerTools.View.Controls
             var lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(sender.ItemsSource);
             var comparer = new CodeBrowserResultComparer(direction, column, DisplayedResultType);
 
-            if (lcv.Count < 100)
+            if (lcv.Count < 2000)
             {
                 lcv.CustomSort = comparer;
                 column.SortDirection = direction;
@@ -154,10 +166,20 @@ namespace XSharpPowerTools.View.Controls
             {
                 do
                 {
-                    
                     ReDoSearch = false;
-                    var currentFile = SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::") ? await DocumentHelper.GetCurrentFileAsync() : null;
-                    var (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, SolutionDirectory, 2000, direction, orderBy);
+
+                    List<XSModelResultItem> results;
+                    XSModelResultType _;
+                    if (SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::"))
+                    {
+                        var currentFile = await DocumentHelper.GetCurrentFileAsync();
+                        var caretPosition = await DocumentHelper.GetCaretPositionAsync();
+                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
+                    }
+                    else
+                    {
+                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, SolutionDirectory, 2000, direction, orderBy);
+                    }
 
                     ResultsDataGrid.ItemsSource = results;
 
