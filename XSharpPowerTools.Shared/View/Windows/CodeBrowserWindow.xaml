@@ -99,7 +99,6 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <ToggleButton
                     x:Name="MethodToggleButton"
@@ -107,6 +106,7 @@
                     Content="Method"
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
+                    Click="FilterButton_Click"
                     Margin="0,0,1,0"/>
                 <ToggleButton
                     x:Name="PropertyToggleButton"
@@ -114,6 +114,7 @@
                     Content="Property"
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
+                    Click="FilterButton_Click"
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="FunctionToggleButton"
@@ -121,13 +122,7 @@
                     Content="Function"
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
-                    Margin="1,0,1,0"/>
-                <ToggleButton
-                    x:Name="ConstructorToggleButton"
-                    Grid.Column="3"
-                    Content="Con-/Destructor"
-                    Style="{StaticResource GenericToggleButton}"
-                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="VariableToggleButton"
@@ -135,6 +130,7 @@
                     Content="Variable"
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
+                    Click="FilterButton_Click"
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="DefineToggleButton"
@@ -142,6 +138,7 @@
                     Content="Define"
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
+                    Click="FilterButton_Click"
                     Margin="1,0,0,0"/>
             </Grid>
             <controls:SearchTextBox

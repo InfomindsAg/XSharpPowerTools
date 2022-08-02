@@ -22,7 +22,6 @@ namespace XSharpPowerTools
         Method,
         Property,
         Function,
-        Constructor,
         Variable,
         Define
     }
@@ -481,7 +480,6 @@ namespace XSharpPowerTools
         private string GetFilterSqlConditions(FilterableKind kind) => 
             kind switch
             {
-                FilterableKind.Constructor => "(Kind = 3 OR Kind = 4)",
                 FilterableKind.Method => "Kind = 5",
                 FilterableKind.Property => "(Kind = 6 OR Kind = 7 OR Kind = 8)",
                 FilterableKind.Function => "(Kind = 9 OR Kind = 10)",

@@ -114,7 +114,6 @@ namespace XSharpPowerTools.View.Windows
                             FilterableKind.Method, 
                             FilterableKind.Property, 
                             FilterableKind.Function, 
-                            FilterableKind.Constructor, 
                             FilterableKind.Variable, 
                             FilterableKind.Define 
                         };
@@ -276,13 +275,17 @@ namespace XSharpPowerTools.View.Windows
                 filters.Add(FilterableKind.Property);
             if (FunctionToggleButton.IsChecked.HasValue && FunctionToggleButton.IsChecked.Value)
                 filters.Add(FilterableKind.Function);
-            if (ConstructorToggleButton.IsChecked.HasValue && ConstructorToggleButton.IsChecked.Value)
-                filters.Add(FilterableKind.Constructor);
             if (VariableToggleButton.IsChecked.HasValue && VariableToggleButton.IsChecked.Value)
                 filters.Add(FilterableKind.Variable);
             if (DefineToggleButton.IsChecked.HasValue && DefineToggleButton.IsChecked.Value)
                 filters.Add(FilterableKind.Define);
             return filters;
+        }
+
+        private void FilterButton_Click(object sender, RoutedEventArgs e) 
+        {
+            SearchTextBox.Focus();
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}FilterButton_Click");
         }
     }
 }
