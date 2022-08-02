@@ -172,6 +172,36 @@ namespace XSharpPowerTools.View.Windows
             {
                 ResultsDataGrid.SelectPrevious();
             }
+            else if (Keyboard.Modifiers == ModifierKeys.Control) 
+            {
+                var toggleButtonChecked = false;
+                if (e.Key == Key.D1)
+                {
+                    MethodToggleButton.IsChecked = !MethodToggleButton.IsChecked;
+                    toggleButtonChecked = true;
+                }
+                else if (e.Key == Key.D2)
+                {
+                    PropertyToggleButton.IsChecked = !PropertyToggleButton.IsChecked;
+                    toggleButtonChecked = true;
+                }
+                else if (e.Key == Key.D3)
+                {
+                    FunctionToggleButton.IsChecked = !FunctionToggleButton.IsChecked;
+                    toggleButtonChecked = true;
+                }
+                else if (e.Key == Key.D4)
+                {
+                    DefineToggleButton.IsChecked = !DefineToggleButton.IsChecked;
+                    toggleButtonChecked = true;
+                }
+    
+                if (toggleButtonChecked) 
+                {
+                    FilterButton_Click(null, null);
+                    e.Handled = true;
+                }
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
