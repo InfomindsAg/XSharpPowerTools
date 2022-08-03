@@ -107,6 +107,7 @@
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
+                    ToolTip="filter prefix m"
                     Margin="0,0,1,0"/>
                 <ToggleButton
                     x:Name="PropertyToggleButton"
@@ -115,6 +116,7 @@
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
+                    ToolTip="filter prefix p"
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="FunctionToggleButton"
@@ -123,6 +125,7 @@
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
+                    ToolTip="filter prefix f"
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="VariableToggleButton"
@@ -131,6 +134,7 @@
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
+                    ToolTip="filter prefix v"
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="DefineToggleButton"
@@ -139,6 +143,7 @@
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
+                    ToolTip="filter prefix d"
                     Margin="1,0,0,0"/>
             </Grid>
             <controls:SearchTextBox

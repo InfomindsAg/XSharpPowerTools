@@ -18,8 +18,7 @@ ex1.ex2       - searches for members similar to 'ex2' within classes similar to 
 ..example    - searches for members 'example' within current document
 " + "\"example\"" + @"   - matches whole word only
 ex*Model    - * is a placeholder for multiple characters
-p example   - searches for procedures/functions similar to 'example'
-d example   - searches for defines similar to 'example'";
+p example   - filtered search with prefixes, for more info see tooltips of filter buttons";
         }
     }
 }
