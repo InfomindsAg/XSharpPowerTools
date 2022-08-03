@@ -94,8 +94,46 @@ namespace XSharpPowerTools.Helpers
             {
                 var insertPos = usings.LastOrDefault()?.EndIncludingLineBreak.Position ?? 0;
                 var paddingNum = usings.LastOrDefault()?.GetText().TakeWhile(char.IsWhiteSpace).Count();
-                var padding = paddingNum != null ? new string(' ', (int)paddingNum) : string.Empty;
-                edit.Insert(insertPos, padding + "using " + namespaceRef + Environment.NewLine);
+                var padding = paddingNum.HasValue ? new string(' ', paddingNum.Value) : string.Empty;
+                edit.Insert(insertPos, $"{padding}using {namespaceRef}{Environment.NewLine}");
+                edit.Apply();
+            }
+            catch (Exception)
+            {
+                edit.Cancel();
+            }
+        }
+
+        public static async Task InsertNamespaceReferenceAsync(string namespaceRef, string type) 
+        {
+            var documentView = await VS.Documents.GetActiveDocumentViewAsync();
+            var fileName = documentView?.FilePath;
+            var textView = documentView?.TextView;
+
+            if (textView == null)
+                return;
+
+            ITextEdit edit;
+            try
+            {
+                edit = textView.TextBuffer?.CreateEdit();
+            }
+            catch (InvalidOperationException)
+            {
+                return;
+            }
+
+            var lines = textView.TextBuffer?.CurrentSnapshot?.Lines;
+            var caretPosition = textView.Caret.Position.BufferPosition.Position;
+            var caretLine = lines?.FirstOrDefault(q => q.Start.Position <= caretPosition && q.End.Position >= caretPosition);
+            var caretWordPosition = GetRelativeCaretWordPosition(caretLine, caretPosition);
+
+            try
+            {
+                var insertPos = caretLine.Start.Position + caretWordPosition;
+                edit.Insert(insertPos, $"{namespaceRef}.");
+                if (!textView.Selection.IsEmpty)
+                    edit.Replace(textView.Selection.SelectedSpans.FirstOrDefault(), type);
                 edit.Apply();
             }
             catch (Exception)
@@ -133,6 +171,27 @@ namespace XSharpPowerTools.Helpers
             }
 
             return caretWord;
+        }
+
+        private static int GetRelativeCaretWordPosition(ITextSnapshotLine caretLine, int caretPosition) 
+        {
+            var lineText = caretLine?.GetText();
+
+            if (string.IsNullOrWhiteSpace(lineText))
+                return 0;
+
+            var relativeCaretPosition = caretPosition - caretLine.Start.Position;
+
+            var words = Regex.Split(lineText, @"(\W)");
+
+            var lengthSum = 0;
+            foreach (var word in words)
+            {
+                if (lengthSum <= relativeCaretPosition && lengthSum + word.Length >= relativeCaretPosition && !Regex.IsMatch(word, @"\W"))
+                    return lengthSum;
+                lengthSum += word.Length;
+            }
+            return 0;
         }
 
         public static async Task<string> GetEditorSearchTermAsync()
