@@ -44,7 +44,7 @@ namespace XSharpPowerTools.Commands
                 }
             }
             else
-                await VS.MessageBox.ShowWarningAsync("X# Code Browser", "X# Code Browser is only available an opened solution.");
+                await VS.MessageBox.ShowWarningAsync("X# Code Browser", "X# Code Browser is only available with an opened solution.");
         }
 
         public static void BeforeQueryStatus(object sender, EventArgs e)

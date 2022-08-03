@@ -28,7 +28,7 @@ namespace XSharpPowerTools
 
     public class XSModelResultItem
     {
-        private static List<int> KindsWithParams = new List<int> { 3, 5, 9, 10 };
+        private static readonly List<int> KindsWithParams = new List<int> { 3, 5, 9, 10 };
 
         public string SolutionDirectory { get; set; }
         public XSModelResultType ResultType { get; set; }
@@ -90,6 +90,15 @@ namespace XSharpPowerTools
 
     public class XSModel
     {
+        private readonly Dictionary<char, FilterableKind> ValidPrefixes = new()
+        {
+            { 'm', FilterableKind.Method },
+            { 'p', FilterableKind.Property },
+            { 'f', FilterableKind.Function },
+            { 'v', FilterableKind.Variable },
+            { 'd', FilterableKind.Define }
+        };
+
         private readonly SqliteConnection Connection;
 
         public XSModel(string dbFile) =>
@@ -113,27 +122,25 @@ namespace XSharpPowerTools
 
             var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
-            if (searchTerm.Trim().StartsWith("p "))
+            var prefixFiltersApplied = false;
+            if (searchTerm.Trim().Contains(' '))
             {
-                searchTerm = searchTerm.Trim().Substring(2).Trim();
-                var results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Function);
-
-                if (results.Count < 1)
-                    results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
-
-                Connection.Close();
-                return (results, XSModelResultType.Procedure);
+                var searchTermElements = searchTerm.Trim().Split(new[] { ' ' }, 2);
+                var prefixes = searchTermElements[0];
+                searchTerm = searchTermElements[1];
+                if (prefixes.All(q => ValidPrefixes.Keys.Contains(q))) 
+                {
+                    filters.Clear();
+                    foreach (var prefix in prefixes) 
+                        filters.Add(ValidPrefixes[prefix]);
+                    prefixFiltersApplied = true;
+                }
             }
-            else if (searchTerm.Trim().StartsWith("d "))
-            {
-                searchTerm = searchTerm.Trim().Substring(2).Trim();
-                var results = await SearchForKindAsync(searchTerm, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
-                Connection.Close();
-                return (results, XSModelResultType.Procedure);
-            }
-            else if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
+
+            if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
             {
                 List<XSModelResultItem> results;
+                XSModelResultType resultType;
                 if (caretPostion < 0)
                 {
                     results = await SearchInCurrentFileAsync(searchTerm, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
@@ -142,16 +149,28 @@ namespace XSharpPowerTools
                 {
                     var classInfo = await GetContaingClassAsync(currentFile, caretPostion);
                     if (classInfo != null)
-                        results = await SearchInCurrentClassAsync(searchTerm.Trim(), filters, classInfo, orderBy, sqlSortDirection, solutionDirectory, limit);
+                        results = await SearchInCurrentClassAsync(searchTerm, filters, classInfo, orderBy, sqlSortDirection, solutionDirectory, limit);
                     else
                         results = await SearchInCurrentFileAsync(searchTerm, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
                 }
                 Connection.Close();
-                return (results, XSModelResultType.Member);
+
+                resultType = results.Any(q => q.ResultType == XSModelResultType.Member) 
+                    ? XSModelResultType.Member 
+                    : XSModelResultType.Procedure;
+
+                return (results, resultType);
             }
             else
             {
                 var (className, memberName) = SearchTermHelper.EvaluateSearchTerm(searchTerm);
+
+                if (prefixFiltersApplied && string.IsNullOrEmpty(memberName)) 
+                {
+                    memberName = className;
+                    className = null;
+                }
+
                 if (string.IsNullOrWhiteSpace(memberName))
                 {
                     var results = await SearchForClassAsync(className, orderBy, sqlSortDirection, solutionDirectory, limit);
@@ -176,7 +195,9 @@ namespace XSharpPowerTools
                 else
                 {
                     var results = await SearchForMemberAsync(className, memberName, filters, orderBy, sqlSortDirection, solutionDirectory, limit);
-                    var resultType = XSModelResultType.Member;
+                    var resultType = results.Any(q => q.ResultType == XSModelResultType.Member)
+                        ? XSModelResultType.Member
+                        : XSModelResultType.Procedure;
 
                     if (results.Count < 1 && string.IsNullOrWhiteSpace(className))
                     {
@@ -243,7 +264,11 @@ namespace XSharpPowerTools
             className = className?.Replace("_", @"\_");
 
             if (string.IsNullOrWhiteSpace(orderBy))
-                orderBy = "TypeName";
+            {
+                orderBy = filters.Any(q => q != FilterableKind.Function && q != FilterableKind.Define)
+                    ? "TypeName"
+                    : "Name";
+            }
 
             var command = Connection.CreateCommand();
 
@@ -279,7 +304,7 @@ namespace XSharpPowerTools
                         Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
                         Kind = reader.GetInt32(5),
                         SourceCode = reader.GetString(6),
-                        ResultType = XSModelResultType.Member,
+                        ResultType = reader.GetInt32(5) == 9 || reader.GetInt32(5) == 10 || reader.GetInt32(5) == 23 ? XSModelResultType.Procedure : XSModelResultType.Member,
                         SolutionDirectory = solutionDirectory
                     };
                     results.Add(resultItem);
