@@ -141,17 +141,20 @@ namespace XSharpPowerTools
             {
                 List<XSModelResultItem> results;
                 XSModelResultType resultType;
+
+                var memberName = SearchTermHelper.EvaluateSearchTermLocal(searchTerm);
+
                 if (caretPostion < 0)
                 {
-                    results = await SearchInCurrentFileAsync(searchTerm, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    results = await SearchInCurrentFileAsync(memberName, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
                 }
                 else 
                 {
                     var classInfo = await GetContaingClassAsync(currentFile, caretPostion);
                     if (classInfo != null)
-                        results = await SearchInCurrentClassAsync(searchTerm, filters, classInfo, orderBy, sqlSortDirection, solutionDirectory, limit);
+                        results = await SearchInCurrentClassAsync(memberName, filters, classInfo, orderBy, sqlSortDirection, solutionDirectory, limit);
                     else
-                        results = await SearchInCurrentFileAsync(searchTerm, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
+                        results = await SearchInCurrentFileAsync(memberName, filters, currentFile, orderBy, sqlSortDirection, solutionDirectory, limit);
                 }
                 Connection.Close();
 
@@ -276,7 +279,7 @@ namespace XSharpPowerTools
                 @$"
                     SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                     FROM ProjectMembers 
-                    WHERE {GetFilterSql(filters)}
+                    WHERE {GetFilterSql(filters, memberName)}
                     AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\'
                 ";
             command.Parameters.AddWithValue("$memberName", memberName.Trim().ToLower());
@@ -313,18 +316,20 @@ namespace XSharpPowerTools
             return results;
         }
 
-        private async Task<List<XSModelResultItem>> SearchInCurrentClassAsync(string searchTerm, List<FilterableKind> filters, NamespaceResultItem classInfo, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
+        private async Task<List<XSModelResultItem>> SearchInCurrentClassAsync(string memberName, List<FilterableKind> filters, NamespaceResultItem classInfo, string orderBy, string sqlSortDirection, string solutionDirectory, int limit)
         {
-            var memberName = searchTerm.Trim().Substring(2).Trim();
             if (string.IsNullOrWhiteSpace(memberName))
                 return new();
 
-            if (!memberName.Contains("\"") && !memberName.Contains("*"))
-                memberName = $"%{memberName}%";
+            if (!memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase) && !memberName.Equals(".dtor", StringComparison.OrdinalIgnoreCase)) 
+            {
+                if (!memberName.Contains("\"") && !memberName.Contains("*"))
+                    memberName = $"%{memberName}%";
 
-            memberName = memberName.Replace("_", @"\_");
-            memberName = memberName.Replace("\"", string.Empty);
-            memberName = memberName.ToLower().Replace("*", "%");
+                memberName = memberName.Replace("_", @"\_");
+                memberName = memberName.Replace("\"", string.Empty);
+                memberName = memberName.ToLower().Replace("*", "%");
+            }
 
             if (string.IsNullOrWhiteSpace(orderBy))
                 orderBy = "Name";
@@ -342,7 +347,7 @@ namespace XSharpPowerTools
                                         AND LOWER(TRIM(Name)) = $typeName
                                         AND LOWER(TRIM(Namespace)) = $namespace
                                         AND idProject = $projectId)
-                    AND {GetFilterSql(filters)}
+                    AND {GetFilterSql(filters, memberName)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT {limit}
@@ -378,9 +383,8 @@ namespace XSharpPowerTools
             return results;
         }
 
-        private async Task<List<XSModelResultItem>> SearchInCurrentFileAsync(string searchTerm, List<FilterableKind> filters, string currentFile, string orderBy, string sqlSortDirection, string solutionDirectory, int limit) 
+        private async Task<List<XSModelResultItem>> SearchInCurrentFileAsync(string memberName, List<FilterableKind> filters, string currentFile, string orderBy, string sqlSortDirection, string solutionDirectory, int limit) 
         {
-            var memberName = searchTerm.Trim().Substring(2).Trim();
             if (string.IsNullOrWhiteSpace(memberName))
                 return new();
 
@@ -405,7 +409,7 @@ namespace XSharpPowerTools
                 				        WHERE Kind = 1
                 				        AND LOWER(Sourcecode) LIKE '%class%'
                                         AND LOWER(TRIM(FileName))=$fileName)
-                    AND {GetFilterSql(filters)}
+                    AND {GetFilterSql(filters, memberName)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT {limit}
@@ -490,8 +494,13 @@ namespace XSharpPowerTools
             return results;
         }
 
-        private string GetFilterSql(List<FilterableKind> kinds) 
+        private string GetFilterSql(List<FilterableKind> kinds, string memberName) 
         {
+            if (memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase))
+                return "Kind = 3";
+            else if (memberName.Equals(".dtor", StringComparison.OrdinalIgnoreCase))
+                return "Kind = 4";
+
             var sb = new StringBuilder().Append('(');
             foreach (var kind in kinds) 
             {

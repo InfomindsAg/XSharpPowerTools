@@ -106,20 +106,7 @@ namespace XSharpPowerTools.View.Windows
                         caretPosition = -1;
                     }
 
-                    var filters = GetFilters();
-                    if (filters.Count < 1) 
-                    {
-                        filters = new List<FilterableKind> 
-                        { 
-                            FilterableKind.Method, 
-                            FilterableKind.Property, 
-                            FilterableKind.Function, 
-                            FilterableKind.Variable, 
-                            FilterableKind.Define 
-                        };
-                    }
-
-                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, filters, SolutionDirectory, currentFile, caretPosition, direction, orderBy);
+                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, GetFilters(), SolutionDirectory, currentFile, caretPosition, direction, orderBy);
 
                     ResultsDataGrid.ItemsSource = results;
                     ResultsDataGrid.SelectedItem = results.FirstOrDefault();
@@ -309,6 +296,19 @@ namespace XSharpPowerTools.View.Windows
                 filters.Add(FilterableKind.Variable);
             if (DefineToggleButton.IsChecked.HasValue && DefineToggleButton.IsChecked.Value)
                 filters.Add(FilterableKind.Define);
+
+            if (filters.Count < 1)
+            {
+                filters = new List<FilterableKind>
+                        {
+                            FilterableKind.Method,
+                            FilterableKind.Property,
+                            FilterableKind.Function,
+                            FilterableKind.Variable,
+                            FilterableKind.Define
+                        };
+            }
+
             return filters;
         }
 
