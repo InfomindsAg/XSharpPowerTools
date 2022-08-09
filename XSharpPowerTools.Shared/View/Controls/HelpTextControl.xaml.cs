@@ -16,7 +16,7 @@ namespace XSharpPowerTools.View.Controls
 ex1.ex2       - searches for members similar to 'ex2' within classes similar to 'ex1' (""."" equal to "":"")
 .example     - searches for members 'example' within all classes
 ..example    - searches for members 'example' within current document
-" + "\"example\"" + @"   - matches whole word only
+""example""   - matches whole word only
 ex*Model    - * is a placeholder for multiple characters
 p example   - filtered search with prefixes, for more info see tooltips of filter buttons";
         }
