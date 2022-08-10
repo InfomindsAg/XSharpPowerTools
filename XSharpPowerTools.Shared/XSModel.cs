@@ -226,14 +226,16 @@ namespace XSharpPowerTools
             var command = Connection.CreateCommand();
 
             command.CommandText =
-            @$"
-                        SELECT Name, FileName, StartLine, ProjectFileName, Kind, Sourcecode
-                        FROM ProjectTypes 
-                        WHERE ((Kind = 1 AND LOWER(Sourcecode) LIKE '%class%') OR Kind = 16 OR Kind = 18)
-                        AND LOWER(TRIM(Name)) LIKE $className ESCAPE '\'
-                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
-                        LIMIT {limit}
-                    ";
+                @$"
+                    SELECT Name, FileName, StartLine, ProjectFileName, Kind, Sourcecode
+                    FROM ProjectTypes 
+                    WHERE ((Kind = 1 AND LOWER(Sourcecode) LIKE '%class%') OR Kind = 16 OR Kind = 18)
+                    AND LOWER(TRIM(Name)) LIKE $className ESCAPE '\'
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
+                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                    LIMIT {limit}
+                ";
             command.Parameters.AddWithValue("$className", className.Trim().ToLower());
 
             var reader = await command.ExecuteReaderAsync();
@@ -289,7 +291,12 @@ namespace XSharpPowerTools
                 command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $className  ESCAPE '\'";
                 command.Parameters.AddWithValue("$className", className.Trim().ToLower());
             }
-            command.CommandText += $" ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}";
+            command.CommandText += 
+                @$"
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
+                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}
+                ";
 
             var reader = await command.ExecuteReaderAsync();
 
@@ -349,6 +356,8 @@ namespace XSharpPowerTools
                                         AND idProject = $projectId)
                     AND {GetFilterSql(filters, memberName)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT {limit}
                 ";
@@ -411,6 +420,8 @@ namespace XSharpPowerTools
                                         AND LOWER(TRIM(FileName))=$fileName)
                     AND {GetFilterSql(filters, memberName)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT {limit}
                 ";
@@ -457,6 +468,8 @@ namespace XSharpPowerTools
                     FROM ProjectMembers 
                     WHERE {GetFilterSqlConditions(kind)}
                     AND LOWER(TRIM(Name)) LIKE $memberName ESCAPE '\' 
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
                     ORDER BY LENGTH(TRIM({orderBy})), TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}
                 ";
 
@@ -570,23 +583,23 @@ namespace XSharpPowerTools
             searchTerm = searchTerm.Replace("_", @"\_");
             var command = Connection.CreateCommand();
             command.CommandText =
-                    @$"
-                        SELECT *
-                        FROM 
-	                        (SELECT DISTINCT Name, Namespace
-		                        FROM AssemblyTypes
-		                        WHERE Namespace IS NOT NULL
-			                        AND trim(Namespace) != ''
-			                        AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\'
-	                        UNION
-	                        SELECT DISTINCT Name, Namespace
-		                        FROM ProjectTypes 
-		                        WHERE Namespace IS NOT NULL
-			                        AND trim(Namespace) != ''
-			                        AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\')
-                        ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
-                        LIMIT 100
-                    ";
+                @$"
+                    SELECT *
+                    FROM 
+	                    (SELECT DISTINCT Name, Namespace
+		                    FROM AssemblyTypes
+		                    WHERE Namespace IS NOT NULL
+			                    AND trim(Namespace) != ''
+			                    AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\'
+	                    UNION
+	                    SELECT DISTINCT Name, Namespace
+		                    FROM ProjectTypes 
+		                    WHERE Namespace IS NOT NULL
+			                    AND trim(Namespace) != ''
+			                    AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\')
+                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                    LIMIT 100
+                ";
             command.Parameters.AddWithValue("$typeName", $"%{searchTerm.Trim().ToLower()}%");
 
             var reader = await command.ExecuteReaderAsync();
