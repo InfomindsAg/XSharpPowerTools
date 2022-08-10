@@ -212,7 +212,13 @@ namespace XSharpPowerTools.View.Controls
         public void ContextMenu_Click(object sender, RoutedEventArgs e) 
         {
             ShouldGroup = !ShouldGroup;
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}ContextMenu_Click");
+            var cvResults = CollectionViewSource.GetDefaultView(ResultsDataGrid.ItemsSource);
+            if (cvResults != null && cvResults.CanGroup)
+            {
+                cvResults.GroupDescriptions.Clear();
+                if (ShouldGroup)
+                    cvResults.GroupDescriptions.Add(new PropertyGroupDescription("Project"));
+            }
         }
     }
 }
