@@ -15,7 +15,13 @@ namespace XSharpPowerTools.Helpers
             searchTerm = searchTerm.Replace('*', '%');
             searchTerm = searchTerm.Replace('\'', '"');
             var keyWords = searchTerm.Split(new[] { '.' }, 2);
-            if (keyWords.Length > 1)
+
+            if (searchTerm.EndsWith(".."))
+            {
+                className = searchTerm.Substring(0, searchTerm.Length - 2);
+                memberName = ".ctor";
+            }
+            else if (keyWords.Length > 1)
             {
                 if (keyWords[keyWords.Length - 1].Trim().Equals(".c", StringComparison.OrdinalIgnoreCase))
                     memberName = ".ctor";
@@ -32,11 +38,6 @@ namespace XSharpPowerTools.Helpers
                     memberName = ".ctor";
                 else if (memberName.Equals("dtor", StringComparison.OrdinalIgnoreCase))
                     memberName = ".dtor";
-            }
-            else if (searchTerm.EndsWith("..")) 
-            { 
-                className = searchTerm.Substring(0, searchTerm.Length - 2);
-                memberName = ".ctor";
             }
             else
             {
