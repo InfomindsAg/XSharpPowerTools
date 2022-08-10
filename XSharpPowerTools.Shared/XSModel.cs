@@ -508,6 +508,10 @@ namespace XSharpPowerTools
                 sb.Append(" OR ");
             }
             sb.Length = sb.Length - 4;
+
+            if (memberName.Equals("%"))
+                sb.Append(" OR Kind = 3 OR Kind = 4");
+
             return sb.Append(')').ToString();
         }
 
