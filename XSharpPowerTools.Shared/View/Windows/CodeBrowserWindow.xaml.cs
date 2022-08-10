@@ -300,13 +300,13 @@ namespace XSharpPowerTools.View.Windows
             if (filters.Count < 1)
             {
                 filters = new List<FilterableKind>
-                        {
-                            FilterableKind.Method,
-                            FilterableKind.Property,
-                            FilterableKind.Function,
-                            FilterableKind.Variable,
-                            FilterableKind.Define
-                        };
+                    {
+                        FilterableKind.Method,
+                        FilterableKind.Property,
+                        FilterableKind.Function,
+                        FilterableKind.Variable,
+                        FilterableKind.Define
+                    };
             }
 
             return filters;

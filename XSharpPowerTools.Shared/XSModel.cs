@@ -74,6 +74,7 @@ namespace XSharpPowerTools
             16 => "Interface",
             18 => "Enum",
             23 => "Define",
+            26 => "Global",
             _ => string.Empty
         };
     }
@@ -122,7 +123,7 @@ namespace XSharpPowerTools
 
             var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
-            var prefixFiltersApplied = false;
+            var filtersApplied = false;
             if (searchTerm.Trim().Contains(' '))
             {
                 var searchTermElements = searchTerm.Trim().Split(new[] { ' ' }, 2);
@@ -133,8 +134,12 @@ namespace XSharpPowerTools
                     filters.Clear();
                     foreach (var prefix in prefixes) 
                         filters.Add(ValidPrefixes[prefix]);
-                    prefixFiltersApplied = true;
+                    filtersApplied = true;
                 }
+            }
+            else if (filters.Count > 0 && filters.Count < 5) 
+            {
+                filtersApplied = true;
             }
 
             if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
@@ -168,7 +173,7 @@ namespace XSharpPowerTools
             {
                 var (className, memberName) = SearchTermHelper.EvaluateSearchTerm(searchTerm);
 
-                if (prefixFiltersApplied && string.IsNullOrEmpty(memberName)) 
+                if (filtersApplied && string.IsNullOrEmpty(memberName)) 
                 {
                     memberName = className;
                     className = null;
@@ -534,7 +539,7 @@ namespace XSharpPowerTools
                 FilterableKind.Method => "Kind = 5",
                 FilterableKind.Property => "(Kind = 6 OR Kind = 7 OR Kind = 8)",
                 FilterableKind.Function => "(Kind = 9 OR Kind = 10)",
-                FilterableKind.Variable => "Kind = 11",
+                FilterableKind.Variable => "(Kind = 11 OR Kind = 26)",
                 FilterableKind.Define => "Kind = 23",
                 _ => null,
             };

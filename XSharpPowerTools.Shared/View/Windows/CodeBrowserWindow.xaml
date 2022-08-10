@@ -129,7 +129,7 @@
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="VariableToggleButton"
-                    Grid.Column="4"
+                    Grid.Column="3"
                     Content="Variable"
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
@@ -138,7 +138,7 @@
                     Margin="1,0,1,0"/>
                 <ToggleButton
                     x:Name="DefineToggleButton"
-                    Grid.Column="5"
+                    Grid.Column="4"
                     Content="Define"
                     Style="{StaticResource GenericToggleButton}"
                     VerticalAlignment="Center"
