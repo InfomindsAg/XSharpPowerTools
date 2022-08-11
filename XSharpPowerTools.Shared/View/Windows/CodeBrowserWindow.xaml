@@ -217,7 +217,8 @@
                         SortMemberPath="MemberName.Length"/>
                     <DataGridTextColumn
                         Header=" Params"
-                        Binding="{Binding ParametersCount}"/>
+                        Binding="{Binding ParametersCount}"
+                        CanUserSort="False"/>
                     <DataGridTextColumn
                         Header=" Kind"
                         Binding="{Binding KindName}"

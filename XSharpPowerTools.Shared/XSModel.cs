@@ -226,7 +226,9 @@ namespace XSharpPowerTools
             className = className.Replace("_", @"\_");
 
             if (string.IsNullOrWhiteSpace(orderBy))
-                orderBy = "Name";
+                orderBy = $"LENGTH(TRIM(Name)) {sqlSortDirection}, TRIM(Name)";
+            else
+                orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
 
             var command = Connection.CreateCommand();
 
@@ -238,7 +240,7 @@ namespace XSharpPowerTools
                     AND LOWER(TRIM(Name)) LIKE $className ESCAPE '\'
                     AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
                     AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
-                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                    ORDER BY {orderBy}
                     LIMIT {limit}
                 ";
             command.Parameters.AddWithValue("$className", className.Trim().ToLower());
@@ -274,11 +276,9 @@ namespace XSharpPowerTools
             className = className?.Replace("_", @"\_");
 
             if (string.IsNullOrWhiteSpace(orderBy))
-            {
-                orderBy = filters.Any(q => q != FilterableKind.Function && q != FilterableKind.Define)
-                    ? "TypeName"
-                    : "Name";
-            }
+                orderBy = $"LENGTH(TRIM(Name)) {sqlSortDirection}, TRIM(Name) {sqlSortDirection}, LENGTH(TRIM(TypeName)) {sqlSortDirection}, TRIM(TypeName) {sqlSortDirection}";
+            else
+                orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
 
             var command = Connection.CreateCommand();
 
@@ -300,7 +300,8 @@ namespace XSharpPowerTools
                 @$"
                     AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
                     AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
-                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection} LIMIT {limit}
+                    ORDER BY {orderBy}
+                    LIMIT {limit}
                 ";
 
             var reader = await command.ExecuteReaderAsync();
@@ -333,7 +334,7 @@ namespace XSharpPowerTools
             if (string.IsNullOrWhiteSpace(memberName))
                 return new();
 
-            if (!memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase) && !memberName.Equals(".dtor", StringComparison.OrdinalIgnoreCase)) 
+            if (!memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase) && !memberName.Equals(".dtor", StringComparison.OrdinalIgnoreCase))
             {
                 if (!memberName.Contains("\"") && !memberName.Contains("*"))
                     memberName = $"%{memberName}%";
@@ -342,9 +343,15 @@ namespace XSharpPowerTools
                 memberName = memberName.Replace("\"", string.Empty);
                 memberName = memberName.ToLower().Replace("*", "%");
             }
+            else if (string.IsNullOrWhiteSpace(orderBy))
+            {
+                orderBy = "TypeName";
+            }
 
             if (string.IsNullOrWhiteSpace(orderBy))
-                orderBy = "Name";
+                orderBy = $"LENGTH(TRIM(Name)) {sqlSortDirection}, TRIM(Name) {sqlSortDirection}, LENGTH(TRIM(TypeName)) {sqlSortDirection}, TRIM(TypeName) {sqlSortDirection}";
+            else
+                orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
 
             var command = Connection.CreateCommand();
 
@@ -353,17 +360,17 @@ namespace XSharpPowerTools
                     SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                     FROM ProjectMembers
                     WHERE IdType IN (SELECT Id
-                				        FROM ProjectTypes
-                				        WHERE Kind = 1
-                				        AND LOWER(Sourcecode) LIKE '%class%'
-                                        AND LOWER(TRIM(Name)) = $typeName
-                                        AND LOWER(TRIM(Namespace)) = $namespace
-                                        AND idProject = $projectId)
+                				    FROM ProjectTypes
+                				    WHERE Kind = 1
+                				    AND LOWER(Sourcecode) LIKE '%class%'
+                                    AND LOWER(TRIM(Name)) = $typeName
+                                    AND LOWER(TRIM(Namespace)) = $namespace
+                                    AND idProject = $projectId)
                     AND {GetFilterSql(filters, memberName)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                     AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
                     AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
-                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                    ORDER BY {orderBy}
                     LIMIT {limit}
                 ";
 
@@ -410,7 +417,9 @@ namespace XSharpPowerTools
             memberName = memberName.ToLower().Replace("*", "%");
 
             if (string.IsNullOrWhiteSpace(orderBy))
-                orderBy = "Name";
+                orderBy = $"LENGTH(TRIM(Name)) {sqlSortDirection}, TRIM(Name) {sqlSortDirection}, LENGTH(TRIM(TypeName)) {sqlSortDirection}, TRIM(TypeName) {sqlSortDirection}";
+            else
+                orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
 
             var command = Connection.CreateCommand();
 
@@ -419,15 +428,15 @@ namespace XSharpPowerTools
                     SELECT Name, FileName, StartLine, TypeName, ProjectFileName, Kind, Sourcecode
                     FROM ProjectMembers
                     WHERE IdType IN (SELECT Id
-                				        FROM ProjectTypes
-                				        WHERE Kind = 1
-                				        AND LOWER(Sourcecode) LIKE '%class%'
-                                        AND LOWER(TRIM(FileName))=$fileName)
+                				    FROM ProjectTypes
+                				    WHERE Kind = 1
+                				    AND LOWER(Sourcecode) LIKE '%class%'
+                                    AND LOWER(TRIM(FileName))=$fileName)
                     AND {GetFilterSql(filters, memberName)}
                     AND LOWER(Name) LIKE $memberName  ESCAPE '\'
                     AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
                     AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
-                    ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
+                    ORDER BY {orderBy}
                     LIMIT {limit}
                 ";
 
