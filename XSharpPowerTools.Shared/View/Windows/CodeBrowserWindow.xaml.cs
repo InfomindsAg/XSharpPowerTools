@@ -254,10 +254,7 @@ namespace XSharpPowerTools.View.Windows
                 var toolWindowPane = await CodeBrowserResultsToolWindow.ShowAsync();
 
                 var items = ResultsDataGrid.ItemsSource as List<XSModelResultItem>;
-                if (items.Count < 100)
-                    (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, items);
-                else
-                     await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, GetFilters(), LastSearchTerm, SolutionDirectory);
+                await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, GetFilters(), LastSearchTerm, SolutionDirectory, items, DisplayedResultType);
 
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
@@ -286,6 +283,7 @@ namespace XSharpPowerTools.View.Windows
         private List<FilterableKind> GetFilters() 
         { 
             var filters = new List<FilterableKind>();
+            
             if (MethodToggleButton.IsChecked.HasValue && MethodToggleButton.IsChecked.Value)
                 filters.Add(FilterableKind.Method);
             if (PropertyToggleButton.IsChecked.HasValue && PropertyToggleButton.IsChecked.Value)
@@ -315,6 +313,17 @@ namespace XSharpPowerTools.View.Windows
         private void FilterButton_Click(object sender, RoutedEventArgs e) 
         {
             SearchTextBox.Focus();
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}FilterButton_Click");
+        }
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e) 
+        {
+            MethodToggleButton.IsChecked = false;
+            PropertyToggleButton.IsChecked = false;
+            FunctionToggleButton.IsChecked = false;
+            VariableToggleButton.IsChecked = false;
+            DefineToggleButton.IsChecked = false;
+
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}FilterButton_Click");
         }
     }

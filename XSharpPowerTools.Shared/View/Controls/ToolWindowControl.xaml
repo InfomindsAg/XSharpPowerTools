@@ -24,11 +24,6 @@
             <DataGrid.Resources>
                 <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
             </DataGrid.Resources>
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Toggle grouping" Click="ContextMenu_Click"/>
-                </ContextMenu>
-            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn
                         Header=" Type"

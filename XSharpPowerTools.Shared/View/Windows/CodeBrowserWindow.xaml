@@ -75,7 +75,9 @@
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="890"/>
+                <ColumnDefinition Width="870"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="5"/>
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="5"/>
@@ -91,7 +93,7 @@
             <Grid
                 Grid.Row="0"
                 Grid.Column="1"
-                Grid.ColumnSpan="5"
+                Grid.ColumnSpan="7"
                 HorizontalAlignment="Right">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -184,6 +186,21 @@
                 ToolTip="Save results to seperate view (Ctrl + Return)"
                 FontFamily="Segoe MDL2 Assets"
                 Content="&#xE094;"/>
+            <Button
+                x:Name="RefreshButton"
+                Grid.Row="1"
+                Grid.Column="7"
+                Height="20"
+                Width="20"
+                IsTabStop="False"
+                Click="RefreshButton_Click"
+                VerticalAlignment="Center"
+                TabIndex="2"
+                FontWeight="ExtraBold"
+                Style="{StaticResource GenericButton}"
+                ToolTip="Search again without any filters or user sorting applied"
+                FontFamily="Segoe MDL2 Assets"
+                Content="&#xE72C;"/>
             <controls:HelpTextControl
                 x:Name="HelpControl"
                 Grid.Column="1"
@@ -203,7 +220,7 @@
                 Margin="0,0,0,0"
                 Grid.Row="4"
                 Grid.Column="1"
-                Grid.ColumnSpan="5"
+                Grid.ColumnSpan="7"
                 Width="Auto"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <DataGrid.Columns>
