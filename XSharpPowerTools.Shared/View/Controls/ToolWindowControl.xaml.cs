@@ -114,10 +114,6 @@ namespace XSharpPowerTools.View.Controls
 
         private void SetTableColumns(XSModelResultType resultType)
         {
-            ResultsDataGrid.Columns[0].Visibility = resultType == XSModelResultType.Procedure
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-
             var memberSpecificColumnsVisibility = resultType == XSModelResultType.Type
                 ? Visibility.Collapsed
                 : Visibility.Visible;

@@ -13,11 +13,10 @@ namespace XSharpPowerTools
     public enum XSModelResultType
     {
         Type,
-        Member,
-        Procedure
+        Member
     }
 
-    public enum FilterableKind //later to be expanded for filtering
+    public enum FilterableKind
     { 
         Method,
         Property,
@@ -28,17 +27,23 @@ namespace XSharpPowerTools
 
     public class XSModelResultItem
     {
-        private static readonly List<int> KindsWithParams = new List<int> { 3, 5, 9, 10 };
+        private static readonly List<int> KindsWithParams = new() { 3, 5, 9, 10 };
 
         public string SolutionDirectory { get; set; }
         public XSModelResultType ResultType { get; set; }
-        public string TypeName { get; set; }
         public string MemberName { get; set; }
         public string ContainingFile { get; set; }
         public string Project { get; set; }
         public string SourceCode { get; set; }
         public int Line { get; set; }
         public int Kind { get; set; }
+
+        private string _typeName;
+        public string TypeName 
+        {
+            get => _typeName;
+            set => _typeName = "(Global Scope)".Equals(value?.Trim(), StringComparison.OrdinalIgnoreCase) ? string.Empty : value?.Trim();
+        }
 
         public string RelativePath =>
             string.IsNullOrWhiteSpace(SolutionDirectory) || !ContainingFile.StartsWith(SolutionDirectory) ? ContainingFile : ContainingFile.Substring(SolutionDirectory.Length + 1);
@@ -145,7 +150,6 @@ namespace XSharpPowerTools
             if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
             {
                 List<XSModelResultItem> results;
-                XSModelResultType resultType;
 
                 var memberName = SearchTermHelper.EvaluateSearchTermLocal(searchTerm);
 
@@ -163,11 +167,7 @@ namespace XSharpPowerTools
                 }
                 Connection.Close();
 
-                resultType = results.Any(q => q.ResultType == XSModelResultType.Member) 
-                    ? XSModelResultType.Member 
-                    : XSModelResultType.Procedure;
-
-                return (results, resultType);
+                return (results, XSModelResultType.Member);
             }
             else
             {
@@ -189,13 +189,6 @@ namespace XSharpPowerTools
                         results = await SearchForMemberAsync(null, className, filters, orderBy, sqlSortDirection, solutionDirectory, limit);
                         resultType = XSModelResultType.Member;
                     }
-                    if (results.Count < 1) 
-                    { 
-                        results = await SearchForKindAsync(className, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Function);
-                        resultType = XSModelResultType.Procedure;
-                    }
-                    if (results.Count < 1)
-                        results = await SearchForKindAsync(className, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
 
                     Connection.Close();
                     return (results, resultType);
@@ -203,20 +196,9 @@ namespace XSharpPowerTools
                 else
                 {
                     var results = await SearchForMemberAsync(className, memberName, filters, orderBy, sqlSortDirection, solutionDirectory, limit);
-                    var resultType = results.Any(q => q.ResultType == XSModelResultType.Member)
-                        ? XSModelResultType.Member
-                        : XSModelResultType.Procedure;
-
-                    if (results.Count < 1 && string.IsNullOrWhiteSpace(className))
-                    {
-                        results = await SearchForKindAsync(memberName, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Function);
-                        resultType = XSModelResultType.Procedure;
-                    }
-                    if (results.Count < 1 && string.IsNullOrWhiteSpace(className))
-                        results = await SearchForKindAsync(memberName, orderBy, sqlSortDirection, solutionDirectory, limit, FilterableKind.Define);
 
                     Connection.Close();
-                    return (results, resultType);
+                    return (results, XSModelResultType.Member);
                 }
             }
         }
@@ -320,7 +302,7 @@ namespace XSharpPowerTools
                         Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
                         Kind = reader.GetInt32(5),
                         SourceCode = reader.GetString(6),
-                        ResultType = reader.GetInt32(5) == 9 || reader.GetInt32(5) == 10 || reader.GetInt32(5) == 23 ? XSModelResultType.Procedure : XSModelResultType.Member,
+                        ResultType = XSModelResultType.Member,
                         SolutionDirectory = solutionDirectory
                     };
                     results.Add(resultItem);
@@ -512,7 +494,7 @@ namespace XSharpPowerTools
                         Project = Path.GetFileNameWithoutExtension(reader.GetString(4)),
                         Kind = reader.GetInt32(5),
                         SourceCode = reader.GetString(6),
-                        ResultType = XSModelResultType.Procedure,
+                        ResultType = XSModelResultType.Member,
                         SolutionDirectory = solutionDirectory
                     };
                     results.Add(resultItem);
