@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.Experimentation;
-using Microsoft.VisualStudio.PlatformUI;
+﻿using Microsoft.VisualStudio.PlatformUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -57,7 +56,8 @@ namespace XSharpPowerTools.View.Windows
                 PropertyToggleButton,
                 FunctionToggleButton,
                 VariableToggleButton,
-                DefineToggleButton
+                DefineToggleButton,
+                EnumValueToggleButton
             };
 
             TypeToggleButtons = new List<ToggleButton>
@@ -181,31 +181,25 @@ namespace XSharpPowerTools.View.Windows
             }
             else if (Keyboard.Modifiers == ModifierKeys.Control) 
             {
-                var toggleButtonChecked = false;
-                if (e.Key == Key.D1)
+                var toggleButtonToCheck = e.Key switch
                 {
-                    MethodToggleButton.IsChecked = !MethodToggleButton.IsChecked;
-                    toggleButtonChecked = true;
-                }
-                else if (e.Key == Key.D2)
+                    Key.D1 => MethodToggleButton,
+                    Key.D2 => PropertyToggleButton,
+                    Key.D3 => FunctionToggleButton,
+                    Key.D4 => VariableToggleButton,
+                    Key.D5 => DefineToggleButton,
+                    Key.D6 => EnumValueToggleButton,
+                    Key.D7 => ClassToggleButton,
+                    Key.D8 => EnumToggleButton,
+                    Key.D9 => InterfaceToggleButton,
+                    Key.D0 => StructToggleButton,
+                    _ => null
+                };
+                    
+                if (toggleButtonToCheck != null) 
                 {
-                    PropertyToggleButton.IsChecked = !PropertyToggleButton.IsChecked;
-                    toggleButtonChecked = true;
-                }
-                else if (e.Key == Key.D3)
-                {
-                    FunctionToggleButton.IsChecked = !FunctionToggleButton.IsChecked;
-                    toggleButtonChecked = true;
-                }
-                else if (e.Key == Key.D4)
-                {
-                    DefineToggleButton.IsChecked = !DefineToggleButton.IsChecked;
-                    toggleButtonChecked = true;
-                }
-    
-                if (toggleButtonChecked) 
-                {
-                    FilterButton_Click(null, null);
+                    toggleButtonToCheck.IsChecked = !toggleButtonToCheck.IsChecked;
+                    FilterButton_Click(toggleButtonToCheck, null);
                     e.Handled = true;
                 }
             }
@@ -242,7 +236,7 @@ namespace XSharpPowerTools.View.Windows
                 DragMove();
         }
 
-        private void SearchTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) =>
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
             AllowReturn = false;
 
         public void OnReturn(object selectedItem)
@@ -318,6 +312,8 @@ namespace XSharpPowerTools.View.Windows
                     filter.MemberFilters.Add(MemberFilter.Variable);
                 if (DefineToggleButton.IsChecked.HasValue && DefineToggleButton.IsChecked.Value)
                     filter.MemberFilters.Add(MemberFilter.Define);
+                if (EnumValueToggleButton.IsChecked.HasValue && EnumValueToggleButton.IsChecked.Value)
+                    filter.MemberFilters.Add(MemberFilter.EnumValue);
             }
             else if (ActiveFilterGroup == FilterType.Type)
             {

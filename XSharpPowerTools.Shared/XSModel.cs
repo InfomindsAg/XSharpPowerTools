@@ -173,7 +173,7 @@ namespace XSharpPowerTools
             }
             else
             {
-                var (className, memberName) = SearchTermHelper.EvaluateSearchTerm(searchTerm);
+                var (typeName, memberName) = SearchTermHelper.EvaluateSearchTerm(searchTerm);
                                     
                 if (!filtersApplied) 
                 {
@@ -183,29 +183,29 @@ namespace XSharpPowerTools
                         filter.Type = FilterType.Member;
                 }
 
-                var (results, resultType) = await BuildAndExecuteSqlAsync(className, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit);
+                var (results, resultType) = await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit);
 
                 if (!filtersApplied && filter.Type == FilterType.Type && results.Count < 1) 
                 {
                     filter.Type = FilterType.Member;
-                    (results, resultType) = await BuildAndExecuteSqlAsync(className, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit);
+                    (results, resultType) = await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit);
                 }
                 Connection.Close();
                 return (results, resultType);
             }
         }
 
-        private async Task<(List<XSModelResultItem>, XSModelResultType)> BuildAndExecuteSqlAsync(string className, string memberName, Filter filter, string orderBy, string sqlSortDirection, string solutionDirectory, int limit, string currentFile = null, int caretPosition = -1)
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> BuildAndExecuteSqlAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string solutionDirectory, int limit, string currentFile = null, int caretPosition = -1)
         {
             memberName = memberName.Replace("_", @"\_");
-            className = className?.Replace("_", @"\_");
+            typeName = typeName?.Replace("_", @"\_");
 
             var searchingForMember = filter.Type == FilterType.Member;
 
             if (searchingForMember && string.IsNullOrWhiteSpace(memberName))
             {
-                memberName = className;
-                className = null;
+                memberName = typeName;
+                typeName = null;
             }
 
             if (string.IsNullOrWhiteSpace(orderBy))
@@ -230,7 +230,7 @@ namespace XSharpPowerTools
                 ";
             command.Parameters.AddWithValue("$name", searchingForMember
                 ? memberName.Trim().ToLower()
-                : className.Trim().ToLower());
+                : typeName.Trim().ToLower());
 
             if (searchingForMember)
             {
@@ -255,10 +255,10 @@ namespace XSharpPowerTools
                         }
                     }
                 }
-                else if (!string.IsNullOrWhiteSpace(className)) 
+                else if (!string.IsNullOrWhiteSpace(typeName)) 
                 {
-                    command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $className  ESCAPE '\'";
-                    command.Parameters.AddWithValue("$className", className.Trim().ToLower());
+                    command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $typeName  ESCAPE '\'";
+                    command.Parameters.AddWithValue("$typeName", typeName.Trim().ToLower());
                 }
             }
             command.CommandText +=

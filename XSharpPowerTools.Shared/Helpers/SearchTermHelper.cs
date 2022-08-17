@@ -8,7 +8,7 @@ namespace XSharpPowerTools.Helpers
         public static (string, string) EvaluateSearchTerm(string searchTerm)
         {
             var memberName = string.Empty;
-            var className = string.Empty;
+            var typeName = string.Empty;
 
             searchTerm = searchTerm.Trim().Replace(':', '.');
             searchTerm = searchTerm.Replace(' ', '.');
@@ -18,7 +18,7 @@ namespace XSharpPowerTools.Helpers
 
             if (searchTerm.EndsWith(".."))
             {
-                className = searchTerm.Substring(0, searchTerm.Length - 2);
+                typeName = searchTerm.Substring(0, searchTerm.Length - 2);
                 memberName = ".ctor";
             }
             else if (keyWords.Length > 1)
@@ -29,7 +29,7 @@ namespace XSharpPowerTools.Helpers
                     memberName = ".dtor";
                 else
                     memberName = keyWords[keyWords.Length - 1];
-                className = keyWords[keyWords.Length - 2];
+                typeName = keyWords[keyWords.Length - 2];
             }
             else if (searchTerm.StartsWith("."))
             {
@@ -41,13 +41,13 @@ namespace XSharpPowerTools.Helpers
             }
             else
             {
-                className = searchTerm;
+                typeName = searchTerm;
             }
 
-            if (className.Contains('"'))
-                className = className.Replace("\"", "");
-            else if (!string.IsNullOrWhiteSpace(className) && !className.Contains("%"))
-                className = $"%{className}%";
+            if (typeName.Contains('"'))
+                typeName = typeName.Replace("\"", "");
+            else if (!string.IsNullOrWhiteSpace(typeName) && !typeName.Contains("%"))
+                typeName = $"%{typeName}%";
 
             if (!memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase) && !memberName.Equals(".dtor", StringComparison.OrdinalIgnoreCase))
             {
@@ -57,7 +57,7 @@ namespace XSharpPowerTools.Helpers
                     memberName = $"%{memberName}%";
             }
 
-            return (className, memberName);
+            return (typeName, memberName);
         }
 
         public static string EvaluateSearchTermLocal(string searchTerm)

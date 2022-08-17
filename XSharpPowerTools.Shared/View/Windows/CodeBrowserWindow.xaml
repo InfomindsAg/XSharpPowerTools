@@ -96,52 +96,7 @@
                 Grid.ColumnSpan="7"
                 HorizontalAlignment="Right"
                 Orientation="Horizontal"
-                FlowDirection="RightToLeft">
-                <Grid x:Name="TypeFilterGrid" HorizontalAlignment="Right">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <ToggleButton
-                        x:Name="ClassToggleButton"
-                        Grid.Column="0"
-                        Content="Class"
-                        Style="{StaticResource GenericToggleButton}"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="filter prefix m"
-                        Margin="0,0,1,0"/>
-                    <ToggleButton
-                        x:Name="EnumToggleButton"
-                        Grid.Column="1"
-                        Content="Enum"
-                        Style="{StaticResource GenericToggleButton}"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="filter prefix p"
-                        Margin="1,0,1,0"/>
-                    <ToggleButton
-                        x:Name="InterfaceToggleButton"
-                        Grid.Column="2"
-                        Content="Interface"
-                        Style="{StaticResource GenericToggleButton}"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="filter prefix f"
-                        Margin="1,0,1,0"/>
-                    <ToggleButton
-                        x:Name="StructToggleButton"
-                        Grid.Column="3"
-                        Content="Struct"
-                        Style="{StaticResource GenericToggleButton}"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="filter prefix v"
-                        Margin="1,0,1,0"/>
-                </Grid>
-                <Label Content="Or"/>
+                FlowDirection="LeftToRight">
                 <Grid x:Name="MemberFilterGrid" HorizontalAlignment="Right">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -205,6 +160,51 @@
                         Click="FilterButton_Click"
                         ToolTip=""
                         Margin="1,0,0,0"/>
+                </Grid>
+                <Label Content="Or"/>
+                <Grid x:Name="TypeFilterGrid" HorizontalAlignment="Right">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ToggleButton
+                        x:Name="ClassToggleButton"
+                        Grid.Column="0"
+                        Content="Class"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix m"
+                        Margin="0,0,1,0"/>
+                    <ToggleButton
+                        x:Name="EnumToggleButton"
+                        Grid.Column="1"
+                        Content="Enum"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix p"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="InterfaceToggleButton"
+                        Grid.Column="2"
+                        Content="Interface"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix f"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="StructToggleButton"
+                        Grid.Column="3"
+                        Content="Struct"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix v"
+                        Margin="1,0,1,0"/>
                 </Grid>
             </StackPanel>
             <controls:SearchTextBox
