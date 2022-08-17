@@ -27,8 +27,8 @@ namespace XSharpPowerTools.View.Controls
         private string SearchTerm;
         private string SolutionDirectory;
         private FilterType ActiveFilterGroup;
-        private readonly List<MenuItem> TypeMenuItems;
-        private readonly List<MenuItem> MemberMenuItems;
+        private readonly Dictionary<MenuItem, TypeFilter> TypeMenuItems;
+        private readonly Dictionary<MenuItem, MemberFilter> MemberMenuItems;
         private readonly MenuItem GroupingMenuItem;
         private readonly MenuItem ClassFilterMenuItem;
         private readonly MenuItem EnumFilterMenuItem;
@@ -52,18 +52,18 @@ namespace XSharpPowerTools.View.Controls
             InterfaceFilterMenuItem = new MenuItem { Header = "Interfaces", IsCheckable = true, StaysOpenOnClick = true };
             StructFilterMenuItem = new MenuItem { Header = "Structs", IsCheckable = true, StaysOpenOnClick = true };
 
-            TypeMenuItems = new List<MenuItem>
+            TypeMenuItems = new Dictionary<MenuItem, TypeFilter>
             {
-                ClassFilterMenuItem,
-                EnumFilterMenuItem,
-                InterfaceFilterMenuItem,
-                StructFilterMenuItem
+                { ClassFilterMenuItem, TypeFilter.Class },
+                { EnumFilterMenuItem, TypeFilter.Enum },
+                { InterfaceFilterMenuItem, TypeFilter.Interface },
+                { StructFilterMenuItem, TypeFilter.Struct }
             };
 
             foreach (var typeMenuItem in TypeMenuItems)
             {
-                typeMenuItem.Checked += TypeFilter_ContextMenu_Checked;
-                typeMenuItem.Unchecked += Filter_ContextMenu_Unchecked;
+                typeMenuItem.Key.Checked += TypeFilter_ContextMenu_Checked;
+                typeMenuItem.Key.Unchecked += Filter_ContextMenu_Unchecked;
             }
 
             MethodFilterMenuItem = new MenuItem { Header = "Methods", IsCheckable = true, StaysOpenOnClick = true };
@@ -72,19 +72,19 @@ namespace XSharpPowerTools.View.Controls
             VariableFilterMenuItem = new MenuItem { Header = "Variables", IsCheckable = true, StaysOpenOnClick = true };
             DefineFilterMenuItem = new MenuItem { Header = "Defines", IsCheckable = true, StaysOpenOnClick = true };
 
-            MemberMenuItems = new List<MenuItem>
+            MemberMenuItems = new Dictionary<MenuItem, MemberFilter>
             {
-                MethodFilterMenuItem,
-                FunctionFilterMenuItem,
-                PropertyFilterMenuItem,
-                VariableFilterMenuItem,
-                DefineFilterMenuItem
+                { MethodFilterMenuItem, MemberFilter.Method },
+                { FunctionFilterMenuItem, MemberFilter.Function },
+                { PropertyFilterMenuItem, MemberFilter.Property },
+                { VariableFilterMenuItem, MemberFilter.Variable },
+                { DefineFilterMenuItem, MemberFilter.Define }
             };
 
             foreach (var memberMenuItem in MemberMenuItems)
             {
-                memberMenuItem.Checked += MemberFilter_ContextMenu_Checked;
-                memberMenuItem.Unchecked += Filter_ContextMenu_Unchecked;
+                memberMenuItem.Key.Checked += MemberFilter_ContextMenu_Checked;
+                memberMenuItem.Key.Unchecked += Filter_ContextMenu_Unchecked;
             }
 
             GroupingMenuItem = new MenuItem { Header = "Grouping", IsCheckable = true, IsChecked = true };
@@ -287,30 +287,13 @@ namespace XSharpPowerTools.View.Controls
             if (ActiveFilterGroup == FilterType.Member)
             {
                 filter.MemberFilters = new List<MemberFilter>();
-
-                if (MethodFilterMenuItem.IsChecked)
-                    filter.MemberFilters.Add(MemberFilter.Method);
-                if (PropertyFilterMenuItem.IsChecked)
-                    filter.MemberFilters.Add(MemberFilter.Property);
-                if (FunctionFilterMenuItem.IsChecked)
-                    filter.MemberFilters.Add(MemberFilter.Function);
-                if (VariableFilterMenuItem.IsChecked)
-                    filter.MemberFilters.Add(MemberFilter.Variable);
-                if (DefineFilterMenuItem.IsChecked)
-                    filter.MemberFilters.Add(MemberFilter.Define);
+                filter.MemberFilters.AddRange(MemberMenuItems.Where(q => q.Key.IsChecked).Select(q => q.Value));
             }
             else if (ActiveFilterGroup == FilterType.Type)
             {
                 filter.TypeFilters = new List<TypeFilter>();
+                filter.TypeFilters.AddRange(TypeMenuItems.Where(q => q.Key.IsChecked).Select(q => q.Value));
 
-                if (ClassFilterMenuItem.IsChecked)
-                    filter.TypeFilters.Add(TypeFilter.Class);
-                if (EnumFilterMenuItem.IsChecked)
-                    filter.TypeFilters.Add(TypeFilter.Enum);
-                if (InterfaceFilterMenuItem.IsChecked)
-                    filter.TypeFilters.Add(TypeFilter.Interface);
-                if (StructFilterMenuItem.IsChecked)
-                    filter.TypeFilters.Add(TypeFilter.Struct);
             }
             else if (ActiveFilterGroup == FilterType.Inactive)
             {
@@ -338,8 +321,11 @@ namespace XSharpPowerTools.View.Controls
         {
             ActiveFilterGroup = filter.Type;
             
-            TypeMenuItems.ForEach(q => q.IsChecked = false);
-            MemberMenuItems.ForEach(q => q.IsChecked = false);
+            foreach (var typeMenuItem in TypeMenuItems.Keys)
+                typeMenuItem.IsChecked = false;
+
+            foreach (var memberMenuItem in MemberMenuItems.Keys)
+                memberMenuItem.IsChecked = false;
 
             if (ActiveFilterGroup == FilterType.Type)
             {
@@ -376,18 +362,20 @@ namespace XSharpPowerTools.View.Controls
         public void TypeFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
         {
             ActiveFilterGroup = FilterType.Type;
-            MemberMenuItems.ForEach(q => q.IsChecked = false);
+            foreach (var memberMenuItem in MemberMenuItems.Keys)
+                memberMenuItem.IsChecked = false;
         }
 
         public void MemberFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
         {
             ActiveFilterGroup = FilterType.Member;
-            TypeMenuItems.ForEach(q => q.IsChecked = false);
+            foreach (var typeMenuItem in TypeMenuItems.Keys)
+                typeMenuItem.IsChecked = false;
         }
 
         public void Filter_ContextMenu_Unchecked(object sender, RoutedEventArgs e) 
         {
-            if (TypeMenuItems.All(q => !q.IsChecked) && MemberMenuItems.All(q => !q.IsChecked))
+            if (TypeMenuItems.All(q => !q.Key.IsChecked) && MemberMenuItems.All(q => !q.Key.IsChecked))
                 ActiveFilterGroup = FilterType.Inactive;
         }
     }
