@@ -64,7 +64,6 @@ namespace XSharpPowerTools.Helpers
         {
             searchTerm = searchTerm.Trim().Replace(':', '.');
             searchTerm = searchTerm.Replace(' ', '.');
-            searchTerm = searchTerm.Replace('*', '%');
             searchTerm = searchTerm.Replace('\'', '"');
 
             var memberName = searchTerm.Substring(searchTerm.TakeWhile(q => q == '.').Count());

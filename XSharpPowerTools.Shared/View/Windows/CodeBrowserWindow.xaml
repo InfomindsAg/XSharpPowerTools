@@ -90,64 +90,123 @@
                 Margin="0,3,0,0"
                 Grid.Column="1"
                 FontWeight="DemiBold"/>
-            <Grid
+            <StackPanel
                 Grid.Row="0"
                 Grid.Column="1"
                 Grid.ColumnSpan="7"
-                HorizontalAlignment="Right">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <ToggleButton
-                    x:Name="MethodToggleButton"
-                    Grid.Column="0"
-                    Content="Method"
-                    Style="{StaticResource GenericToggleButton}"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="filter prefix m"
-                    Margin="0,0,1,0"/>
-                <ToggleButton
-                    x:Name="PropertyToggleButton"
-                    Grid.Column="1"
-                    Content="Property"
-                    Style="{StaticResource GenericToggleButton}"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="filter prefix p"
-                    Margin="1,0,1,0"/>
-                <ToggleButton
-                    x:Name="FunctionToggleButton"
-                    Grid.Column="2"
-                    Content="Function"
-                    Style="{StaticResource GenericToggleButton}"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="filter prefix f"
-                    Margin="1,0,1,0"/>
-                <ToggleButton
-                    x:Name="VariableToggleButton"
-                    Grid.Column="3"
-                    Content="Variable"
-                    Style="{StaticResource GenericToggleButton}"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="filter prefix v"
-                    Margin="1,0,1,0"/>
-                <ToggleButton
-                    x:Name="DefineToggleButton"
-                    Grid.Column="4"
-                    Content="Define"
-                    Style="{StaticResource GenericToggleButton}"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="filter prefix d"
-                    Margin="1,0,0,0"/>
-            </Grid>
+                HorizontalAlignment="Right"
+                Orientation="Horizontal"
+                FlowDirection="RightToLeft">
+                <Grid x:Name="TypeFilterGrid" HorizontalAlignment="Right">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ToggleButton
+                        x:Name="ClassToggleButton"
+                        Grid.Column="0"
+                        Content="Class"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix m"
+                        Margin="0,0,1,0"/>
+                    <ToggleButton
+                        x:Name="EnumToggleButton"
+                        Grid.Column="1"
+                        Content="Enum"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix p"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="InterfaceToggleButton"
+                        Grid.Column="2"
+                        Content="Interface"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix f"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="StructToggleButton"
+                        Grid.Column="3"
+                        Content="Struct"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix v"
+                        Margin="1,0,1,0"/>
+                </Grid>
+                <Label Content="Or"/>
+                <Grid x:Name="MemberFilterGrid" HorizontalAlignment="Right">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ToggleButton
+                        x:Name="MethodToggleButton"
+                        Grid.Column="0"
+                        Content="Method"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix m"
+                        Margin="0,0,1,0"/>
+                    <ToggleButton
+                        x:Name="PropertyToggleButton"
+                        Grid.Column="1"
+                        Content="Property"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix p"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="FunctionToggleButton"
+                        Grid.Column="2"
+                        Content="Function"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix f"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="VariableToggleButton"
+                        Grid.Column="3"
+                        Content="Variable"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix v"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="DefineToggleButton"
+                        Grid.Column="4"
+                        Content="Define"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip="filter prefix d"
+                        Margin="1,0,1,0"/>
+                    <ToggleButton
+                        x:Name="EnumValueToggleButton"
+                        Grid.Column="5"
+                        Content="Enum"
+                        Style="{StaticResource GenericToggleButton}"
+                        VerticalAlignment="Center"
+                        Click="FilterButton_Click"
+                        ToolTip=""
+                        Margin="1,0,0,0"/>
+                </Grid>
+            </StackPanel>
             <controls:SearchTextBox
                 x:Name="SearchTextBox"
                 Grid.Row="1"
