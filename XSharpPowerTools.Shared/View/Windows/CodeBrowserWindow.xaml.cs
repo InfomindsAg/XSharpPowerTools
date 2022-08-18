@@ -24,8 +24,8 @@ namespace XSharpPowerTools.View.Windows
         const string FileReference = "vs/XSharpPowerTools/CodeBrowser/";
         readonly string SolutionDirectory;
         FilterType ActiveFilterGroup;
-        readonly Dictionary<ToggleButton, TypeFilter> TypeToggleButtons;
-        readonly Dictionary<ToggleButton, MemberFilter> MemberToggleButtons;
+        readonly Dictionary<FilterButton, TypeFilter> TypeFilterButtons;
+        readonly Dictionary<FilterButton, MemberFilter> MemberFilterButtons;
         XSModelResultType DisplayedResultType;
         string LastSearchTerm;
         volatile bool SearchActive = false;
@@ -50,22 +50,22 @@ namespace XSharpPowerTools.View.Windows
                 .Throttle(TimeSpan.FromMilliseconds(500))
                 .Subscribe(x => OnTextChanged());
 
-            MemberToggleButtons = new Dictionary<ToggleButton, MemberFilter>
+            MemberFilterButtons = new Dictionary<FilterButton, MemberFilter>
             {
-                { MethodToggleButton, MemberFilter.Method },
-                { PropertyToggleButton, MemberFilter.Property },
-                { FunctionToggleButton, MemberFilter.Function },
-                { VariableToggleButton, MemberFilter.Variable },
-                { DefineToggleButton, MemberFilter.Define },
-                { EnumValueToggleButton, MemberFilter.EnumValue }
+                { MethodFilterButton, MemberFilter.Method },
+                { PropertyFilterButton, MemberFilter.Property },
+                { FunctionFilterButton, MemberFilter.Function },
+                { VariableFilterButton, MemberFilter.Variable },
+                { DefineFilterButton, MemberFilter.Define },
+                { EnumValueFilterButton, MemberFilter.EnumValue }
             };
 
-            TypeToggleButtons = new Dictionary<ToggleButton, TypeFilter>
+            TypeFilterButtons = new Dictionary<FilterButton, TypeFilter>
             {
-                { ClassToggleButton, TypeFilter.Class },
-                { EnumToggleButton, TypeFilter.Enum },
-                { InterfaceToggleButton, TypeFilter.Interface },
-                { StructToggleButton, TypeFilter.Struct }
+                { ClassFilterButton, TypeFilter.Class },
+                { EnumFilterButton, TypeFilter.Enum },
+                { InterfaceFilterButton, TypeFilter.Interface },
+                { StructFilterButton, TypeFilter.Struct }
             };
 
             ActiveFilterGroup = FilterType.Inactive;
@@ -181,38 +181,33 @@ namespace XSharpPowerTools.View.Windows
             }
             else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
-                MethodPopup.IsOpen = true;
-                PropertyPopup.IsOpen = true;
-                FunctionPopup.IsOpen = true;
-                VariablePopup.IsOpen = true;
-                DefinePopup.IsOpen = true;
-                EnumValuePopup.IsOpen = true;
-                ClassPopup.IsOpen = true;
-                EnumPopup.IsOpen = true;
-                InterfacePopup.IsOpen = true;
-                StructPopup.IsOpen = true;
+                foreach (var typeFilterButton in TypeFilterButtons.Keys)
+                    typeFilterButton.ShowPopup();
+
+                foreach (var memberFilterButton in MemberFilterButtons.Keys)
+                    memberFilterButton.ShowPopup();
             }
             else if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                var toggleButtonToCheck = e.Key switch
+                var filterButtonToCheck = e.Key switch
                 {
-                    Key.D1 => MethodToggleButton,
-                    Key.D2 => PropertyToggleButton,
-                    Key.D3 => FunctionToggleButton,
-                    Key.D4 => VariableToggleButton,
-                    Key.D5 => DefineToggleButton,
-                    Key.D6 => EnumValueToggleButton,
-                    Key.D7 => ClassToggleButton,
-                    Key.D8 => EnumToggleButton,
-                    Key.D9 => InterfaceToggleButton,
-                    Key.D0 => StructToggleButton,
+                    Key.D1 => MethodFilterButton,
+                    Key.D2 => PropertyFilterButton,
+                    Key.D3 => FunctionFilterButton,
+                    Key.D4 => VariableFilterButton,
+                    Key.D5 => DefineFilterButton,
+                    Key.D6 => EnumValueFilterButton,
+                    Key.D7 => ClassFilterButton,
+                    Key.D8 => EnumFilterButton,
+                    Key.D9 => InterfaceFilterButton,
+                    Key.D0 => StructFilterButton,
                     _ => null
                 };
 
-                if (toggleButtonToCheck != null)
+                if (filterButtonToCheck != null)
                 {
-                    toggleButtonToCheck.IsChecked = !toggleButtonToCheck.IsChecked;
-                    FilterButton_Click(toggleButtonToCheck, null);
+                    filterButtonToCheck.IsChecked = !filterButtonToCheck.IsChecked;
+                    FilterButton_Click(filterButtonToCheck, null);
                     e.Handled = true;
                 }
             }
@@ -222,16 +217,11 @@ namespace XSharpPowerTools.View.Windows
         {
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
-                MethodPopup.IsOpen = false;
-                PropertyPopup.IsOpen = false;
-                FunctionPopup.IsOpen = false;
-                VariablePopup.IsOpen = false;
-                DefinePopup.IsOpen = false;
-                EnumValuePopup.IsOpen = false;
-                ClassPopup.IsOpen = false;
-                EnumPopup.IsOpen = false;
-                InterfacePopup.IsOpen = false;
-                StructPopup.IsOpen = false;
+                foreach (var typeFilterButton in TypeFilterButtons.Keys)
+                    typeFilterButton.HidePopup();
+
+                foreach (var memberFilterButton in MemberFilterButtons.Keys)
+                    memberFilterButton.HidePopup();
             }
         }
 
@@ -248,11 +238,20 @@ namespace XSharpPowerTools.View.Windows
             { }
         }
 
+        private void Window_LostFocus(object sender, RoutedEventArgs e)
+        {
+            foreach (var typeFilterButton in TypeFilterButtons.Keys)
+                typeFilterButton.HidePopup();
+
+            foreach (var memberFilterButton in MemberFilterButtons.Keys)
+                memberFilterButton.HidePopup();
+        }
+
         private void HelpButton_Click(object sender, RoutedEventArgs e) =>
             HelpControl.Visibility = HelpControl.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
 
         protected override void OnTextChanged() => 
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChange");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
 
         private async Task DoSearchAsync()
         {
@@ -331,12 +330,12 @@ namespace XSharpPowerTools.View.Windows
             if (ActiveFilterGroup == FilterType.Member)
             {
                 filter.MemberFilters = new List<MemberFilter>();
-                filter.MemberFilters.AddRange(MemberToggleButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
+                filter.MemberFilters.AddRange(MemberFilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
             }
             else if (ActiveFilterGroup == FilterType.Type)
             {
                 filter.TypeFilters = new List<TypeFilter>();
-                filter.TypeFilters.AddRange(TypeToggleButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
+                filter.TypeFilters.AddRange(TypeFilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
             }
             else if (ActiveFilterGroup == FilterType.Inactive)
             {
@@ -364,18 +363,18 @@ namespace XSharpPowerTools.View.Windows
         {
             UIElementCollection filterGroupToDeactivate = null;
 
-            if (TypeToggleButtons.ContainsKey(sender as ToggleButton))
+            if (TypeFilterButtons.ContainsKey(sender as FilterButton))
             {
                 filterGroupToDeactivate = MemberFilterGrid.Children;
-                if (TypeToggleButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
+                if (TypeFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
                     ActiveFilterGroup = FilterType.Type;
                 else
                     ActiveFilterGroup = FilterType.Inactive;
             }
-            else if (MemberToggleButtons.ContainsKey(sender as ToggleButton))
+            else if (MemberFilterButtons.ContainsKey(sender as FilterButton))
             {
                 filterGroupToDeactivate = TypeFilterGrid.Children;
-                if (MemberToggleButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
+                if (MemberFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
                     ActiveFilterGroup = FilterType.Member;
                 else
                     ActiveFilterGroup = FilterType.Inactive;
@@ -396,16 +395,16 @@ namespace XSharpPowerTools.View.Windows
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e) 
         {
-            ClassToggleButton.IsChecked = false;
-            EnumToggleButton.IsChecked = false;
-            InterfaceToggleButton.IsChecked = false;
-            StructToggleButton.IsChecked = false;
+            ClassFilterButton.IsChecked = false;
+            EnumFilterButton.IsChecked = false;
+            InterfaceFilterButton.IsChecked = false;
+            StructFilterButton.IsChecked = false;
 
-            MethodToggleButton.IsChecked = false;
-            PropertyToggleButton.IsChecked = false;
-            FunctionToggleButton.IsChecked = false;
-            VariableToggleButton.IsChecked = false;
-            DefineToggleButton.IsChecked = false;
+            MethodFilterButton.IsChecked = false;
+            PropertyFilterButton.IsChecked = false;
+            FunctionFilterButton.IsChecked = false;
+            VariableFilterButton.IsChecked = false;
+            DefineFilterButton.IsChecked = false;
 
             ActiveFilterGroup = FilterType.Inactive;
 

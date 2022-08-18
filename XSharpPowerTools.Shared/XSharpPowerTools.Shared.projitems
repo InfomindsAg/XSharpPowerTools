@@ -9,6 +9,10 @@
     <Import_RootNamespace>XSharpPowerTools</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -48,6 +52,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CodeBrowserResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml.cs">
+      <DependentUpon>FilterButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml.cs">
       <DependentUpon>HelpTextControl.xaml</DependentUpon>
     </Compile>

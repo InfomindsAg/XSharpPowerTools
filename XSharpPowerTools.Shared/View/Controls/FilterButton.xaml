@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="XSharpPowerTools.View.Controls.FilterButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d"
+             xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
+             toolkit:Themes.UseVsTheme="True"
+             x:Name="ContainingControl"
+             d:DesignHeight="100" 
+             d:DesignWidth="580">
+    <UserControl.Resources>
+        <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
+    </UserControl.Resources>
+    <Grid>
+        <ToggleButton
+            x:Name="FilterToggleButton"
+            Style="{StaticResource GenericToggleButton}"
+            Click="FilterButton_Click"
+            Content="{Binding ElementName=ContainingControl, Path=ButtonText}"
+            Width="Auto"
+            Height="20"/>
+        <Popup 
+            x:Name="HotkeyPopup" 
+            Placement="Top" 
+            PlacementTarget="{Binding ElementName=FilterToggleButton}">
+            <TextBlock 
+                Text="{Binding ElementName=ContainingControl, Path=PopupText}" 
+                Width="15" 
+                TextAlignment="Center"/>
+        </Popup>
+    </Grid>
+</UserControl>
