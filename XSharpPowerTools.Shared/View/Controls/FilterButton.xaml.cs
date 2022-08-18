@@ -1,15 +1,17 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 
 namespace XSharpPowerTools.View.Controls
 {
     /// <summary>
     /// Interaction logic for FilterButton.xaml
     /// </summary>
+    [ContentProperty("ButtonContent")]
     public partial class FilterButton : UserControl
     {
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(FilterButton));
-        public static DependencyProperty ButtonTextProperty = DependencyProperty.Register("ButtonText", typeof(string), typeof(FilterButton));
+        public static DependencyProperty ButtonContentProperty = DependencyProperty.Register("ButtonContent", typeof(object), typeof(FilterButton));
         public static DependencyProperty PopupTextProperty = DependencyProperty.Register("PopupText", typeof(string), typeof(FilterButton));
 
         public event RoutedEventHandler Click
@@ -18,10 +20,10 @@ namespace XSharpPowerTools.View.Controls
             remove { RemoveHandler(ClickEvent, value); }
         }
 
-        public string ButtonText
+        public object ButtonContent
         {
-            get => (string)GetValue(ButtonTextProperty);
-            set => SetValue(ButtonTextProperty, value);
+            get => GetValue(ButtonContentProperty);
+            set => SetValue(ButtonContentProperty, value);
         }
 
         public string PopupText

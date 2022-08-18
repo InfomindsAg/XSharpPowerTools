@@ -189,7 +189,7 @@ namespace XSharpPowerTools.View.Windows
             }
             else if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                var filterButtonToCheck = e.Key switch
+                var filterButtonToToggle = e.Key switch
                 {
                     Key.D1 => MethodFilterButton,
                     Key.D2 => PropertyFilterButton,
@@ -201,13 +201,23 @@ namespace XSharpPowerTools.View.Windows
                     Key.D8 => EnumFilterButton,
                     Key.D9 => InterfaceFilterButton,
                     Key.D0 => StructFilterButton,
+                    Key.NumPad1 => MethodFilterButton,
+                    Key.NumPad2 => PropertyFilterButton,
+                    Key.NumPad3 => FunctionFilterButton,
+                    Key.NumPad4 => VariableFilterButton,
+                    Key.NumPad5 => DefineFilterButton,
+                    Key.NumPad6 => EnumValueFilterButton,
+                    Key.NumPad7 => ClassFilterButton,
+                    Key.NumPad8 => EnumFilterButton,
+                    Key.NumPad9 => InterfaceFilterButton,
+                    Key.NumPad0 => StructFilterButton,
                     _ => null
                 };
 
-                if (filterButtonToCheck != null)
+                if (filterButtonToToggle != null)
                 {
-                    filterButtonToCheck.IsChecked = !filterButtonToCheck.IsChecked;
-                    FilterButton_Click(filterButtonToCheck, null);
+                    filterButtonToToggle.IsChecked = !filterButtonToToggle.IsChecked;
+                    FilterButton_Click(filterButtonToToggle, null);
                     e.Handled = true;
                 }
             }

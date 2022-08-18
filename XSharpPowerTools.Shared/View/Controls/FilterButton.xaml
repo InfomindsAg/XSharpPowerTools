@@ -15,10 +15,10 @@
     <Grid>
         <ToggleButton
             x:Name="FilterToggleButton"
-            Style="{StaticResource GenericToggleButton}"
+            Style="{StaticResource FilterToggleButton}"
             Click="FilterButton_Click"
-            Content="{Binding ElementName=ContainingControl, Path=ButtonText}"
-            Width="Auto"
+            Content="{Binding ElementName=ContainingControl, Path=ButtonContent}"
+            Width="20"
             Height="20"/>
         <Popup 
             x:Name="HotkeyPopup" 
