@@ -91,15 +91,6 @@ namespace XSharpPowerTools
 
     public class XSModel
     {
-        private readonly Dictionary<char, MemberFilter> ValidPrefixes = new()
-        {
-            { 'm', MemberFilter.Method },
-            { 'p', MemberFilter.Property },
-            { 'f', MemberFilter.Function },
-            { 'v', MemberFilter.Variable },
-            { 'd', MemberFilter.Define }
-        };
-
         private readonly SqliteConnection Connection;
 
         public XSModel(string dbFile) =>
@@ -124,26 +115,6 @@ namespace XSharpPowerTools
             var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
             var filtersApplied = filter.Type != FilterType.Inactive;
-
-            //Prefix Filters noch zu klären
-            //
-            //if (searchTerm.Trim().Contains(' '))
-            //{
-            //    var searchTermElements = searchTerm.Trim().Split(new[] { ' ' }, 2);
-            //    var prefixes = searchTermElements[0];
-            //    searchTerm = searchTermElements[1];
-            //    if (prefixes.All(q => ValidPrefixes.Keys.Contains(q))) 
-            //    {
-            //        filters.Clear();
-            //        foreach (var prefix in prefixes) 
-            //            filters.Add(ValidPrefixes[prefix]);
-            //        filtersApplied = true;
-            //    }
-            //}
-            //else if (filters.Count > 0 && filters.Count < 5) 
-            //{
-            //    filtersApplied = true;
-            //}
 
             if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::")))
             {

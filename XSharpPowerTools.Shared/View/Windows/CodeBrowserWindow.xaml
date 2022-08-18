@@ -15,7 +15,8 @@
     ResizeMode="NoResize"
     Loaded="Window_Loaded"
     MouseDown="Window_MouseDown"
-    PreviewKeyDown="Window_PreviewKeyDown">
+    PreviewKeyDown="Window_PreviewKeyDown"
+    PreviewKeyUp="Window_PreviewKeyUp">
 
     <local:BaseWindow.Resources>
         <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
@@ -113,8 +114,9 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix m"
-                        Margin="0,0,1,0"/>
+                        ToolTip="Method - Ctrl + 1"
+                        Margin="0,0,1,0">
+                    </ToggleButton>
                     <ToggleButton
                         x:Name="PropertyToggleButton"
                         Grid.Column="1"
@@ -122,7 +124,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix p"
+                        ToolTip="Property - Ctrl + 2"
                         Margin="1,0,1,0"/>
                     <ToggleButton
                         x:Name="FunctionToggleButton"
@@ -131,7 +133,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix f"
+                        ToolTip="Function - Ctrl + 3"
                         Margin="1,0,1,0"/>
                     <ToggleButton
                         x:Name="VariableToggleButton"
@@ -140,7 +142,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix v"
+                        ToolTip="Variable - Ctrl + 4"
                         Margin="1,0,1,0"/>
                     <ToggleButton
                         x:Name="DefineToggleButton"
@@ -149,7 +151,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix d"
+                        ToolTip="Define - Ctrl + 5"
                         Margin="1,0,1,0"/>
                     <ToggleButton
                         x:Name="EnumValueToggleButton"
@@ -158,7 +160,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip=""
+                        ToolTip="Enum - Ctrl + 6"
                         Margin="1,0,0,0"/>
                 </Grid>
                 <Label Content="Or"/>
@@ -176,7 +178,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix m"
+                        ToolTip="Class - Ctrl + 7"
                         Margin="0,0,1,0"/>
                     <ToggleButton
                         x:Name="EnumToggleButton"
@@ -185,7 +187,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix p"
+                        ToolTip="Enum - Ctrl + 8"
                         Margin="1,0,1,0"/>
                     <ToggleButton
                         x:Name="InterfaceToggleButton"
@@ -194,7 +196,7 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix f"
+                        ToolTip="Interface - Ctrl + 9"
                         Margin="1,0,1,0"/>
                     <ToggleButton
                         x:Name="StructToggleButton"
@@ -203,9 +205,39 @@
                         Style="{StaticResource GenericToggleButton}"
                         VerticalAlignment="Center"
                         Click="FilterButton_Click"
-                        ToolTip="filter prefix v"
+                        ToolTip="Struct - Ctrl + 0"
                         Margin="1,0,1,0"/>
                 </Grid>
+                <Popup x:Name="MethodPopup" Placement="Top" PlacementTarget="{Binding ElementName=MethodToggleButton}">
+                    <TextBlock Text="1" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="PropertyPopup" Placement="Top" PlacementTarget="{Binding ElementName=PropertyToggleButton}">
+                    <TextBlock Text="2" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="FunctionPopup" Placement="Top" PlacementTarget="{Binding ElementName=FunctionToggleButton}">
+                    <TextBlock Text="3" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="VariablePopup" Placement="Top" PlacementTarget="{Binding ElementName=VariableToggleButton}">
+                    <TextBlock Text="4" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="DefinePopup" Placement="Top" PlacementTarget="{Binding ElementName=DefineToggleButton}">
+                    <TextBlock Text="5" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="EnumValuePopup" Placement="Top" PlacementTarget="{Binding ElementName=EnumValueToggleButton}">
+                    <TextBlock Text="6" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="ClassPopup" Placement="Top" PlacementTarget="{Binding ElementName=ClassToggleButton}">
+                    <TextBlock Text="7" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="EnumPopup" Placement="Top" PlacementTarget="{Binding ElementName=EnumToggleButton}">
+                    <TextBlock Text="8" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="InterfacePopup" Placement="Top" PlacementTarget="{Binding ElementName=InterfaceToggleButton}">
+                    <TextBlock Text="9" Width="15" TextAlignment="Center"/>
+                </Popup>
+                <Popup x:Name="StructPopup" Placement="Top" PlacementTarget="{Binding ElementName=StructToggleButton}">
+                    <TextBlock Text="0" Width="15" TextAlignment="Center"/>
+                </Popup>
             </StackPanel>
             <controls:SearchTextBox
                 x:Name="SearchTextBox"

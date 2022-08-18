@@ -157,7 +157,7 @@ namespace XSharpPowerTools.View.Windows
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (AllowReturn && e.Key == Key.Return && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            if (AllowReturn && e.Key == Key.Return && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 SaveResultsToToolWindow();
             }
@@ -179,7 +179,20 @@ namespace XSharpPowerTools.View.Windows
             {
                 ResultsDataGrid.SelectPrevious();
             }
-            else if (Keyboard.Modifiers == ModifierKeys.Control) 
+            else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                MethodPopup.IsOpen = true;
+                PropertyPopup.IsOpen = true;
+                FunctionPopup.IsOpen = true;
+                VariablePopup.IsOpen = true;
+                DefinePopup.IsOpen = true;
+                EnumValuePopup.IsOpen = true;
+                ClassPopup.IsOpen = true;
+                EnumPopup.IsOpen = true;
+                InterfacePopup.IsOpen = true;
+                StructPopup.IsOpen = true;
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Control)
             {
                 var toggleButtonToCheck = e.Key switch
                 {
@@ -195,13 +208,30 @@ namespace XSharpPowerTools.View.Windows
                     Key.D0 => StructToggleButton,
                     _ => null
                 };
-                    
-                if (toggleButtonToCheck != null) 
+
+                if (toggleButtonToCheck != null)
                 {
                     toggleButtonToCheck.IsChecked = !toggleButtonToCheck.IsChecked;
                     FilterButton_Click(toggleButtonToCheck, null);
                     e.Handled = true;
                 }
+            }
+        }
+
+        private void Window_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                MethodPopup.IsOpen = false;
+                PropertyPopup.IsOpen = false;
+                FunctionPopup.IsOpen = false;
+                VariablePopup.IsOpen = false;
+                DefinePopup.IsOpen = false;
+                EnumValuePopup.IsOpen = false;
+                ClassPopup.IsOpen = false;
+                EnumPopup.IsOpen = false;
+                InterfacePopup.IsOpen = false;
+                StructPopup.IsOpen = false;
             }
         }
 
