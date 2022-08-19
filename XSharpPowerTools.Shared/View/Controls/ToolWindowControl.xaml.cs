@@ -117,6 +117,7 @@ namespace XSharpPowerTools.View.Controls
             if (selectedItem == null)
                 return;
             var item = selectedItem as XSModelResultItem;
+            using var waitCursor = new WithWaitCursor();
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line)).FileAndForget($"{FileReference}OnReturn");
         }
 
