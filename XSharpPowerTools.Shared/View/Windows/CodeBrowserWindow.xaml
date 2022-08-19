@@ -45,8 +45,8 @@
             HorizontalAlignment="Center" 
             VerticalAlignment="Center">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="30" />
+                <RowDefinition Height="24" />
+                <RowDefinition Height="22" />
                 <RowDefinition Height="Auto"/>
                 <RowDefinition>
                     <RowDefinition.Style>
@@ -75,7 +75,7 @@
                 <RowDefinition>
                     <RowDefinition.Style>
                         <Style TargetType="{x:Type RowDefinition}">
-                            <Setter Property="Height" Value="5" />
+                            <Setter Property="Height" Value="2" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
                                     <Setter Property="Height" Value="0" />
@@ -86,212 +86,197 @@
                 </RowDefinition>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="2" />
                 <ColumnDefinition Width="870"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="20"/>
-                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="2"/>
             </Grid.ColumnDefinitions>
-            <Label
-                Content="X# Code Browser"
+            <TextBlock
+                Text="X# Code Browser"
                 Grid.Row="0"
-                Margin="0,3,0,0"
                 Grid.Column="1"
-                FontWeight="DemiBold"/>
+                FontWeight="DemiBold"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Left"/>
             <StackPanel
                 Grid.Row="0"
                 Grid.Column="1"
-                Grid.ColumnSpan="7"
+                Grid.ColumnSpan="3"
                 HorizontalAlignment="Right"
+                VerticalAlignment="Center"
                 Orientation="Horizontal"
                 FlowDirection="LeftToRight">
-                <Grid x:Name="MemberFilterGrid" HorizontalAlignment="Right">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <controls:FilterButton
-                        x:Name="MethodFilterButton"
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Method - Ctrl + 1"
-                        PopupText="1"
-                        Margin="0,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="PropertyFilterButton"
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Property - Ctrl + 2"
-                        PopupText="2"
-                        Margin="1,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Property}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="FunctionFilterButton"
-                        Grid.Column="2"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Function - Ctrl + 3"
-                        PopupText="3"
-                        Margin="1,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="VariableFilterButton"
-                        Grid.Column="3"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Variable - Ctrl + 4"
-                        PopupText="4"
-                        Margin="1,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Field}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="DefineFilterButton"
-                        Grid.Column="4"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Define - Ctrl + 5"
-                        PopupText="5"
-                        Margin="1,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Constant}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="EnumValueFilterButton"
-                        Grid.Column="5"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Enum - Ctrl + 6"
-                        PopupText="6"
-                        Margin="1,0,0,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Enumeration}"/>
-                    </controls:FilterButton>
-                </Grid>
-                <Label Content="Or"/>
-                <Grid x:Name="TypeFilterGrid" HorizontalAlignment="Right">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <controls:FilterButton
-                        x:Name="ClassFilterButton"
-                        Grid.Column="0"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Class - Ctrl + 7"
-                        PopupText="7"
-                        Margin="0,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Class}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="EnumFilterButton"
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Enum - Ctrl + 8"
-                        PopupText="8"
-                        Margin="1,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.EnumerationPublic}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="InterfaceFilterButton"
-                        Grid.Column="2"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Interface - Ctrl + 9"
-                        PopupText="9"
-                        Margin="1,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Interface}"/>
-                    </controls:FilterButton>
-                    <controls:FilterButton
-                        x:Name="StructFilterButton"
-                        Grid.Column="3"
-                        VerticalAlignment="Center"
-                        Click="FilterButton_Click"
-                        ToolTip="Struct - Ctrl + 0"
-                        PopupText="0"
-                        Margin="1,0,1,0">
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.ValueType}"/>
-                    </controls:FilterButton>
-                </Grid>
+                <controls:FilterButton
+                    x:Name="MethodFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Method (Ctrl + 1)"
+                    PopupText="1"
+                    Margin="0,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}"/>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="PropertyFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Property (Ctrl + 2)"
+                    PopupText="2"
+                    Margin="1,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Property}"/>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="FunctionFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Function (Ctrl + 3)"
+                    PopupText="3"
+                    Margin="1,0,1,0">
+                    <Grid>
+                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="f" FontSize="9" FontWeight="DemiBold" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+                    </Grid>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="VariableFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Variable (Ctrl + 4)"
+                    PopupText="4"
+                    Margin="1,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Field}"/>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="DefineFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Define (Ctrl + 5)"
+                    PopupText="5"
+                    Margin="1,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Constant}"/>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="EnumValueFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Enum (Ctrl + 6)"
+                    PopupText="6"
+                    Margin="1,0,6,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Enumeration}"/>
+                </controls:FilterButton>
+                <Rectangle Height="20" Width="1.5" RadiusX="1" RadiusY="1" Style="{StaticResource GenericRectangle}" VerticalAlignment="Center"/>
+                <controls:FilterButton
+                    x:Name="ClassFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Class (Ctrl + 7)"
+                    PopupText="7"
+                    Margin="6,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Class}"/>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="EnumFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Enum (Ctrl + 8)"
+                    PopupText="8"
+                    Margin="1,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.EnumerationPublic}"/>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="InterfaceFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Interface (Ctrl + 9)"
+                    PopupText="9"
+                    Margin="1,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Interface}"/>
+                </controls:FilterButton>
+                <controls:FilterButton
+                    x:Name="StructFilterButton"
+                    VerticalAlignment="Center"
+                    Click="FilterButton_Click"
+                    ToolTip="Struct (Ctrl + 0)"
+                    PopupText="0"
+                    Margin="1,0,1,0">
+                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.ValueType}"/>
+                </controls:FilterButton>
             </StackPanel>
             <controls:SearchTextBox
                 x:Name="SearchTextBox"
                 Grid.Row="1"
                 Grid.Column="1"
                 Height="20"
-                Margin="0,5,0,0"
+                Margin="0,0,1,0"
                 HorizontalAlignment="Stretch"
                 VerticalAlignment="Top"
                 TextChanged="SearchTextBox_TextChanged"
                 TabIndex="0"/>
-            <Button
-                x:Name="HelpButton"
+            <StackPanel
                 Grid.Row="1"
-                Grid.Column="3"
-                Height="20"
-                Width="20"
-                Content="?"
-                FontWeight="Bold"
-                IsTabStop="False"
-                Click="HelpButton_Click"
-                VerticalAlignment="Center"
-                Style="{StaticResource GenericButton}"
-                TabIndex="1"/>
-            <Button
-                x:Name="ResultsViewButton"
-                Grid.Row="1"
-                Grid.Column="5"
-                Height="20"
-                Width="20"
-                IsTabStop="False"
-                Click="ResultsViewButton_Click"
-                VerticalAlignment="Center"
-                TabIndex="2"
-                FontWeight="ExtraBold"
-                Style="{StaticResource GenericButton}"
-                ToolTip="Save results to seperate view (Ctrl + Return)"
-                FontFamily="Segoe MDL2 Assets"
-                Content="&#xE094;"/>
-            <Button
-                x:Name="RefreshButton"
-                Grid.Row="1"
-                Grid.Column="7"
-                Height="20"
-                Width="20"
-                IsTabStop="False"
-                Click="RefreshButton_Click"
-                VerticalAlignment="Center"
-                TabIndex="2"
-                FontWeight="ExtraBold"
-                Style="{StaticResource GenericButton}"
-                ToolTip="Search again without any filters or user sorting applied"
-                FontFamily="Segoe MDL2 Assets"
-                Content="&#xE72C;"/>
+                Grid.Column="2"
+                Grid.ColumnSpan="2"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Orientation="Horizontal"
+                FlowDirection="LeftToRight">
+                <Button
+                    x:Name="HelpButton"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Margin="1,0,1,0"
+                    Height="20"
+                    Width="20"
+                    Content="?"
+                    FontWeight="Bold"
+                    IsTabStop="False"
+                    Click="HelpButton_Click"
+                    ToolTip="Help"
+                    VerticalAlignment="Center"
+                    Style="{StaticResource GenericButton}"
+                    TabIndex="1"/>
+                <Button
+                    x:Name="ResultsViewButton"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Height="20"
+                    Width="20"
+                    Margin="1,0,1,0"
+                    IsTabStop="False"
+                    Click="ResultsViewButton_Click"
+                    VerticalAlignment="Center"
+                    TabIndex="2"
+                    FontWeight="ExtraBold"
+                    Style="{StaticResource GenericButton}"
+                    ToolTip="Save results to seperate view (Ctrl + Return)"
+                    FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE094;"/>
+                <Button
+                    x:Name="RefreshButton"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Height="20"
+                    Width="20"
+                    Margin="1,0,1,0"
+                    IsTabStop="False"
+                    Click="RefreshButton_Click"
+                    VerticalAlignment="Center"
+                    TabIndex="2"
+                    FontWeight="ExtraBold"
+                    Style="{StaticResource GenericButton}"
+                    ToolTip="Search again without any filters or user sorting applied"
+                    FontFamily="Segoe MDL2 Assets"
+                    Content="&#xE72C;"/>
+            </StackPanel>
             <controls:HelpTextControl
                 x:Name="HelpControl"
                 Grid.Column="1"
-                Grid.ColumnSpan="5"
+                Grid.ColumnSpan="2"
                 Grid.Row="2"
                 Visibility="Collapsed"/>
             <Label
                 x:Name="NoResultsLabel"
                 Grid.Column="1"
-                Grid.ColumnSpan="5"
+                Grid.ColumnSpan="2"
                 Grid.Row="3"
                 Content="No results found"
                 Visibility="Collapsed"
@@ -301,7 +286,7 @@
                 Margin="0,0,0,0"
                 Grid.Row="4"
                 Grid.Column="1"
-                Grid.ColumnSpan="7"
+                Grid.ColumnSpan="2"
                 Width="Auto"
                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <DataGrid.Columns>

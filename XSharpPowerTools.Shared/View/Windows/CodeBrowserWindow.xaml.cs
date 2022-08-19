@@ -371,11 +371,11 @@ namespace XSharpPowerTools.View.Windows
 
         private void FilterButton_Click(object sender, RoutedEventArgs e) 
         {
-            UIElementCollection filterGroupToDeactivate = null;
+            List<FilterButton> filterGroupToDeactivate = null;
 
             if (TypeFilterButtons.ContainsKey(sender as FilterButton))
             {
-                filterGroupToDeactivate = MemberFilterGrid.Children;
+                filterGroupToDeactivate = MemberFilterButtons.Keys.ToList();
                 if (TypeFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
                     ActiveFilterGroup = FilterType.Type;
                 else
@@ -383,7 +383,7 @@ namespace XSharpPowerTools.View.Windows
             }
             else if (MemberFilterButtons.ContainsKey(sender as FilterButton))
             {
-                filterGroupToDeactivate = TypeFilterGrid.Children;
+                filterGroupToDeactivate = TypeFilterButtons.Keys.ToList();
                 if (MemberFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
                     ActiveFilterGroup = FilterType.Member;
                 else
@@ -393,11 +393,8 @@ namespace XSharpPowerTools.View.Windows
             if (filterGroupToDeactivate == null || filterGroupToDeactivate.Count < 1)
                 return;
 
-            foreach (var child in filterGroupToDeactivate) 
-            {
-                if (child is ToggleButton toggleButton)
-                    toggleButton.IsChecked = false;
-            }
+            foreach (var filterButton in filterGroupToDeactivate) 
+                filterButton.IsChecked = false;
 
             SearchTextBox.Focus();
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}FilterButton_Click");

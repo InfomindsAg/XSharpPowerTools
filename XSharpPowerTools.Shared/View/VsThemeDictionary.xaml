@@ -21,6 +21,9 @@
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ComboBoxBorderBrushKey}}"/>
         <Setter Property="FocusVisualStyle" Value="{StaticResource GenericTextBoxFocus}"/>
     </Style>
+    <Style x:Key="GenericRectangle" TargetType="{x:Type Rectangle}">
+        <Setter Property="Fill" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ComboBoxDisabledTextBrushKey}}"/>
+    </Style>
     <Style x:Key="ScrollBarLineButton" TargetType="{x:Type RepeatButton}">
         <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="OverridesDefaultStyle" Value="True" />
@@ -316,7 +319,7 @@
         </Setter>
     </Style>
     <Style x:Key="FilterToggleButton" TargetType="{x:Type ToggleButton}">
-        <Setter Property="Foreground" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ButtonTextBrushKey}}"/>
         <Setter Property="Background" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ToolWindowBackgroundBrushKey}}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource {x:Static vsshell:EnvironmentColors.ComboBoxBorderBrushKey}}"/>
         <Setter Property="BorderThickness" Value="1"/>
