@@ -88,7 +88,7 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="2" />
                 <ColumnDefinition Width="870"/>
-                <ColumnDefinition Width="66"/>
+                <ColumnDefinition Width="64"/>
                 <ColumnDefinition Width="2"/>
             </Grid.ColumnDefinitions>
             <TextBlock
