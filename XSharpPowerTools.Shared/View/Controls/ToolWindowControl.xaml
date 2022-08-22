@@ -26,22 +26,22 @@
             </DataGrid.Resources>
             <DataGrid.Columns>
                 <DataGridTextColumn
-                        Header=" Type"
-                        Binding="{Binding TypeName}"/>
+                    Header=" Type"
+                    Binding="{Binding TypeName}"/>
                 <DataGridTextColumn
-                        Header=" Member"
-                        Binding="{Binding MemberName}"/>
+                    Header=" Member"
+                    Binding="{Binding MemberName}"/>
                 <DataGridTextColumn
-                        Header=" Params"
-                        Binding="{Binding ParametersCount}"/>
+                    Header=" Params"
+                    Binding="{Binding ParametersCount}"/>
                 <DataGridTextColumn
-                        Header=" Kind"
-                        Binding="{Binding KindName}"
-                        ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
-                        CanUserResize="False"/>
+                    Header=" Kind"
+                    Binding="{Binding KindName}"
+                    ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
+                    CanUserResize="False"/>
                 <DataGridTextColumn
-                        Header=" File"
-                        Binding="{Binding RelativePath}">
+                    Header=" File"
+                    Binding="{Binding RelativePath}">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource ResourceKey=GenericDataGridCell}">
                             <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Content.Text}"/>
@@ -51,6 +51,10 @@
                         </Style>
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
+                <DataGridTextColumn
+                    Header=" SourceCode"
+                    Binding="{Binding SourceCodeDisplay}"
+                    Width="80"/>
             </DataGrid.Columns>
         </local:ResultsDataGrid>
     </Grid>

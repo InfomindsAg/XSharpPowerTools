@@ -57,6 +57,21 @@ namespace XSharpPowerTools
             }
         }
 
+        public string SourceCodeDisplay
+        {
+            get 
+            {
+                if (string.IsNullOrEmpty(SourceCode))
+                    return string.Empty;
+
+                var sourceCodeLines = SourceCode.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+
+                return sourceCodeLines.Length > 1 
+                    ? string.Join(" ", sourceCodeLines.Select(q => q.Trim())) 
+                    : SourceCode.Trim();
+            }
+        }
+
         public string KindName => Kind switch
         {
             1 => "Class",
