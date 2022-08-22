@@ -13,6 +13,7 @@ namespace XSharpPowerTools.View.Controls
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(FilterButton));
         public static DependencyProperty ButtonContentProperty = DependencyProperty.Register("ButtonContent", typeof(object), typeof(FilterButton));
         public static DependencyProperty PopupTextProperty = DependencyProperty.Register("PopupText", typeof(string), typeof(FilterButton));
+        public static DependencyProperty HotkeyTextProperty = DependencyProperty.Register("HotkeyText", typeof(string), typeof(FilterButton));
 
         public event RoutedEventHandler Click
         {
@@ -30,6 +31,12 @@ namespace XSharpPowerTools.View.Controls
         {
             get => (string)GetValue(PopupTextProperty);
             set => SetValue(PopupTextProperty, value);
+        }
+
+        public string HotkeyText
+        {
+            get => (string)GetValue(HotkeyTextProperty);
+            set => SetValue(HotkeyTextProperty, value);
         }
 
         public bool? IsChecked 

@@ -111,7 +111,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Method (Ctrl + 1)"
-                    PopupText="1"
+                    HotkeyText="1"
+                    PopupText="Method"
                     Margin="0,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}"/>
                 </controls:FilterButton>
@@ -120,7 +121,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Property (Ctrl + 2)"
-                    PopupText="2"
+                    HotkeyText="2"
+                    PopupText="Property"
                     Margin="1,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Property}"/>
                 </controls:FilterButton>
@@ -129,7 +131,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Function (Ctrl + 3)"
-                    PopupText="3"
+                    HotkeyText="3"
+                    PopupText="Function"
                     Margin="1,0,1,0">
                     <Grid>
                         <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -141,7 +144,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Variable (Ctrl + 4)"
-                    PopupText="4"
+                    HotkeyText="4"
+                    PopupText="Variable"
                     Margin="1,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Field}"/>
                 </controls:FilterButton>
@@ -150,7 +154,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Define (Ctrl + 5)"
-                    PopupText="5"
+                    HotkeyText="5"
+                    PopupText="Define"
                     Margin="1,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Constant}"/>
                 </controls:FilterButton>
@@ -158,8 +163,9 @@
                     x:Name="EnumValueFilterButton"
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
-                    ToolTip="Enum (Ctrl + 6)"
-                    PopupText="6"
+                    ToolTip="Enum values (Ctrl + 6)"
+                    HotkeyText="6"
+                    PopupText="Enum values"
                     Margin="1,0,6,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Enumeration}"/>
                 </controls:FilterButton>
@@ -169,7 +175,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Class (Ctrl + 7)"
-                    PopupText="7"
+                    HotkeyText="7"
+                    PopupText="Class"
                     Margin="6,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Class}"/>
                 </controls:FilterButton>
@@ -178,7 +185,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Enum (Ctrl + 8)"
-                    PopupText="8"
+                    HotkeyText="8"
+                    PopupText="Enum"
                     Margin="1,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.EnumerationPublic}"/>
                 </controls:FilterButton>
@@ -187,7 +195,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Interface (Ctrl + 9)"
-                    PopupText="9"
+                    HotkeyText="9"
+                    PopupText="Interface"
                     Margin="1,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Interface}"/>
                 </controls:FilterButton>
@@ -196,7 +205,8 @@
                     VerticalAlignment="Center"
                     Click="FilterButton_Click"
                     ToolTip="Struct (Ctrl + 0)"
-                    PopupText="0"
+                    HotkeyText="0"
+                    PopupText="Struct"
                     Margin="1,0,1,0">
                     <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.ValueType}"/>
                 </controls:FilterButton>

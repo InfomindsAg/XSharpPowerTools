@@ -22,12 +22,29 @@
             Height="20"/>
         <Popup 
             x:Name="HotkeyPopup" 
-            Placement="Top" 
+            Placement="Top"
+            AllowsTransparency="True"
+            Width="15"
             PlacementTarget="{Binding ElementName=FilterToggleButton}">
-            <TextBlock 
-                Text="{Binding ElementName=ContainingControl, Path=PopupText}" 
-                Width="15" 
-                TextAlignment="Center"/>
+            <Grid Style="{StaticResource FilterPopupBackground}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="2"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBlock 
+                    Grid.Row="1"
+                    Text="{Binding ElementName=ContainingControl, Path=PopupText}">
+                    <TextBlock.LayoutTransform>
+                        <RotateTransform Angle="270"/>
+                    </TextBlock.LayoutTransform>
+                </TextBlock>
+                <TextBlock 
+                    Grid.Row="3"
+                    Text="{Binding ElementName=ContainingControl, Path=HotkeyText}" 
+                    TextAlignment="Center"/>
+            </Grid>
         </Popup>
     </Grid>
 </UserControl>
