@@ -118,7 +118,8 @@ namespace XSharpPowerTools.View.Controls
                 return;
             var item = selectedItem as XSModelResultItem;
             using var waitCursor = new WithWaitCursor();
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line)).FileAndForget($"{FileReference}OnReturn");
+            var keyword = item.ResultType == XSModelResultType.Member ? item.MemberName : item.TypeName;
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line, item.SourceCode, keyword)).FileAndForget($"{FileReference}OnReturn");
         }
 
         public async Task UpdateToolWindowContentsAsync(XSModel xsModel, Filter filter, string searchTerm, string solutionDirectory, List<XSModelResultItem> results, XSModelResultType resultType)

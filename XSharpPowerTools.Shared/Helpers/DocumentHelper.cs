@@ -12,9 +12,7 @@ namespace XSharpPowerTools.Helpers
 {
     public static class DocumentHelper
     {
-        public static DateTime EditorOpenedTimestamp;
-
-        public static async Task OpenProjectItemAtAsync(string file, int lineNumber)
+        public static async Task OpenProjectItemAtAsync(string file, int lineIndex, string sourceCode, string keyWord)
         {
             if (string.IsNullOrEmpty(file))
                 return;
@@ -39,10 +37,18 @@ namespace XSharpPowerTools.Helpers
             await editorWindow.ShowAsync();
 
             var textView = (await VS.Documents.GetDocumentViewAsync(file))?.TextView;
-            var lineIndex = lineNumber > 0 ? lineNumber - 1 : 0;
-            var line = textView.TextSnapshot.Lines.ElementAt(lineIndex);
-            textView.ViewScroller.EnsureSpanVisible(new SnapshotSpan(line.Start, line.End));
-            textView.Caret.MoveTo(line.End);
+            var lines = textView.TextSnapshot.Lines;
+            var linesToSearch = lines.GetRange(lineIndex - 1, 50);
+
+            var sourceCodeLines = sourceCode.Split(';');
+
+            if (sourceCodeLines.Length > 1)
+                sourceCode = sourceCodeLines.Where(q => q.Contains(keyWord)).FirstOrDefault()?.Trim();
+
+            var caretLine = linesToSearch.Where(q => q.GetText().Trim() == sourceCode).FirstOrDefault() ?? lines.ElementAt(lineIndex);
+
+            textView.ViewScroller.EnsureSpanVisible(new SnapshotSpan(caretLine.Start, caretLine.End));
+            textView.Caret.MoveTo(caretLine.End);
             textView.VisualElement.Focus();
         }
 

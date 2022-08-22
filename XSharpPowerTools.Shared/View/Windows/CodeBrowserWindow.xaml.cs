@@ -151,7 +151,8 @@ namespace XSharpPowerTools.View.Windows
                 return;
 
             using var waitCursor = new WithWaitCursor();
-            await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line);
+            var keyword = item.ResultType == XSModelResultType.Member ? item.MemberName : item.TypeName;
+            await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line, item.SourceCode, keyword);
             Close();
         }
 
