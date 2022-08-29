@@ -20,7 +20,7 @@ namespace XSharpPowerTools.View.Windows
         {
             var toolWindowControl = new ToolWindowControl();
             VS.Events.SolutionEvents.OnBeforeCloseSolution += toolWindowControl.SolutionEvents_OnBeforeCloseSolution;
-            return Task.FromResult<FrameworkElement>(toolWindowControl);
+            return System.Threading.Tasks.Task.FromResult<FrameworkElement>(toolWindowControl);
         }
 
         // Give this a new unique guid
