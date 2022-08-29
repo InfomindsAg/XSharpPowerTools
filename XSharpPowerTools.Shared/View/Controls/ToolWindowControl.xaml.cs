@@ -27,18 +27,12 @@ namespace XSharpPowerTools.View.Controls
         private string SearchTerm;
         private string SolutionDirectory;
         private FilterType ActiveFilterGroup;
-        private readonly Dictionary<MenuItem, TypeFilter> TypeMenuItems;
-        private readonly Dictionary<MenuItem, MemberFilter> MemberMenuItems;
+        private bool FiltersChanged = false;
+
+        private readonly Dictionary<TypeFilter, MenuItem> TypeMenuItems;
+        private readonly Dictionary<MemberFilter, MenuItem> MemberMenuItems;
         private readonly MenuItem GroupingMenuItem;
-        private readonly MenuItem ClassFilterMenuItem;
-        private readonly MenuItem EnumFilterMenuItem;
-        private readonly MenuItem InterfaceFilterMenuItem;
-        private readonly MenuItem StructFilterMenuItem;
-        private readonly MenuItem MethodFilterMenuItem;
-        private readonly MenuItem FunctionFilterMenuItem;
-        private readonly MenuItem PropertyFilterMenuItem;
-        private readonly MenuItem VariableFilterMenuItem;
-        private readonly MenuItem DefineFilterMenuItem;
+
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
 
@@ -47,69 +41,91 @@ namespace XSharpPowerTools.View.Controls
             InitializeComponent();
             ResultsDataGrid.Parent = this;
 
-            ClassFilterMenuItem = new MenuItem { Header = "Classes", IsCheckable = true, StaysOpenOnClick = true };
-            EnumFilterMenuItem = new MenuItem { Header = "Enums", IsCheckable = true, StaysOpenOnClick = true };
-            InterfaceFilterMenuItem = new MenuItem { Header = "Interfaces", IsCheckable = true, StaysOpenOnClick = true };
-            StructFilterMenuItem = new MenuItem { Header = "Structs", IsCheckable = true, StaysOpenOnClick = true };
+            var classFilterMenuItem = new MenuItem { Header = "Classes", IsCheckable = true, StaysOpenOnClick = true };
+            var enumFilterMenuItem = new MenuItem { Header = "Enums", IsCheckable = true, StaysOpenOnClick = true };
+            var interfaceFilterMenuItem = new MenuItem { Header = "Interfaces", IsCheckable = true, StaysOpenOnClick = true };
+            var structFilterMenuItem = new MenuItem { Header = "Structs", IsCheckable = true, StaysOpenOnClick = true };
 
-            TypeMenuItems = new Dictionary<MenuItem, TypeFilter>
+            TypeMenuItems = new Dictionary<TypeFilter, MenuItem>
             {
-                { ClassFilterMenuItem, TypeFilter.Class },
-                { EnumFilterMenuItem, TypeFilter.Enum },
-                { InterfaceFilterMenuItem, TypeFilter.Interface },
-                { StructFilterMenuItem, TypeFilter.Struct }
+                { TypeFilter.Class, classFilterMenuItem },
+                { TypeFilter.Enum, enumFilterMenuItem },
+                { TypeFilter.Interface, interfaceFilterMenuItem },
+                { TypeFilter.Struct, structFilterMenuItem }
             };
 
             foreach (var typeMenuItem in TypeMenuItems)
             {
-                typeMenuItem.Key.Checked += TypeFilter_ContextMenu_Checked;
-                typeMenuItem.Key.Unchecked += Filter_ContextMenu_Unchecked;
+                typeMenuItem.Value.Checked += TypeFilter_ContextMenu_Checked;
+                typeMenuItem.Value.Unchecked += Filter_ContextMenu_Unchecked;
             }
 
-            MethodFilterMenuItem = new MenuItem { Header = "Methods", IsCheckable = true, StaysOpenOnClick = true };
-            FunctionFilterMenuItem = new MenuItem { Header = "Properties", IsCheckable = true, StaysOpenOnClick = true };
-            PropertyFilterMenuItem = new MenuItem { Header = "Functions", IsCheckable = true, StaysOpenOnClick = true };
-            VariableFilterMenuItem = new MenuItem { Header = "Variables", IsCheckable = true, StaysOpenOnClick = true };
-            DefineFilterMenuItem = new MenuItem { Header = "Defines", IsCheckable = true, StaysOpenOnClick = true };
+            var methodFilterMenuItem = new MenuItem { Header = "Methods", IsCheckable = true, StaysOpenOnClick = true };
+            var functionFilterMenuItem = new MenuItem { Header = "Properties", IsCheckable = true, StaysOpenOnClick = true };
+            var propertyFilterMenuItem = new MenuItem { Header = "Functions", IsCheckable = true, StaysOpenOnClick = true };
+            var variableFilterMenuItem = new MenuItem { Header = "Variables", IsCheckable = true, StaysOpenOnClick = true };
+            var defineFilterMenuItem = new MenuItem { Header = "Defines", IsCheckable = true, StaysOpenOnClick = true };
+            var enumValueFilterMenuItem = new MenuItem { Header = "Enum values", IsCheckable = true, StaysOpenOnClick = true };
 
-            MemberMenuItems = new Dictionary<MenuItem, MemberFilter>
+            MemberMenuItems = new Dictionary<MemberFilter, MenuItem>
             {
-                { MethodFilterMenuItem, MemberFilter.Method },
-                { FunctionFilterMenuItem, MemberFilter.Function },
-                { PropertyFilterMenuItem, MemberFilter.Property },
-                { VariableFilterMenuItem, MemberFilter.Variable },
-                { DefineFilterMenuItem, MemberFilter.Define }
+                { MemberFilter.Method, methodFilterMenuItem },
+                { MemberFilter.Function, functionFilterMenuItem },
+                { MemberFilter.Property, propertyFilterMenuItem },
+                { MemberFilter.Variable, variableFilterMenuItem },
+                { MemberFilter.Define, defineFilterMenuItem },
+                { MemberFilter.EnumValue, enumValueFilterMenuItem }
             };
 
             foreach (var memberMenuItem in MemberMenuItems)
             {
-                memberMenuItem.Key.Checked += MemberFilter_ContextMenu_Checked;
-                memberMenuItem.Key.Unchecked += Filter_ContextMenu_Unchecked;
+                memberMenuItem.Value.Checked += MemberFilter_ContextMenu_Checked;
+                memberMenuItem.Value.Unchecked += Filter_ContextMenu_Unchecked;
             }
 
             GroupingMenuItem = new MenuItem { Header = "Grouping", IsCheckable = true, IsChecked = true };
             GroupingMenuItem.Checked += Grouping_ContextMenu_Click;
             GroupingMenuItem.Unchecked += Grouping_ContextMenu_Click;
 
-            var refreshResults = new MenuItem { Header = "Refresh results" };
-            refreshResults.Click += RefreshResults_ContextMenu_Click;
+            var searchAgain = new MenuItem { Header = "Search again" };
+            searchAgain.Click += SearchAgain_Click;
 
-            ResultsDataGrid.ContextMenu = new ContextMenu();
+            var applyChanges = new MenuItem { Header = "Apply changes" };
+            applyChanges.Click += ApplyChanges_ContextMenu_Click;
 
-            ResultsDataGrid.ContextMenu.Items.Add(GroupingMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(new Separator());
-            ResultsDataGrid.ContextMenu.Items.Add(ClassFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(EnumFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(InterfaceFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(StructFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(new Separator());
-            ResultsDataGrid.ContextMenu.Items.Add(MethodFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(FunctionFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(PropertyFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(VariableFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(DefineFilterMenuItem);
-            ResultsDataGrid.ContextMenu.Items.Add(new Separator());
-            ResultsDataGrid.ContextMenu.Items.Add(refreshResults);
+            ContextMenu = new ContextMenu();
+            ContextMenu.Closed += ContextMenu_Closed;
+
+            ContextMenu.Items.Add(GroupingMenuItem);
+            ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(searchAgain);
+            ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(classFilterMenuItem);
+            ContextMenu.Items.Add(enumFilterMenuItem);
+            ContextMenu.Items.Add(interfaceFilterMenuItem);
+            ContextMenu.Items.Add(structFilterMenuItem);
+            ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(methodFilterMenuItem);
+            ContextMenu.Items.Add(functionFilterMenuItem);
+            ContextMenu.Items.Add(propertyFilterMenuItem);
+            ContextMenu.Items.Add(variableFilterMenuItem);
+            ContextMenu.Items.Add(defineFilterMenuItem);
+            ContextMenu.Items.Add(enumValueFilterMenuItem);
+            ContextMenu.Items.Add(new Separator());
+            ContextMenu.Items.Add(applyChanges);
+        }
+
+        private void SearchAgain_Click(object sender, RoutedEventArgs e) 
+        {
+            var filter = new Filter { Type = FilterType.Inactive };
+            SetFilter(filter);
+            ApplyChanges_ContextMenu_Click(sender, e);
+        }
+
+        private void ContextMenu_Closed(object sender, RoutedEventArgs e) 
+        { 
+            if (FiltersChanged)
+                ApplyChanges_ContextMenu_Click(sender, e);
         }
 
         public void OnReturn(object selectedItem)
@@ -142,6 +158,8 @@ namespace XSharpPowerTools.View.Controls
                     (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, filter, solutionDirectory, 2000); //aus DB, max 2000
                 }
             }
+
+            NoResultsLabel.Visibility = results.Count < 1 ? Visibility.Visible : Visibility.Collapsed;
 
             DisplayedResultType = resultType;
             SetTableColumns(resultType);
@@ -232,18 +250,19 @@ namespace XSharpPowerTools.View.Controls
                     ReDoSearch = false;
 
                     List<XSModelResultItem> results;
-                    XSModelResultType _;
+                    XSModelResultType resultType;
                     if (SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::"))
                     {
                         var currentFile = await DocumentHelper.GetCurrentFileAsync();
                         var caretPosition = await DocumentHelper.GetCaretPositionAsync();
-                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
+                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
                     }
                     else
                     {
-                        (results, _) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, 2000, direction, orderBy);
+                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, 2000, direction, orderBy);
                     }
 
+                    SetTableColumns(resultType);
                     var _results = Resources["Results"] as Results;
                     _results.Clear();
                     _results.AddRange(results);
@@ -258,8 +277,15 @@ namespace XSharpPowerTools.View.Controls
                         }
                     }
 
-                    ResultsDataGrid.SelectedItem = results.FirstOrDefault();
-                    
+                    if (results.Count < 1) 
+                    {
+                        NoResultsLabel.Visibility =  Visibility.Visible;
+                    }
+                    else 
+                    {
+                        NoResultsLabel.Visibility =  Visibility.Collapsed;
+                        ResultsDataGrid.SelectedItem = results.FirstOrDefault();
+                    }
                 } while (ReDoSearch);
             }
             finally
@@ -279,8 +305,11 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        public void RefreshResults_ContextMenu_Click(object sender, RoutedEventArgs e) => 
+        public void ApplyChanges_ContextMenu_Click(object sender, RoutedEventArgs e)
+        {
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}RefreshResults_ContextMenu_Click");
+            FiltersChanged = false;
+        }
 
         private Filter GetFilter()
         {
@@ -289,12 +318,12 @@ namespace XSharpPowerTools.View.Controls
             if (ActiveFilterGroup == FilterType.Member)
             {
                 filter.MemberFilters = new List<MemberFilter>();
-                filter.MemberFilters.AddRange(MemberMenuItems.Where(q => q.Key.IsChecked).Select(q => q.Value));
+                filter.MemberFilters.AddRange(MemberMenuItems.Where(q => q.Value.IsChecked).Select(q => q.Key));
             }
             else if (ActiveFilterGroup == FilterType.Type)
             {
                 filter.TypeFilters = new List<TypeFilter>();
-                filter.TypeFilters.AddRange(TypeMenuItems.Where(q => q.Key.IsChecked).Select(q => q.Value));
+                filter.TypeFilters.AddRange(TypeMenuItems.Where(q => q.Value.IsChecked).Select(q => q.Key));
 
             }
             else if (ActiveFilterGroup == FilterType.Inactive)
@@ -321,63 +350,46 @@ namespace XSharpPowerTools.View.Controls
 
         private void SetFilter(Filter filter) 
         {
-            ActiveFilterGroup = filter.Type;
-            
-            foreach (var typeMenuItem in TypeMenuItems.Keys)
+            foreach (var typeMenuItem in TypeMenuItems.Values)
                 typeMenuItem.IsChecked = false;
 
-            foreach (var memberMenuItem in MemberMenuItems.Keys)
+            foreach (var memberMenuItem in MemberMenuItems.Values)
                 memberMenuItem.IsChecked = false;
+
+            ActiveFilterGroup = filter.Type;
 
             if (ActiveFilterGroup == FilterType.Type)
             {
                 foreach (var typeFilter in filter.TypeFilters)
-                {
-                    if (typeFilter == TypeFilter.Class)
-                        ClassFilterMenuItem.IsChecked = true;
-                    else if (typeFilter == TypeFilter.Enum)
-                        EnumFilterMenuItem.IsChecked = true;
-                    else if (typeFilter == TypeFilter.Interface)
-                        InterfaceFilterMenuItem.IsChecked = true;
-                    else if (typeFilter == TypeFilter.Struct)
-                        StructFilterMenuItem.IsChecked = true;
-                }
+                    TypeMenuItems[typeFilter].IsChecked = true;
             }
             else if (ActiveFilterGroup == FilterType.Member)
             {
                 foreach (var memberFilter in filter.MemberFilters)
-                {
-                    if (memberFilter == MemberFilter.Method)
-                        MethodFilterMenuItem.IsChecked = true;
-                    else if (memberFilter == MemberFilter.Property)
-                        PropertyFilterMenuItem.IsChecked = true;
-                    else if (memberFilter == MemberFilter.Function)
-                        FunctionFilterMenuItem.IsChecked = true;
-                    else if (memberFilter == MemberFilter.Variable)
-                        VariableFilterMenuItem.IsChecked = true;
-                    else if (memberFilter == MemberFilter.Define)
-                        DefineFilterMenuItem.IsChecked = true;
-                }
+                    MemberMenuItems[memberFilter].IsChecked = true;
             }
         }
 
         public void TypeFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
         {
+            FiltersChanged = true;
             ActiveFilterGroup = FilterType.Type;
-            foreach (var memberMenuItem in MemberMenuItems.Keys)
+            foreach (var memberMenuItem in MemberMenuItems.Values)
                 memberMenuItem.IsChecked = false;
         }
 
         public void MemberFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
         {
+            FiltersChanged = true;
             ActiveFilterGroup = FilterType.Member;
-            foreach (var typeMenuItem in TypeMenuItems.Keys)
+            foreach (var typeMenuItem in TypeMenuItems.Values)
                 typeMenuItem.IsChecked = false;
         }
 
         public void Filter_ContextMenu_Unchecked(object sender, RoutedEventArgs e) 
         {
-            if (TypeMenuItems.All(q => !q.Key.IsChecked) && MemberMenuItems.All(q => !q.Key.IsChecked))
+            FiltersChanged = true;
+            if (TypeMenuItems.All(q => !q.Value.IsChecked) && MemberMenuItems.All(q => !q.Value.IsChecked))
                 ActiveFilterGroup = FilterType.Inactive;
         }
     }
