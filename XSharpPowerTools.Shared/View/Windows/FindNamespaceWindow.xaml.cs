@@ -79,7 +79,7 @@ namespace XSharpPowerTools.View.Windows
         {
             if (item == null)
                 return;
-            await DocumentHelper.InsertUsingAsync(item.Namespace, XSModel);
+            await DocumentHelper.InsertUsingAsync(item.Namespace, item.TypeName, XSModel);
             Close();
         }
 

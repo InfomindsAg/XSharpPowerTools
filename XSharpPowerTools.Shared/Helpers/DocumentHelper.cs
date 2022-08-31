@@ -52,7 +52,7 @@ namespace XSharpPowerTools.Helpers
             textView.VisualElement.Focus();
         }
 
-        public static async Task InsertUsingAsync(string namespaceRef, XSModel xsModel)
+        public static async Task InsertUsingAsync(string namespaceRef, string type, XSModel xsModel)
         {
             var documentView = await VS.Documents.GetActiveDocumentViewAsync();
             var fileName = documentView?.FilePath;
@@ -101,6 +101,10 @@ namespace XSharpPowerTools.Helpers
                 var insertPos = usings.LastOrDefault()?.EndIncludingLineBreak.Position ?? 0;
                 var paddingNum = usings.LastOrDefault()?.GetText().TakeWhile(char.IsWhiteSpace).Count();
                 var padding = paddingNum.HasValue ? new string(' ', paddingNum.Value) : string.Empty;
+
+                if (!textView.Selection.IsEmpty)
+                    edit.Replace(textView.Selection.SelectedSpans.FirstOrDefault(), type);
+
                 edit.Insert(insertPos, $"{padding}using {namespaceRef}{Environment.NewLine}");
                 edit.Apply();
             }
