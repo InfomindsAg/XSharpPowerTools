@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using XSharpPowerTools.Helpers;
@@ -22,6 +23,9 @@ namespace XSharpPowerTools.View.Windows
     {
         const string FileReference = "vs/XSharpPowerTools/CodeBrowser/";
         readonly string SolutionDirectory;
+        FilterType ActiveFilterGroup;
+        readonly Dictionary<FilterButton, TypeFilter> TypeFilterButtons;
+        readonly Dictionary<FilterButton, MemberFilter> MemberFilterButtons;
         XSModelResultType DisplayedResultType;
         string LastSearchTerm;
         volatile bool SearchActive = false;
@@ -45,27 +49,48 @@ namespace XSharpPowerTools.View.Windows
             SearchTextBox.WhenTextChanged
                 .Throttle(TimeSpan.FromMilliseconds(500))
                 .Subscribe(x => OnTextChanged());
+
+            MemberFilterButtons = new Dictionary<FilterButton, MemberFilter>
+            {
+                { MethodFilterButton, MemberFilter.Method },
+                { PropertyFilterButton, MemberFilter.Property },
+                { FunctionFilterButton, MemberFilter.Function },
+                { VariableFilterButton, MemberFilter.Variable },
+                { DefineFilterButton, MemberFilter.Define },
+                { EnumValueFilterButton, MemberFilter.EnumValue }
+            };
+
+            TypeFilterButtons = new Dictionary<FilterButton, TypeFilter>
+            {
+                { ClassFilterButton, TypeFilter.Class },
+                { EnumFilterButton, TypeFilter.Enum },
+                { InterfaceFilterButton, TypeFilter.Interface },
+                { StructFilterButton, TypeFilter.Struct }
+            };
+
+            ActiveFilterGroup = FilterType.Inactive;
         }
 
         private void SetTableColumns(XSModelResultType resultType)
         {
-            ResultsDataGrid.Columns[0].Visibility = resultType == XSModelResultType.Procedure
+            var memberSpecificColumnsVisibility = resultType == XSModelResultType.Type
                 ? Visibility.Collapsed
                 : Visibility.Visible;
 
-            ResultsDataGrid.Columns[1].Visibility = resultType == XSModelResultType.Type
-                ? Visibility.Collapsed
-                : Visibility.Visible;
+            ResultsDataGrid.Columns[1].Visibility = memberSpecificColumnsVisibility;
+            ResultsDataGrid.Columns[2].Visibility = memberSpecificColumnsVisibility;
 
             ResultsDataGrid.Columns[0].Width = 0;
             ResultsDataGrid.Columns[1].Width = 0;
             ResultsDataGrid.Columns[2].Width = 0;
             ResultsDataGrid.Columns[3].Width = 0;
+            ResultsDataGrid.Columns[4].Width = 0;
             ResultsDataGrid.UpdateLayout();
             ResultsDataGrid.Columns[0].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
-            ResultsDataGrid.Columns[1].Width = new DataGridLength(3, DataGridLengthUnitType.Star);
+            ResultsDataGrid.Columns[1].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
             ResultsDataGrid.Columns[2].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
-            ResultsDataGrid.Columns[3].Width = new DataGridLength(9, DataGridLengthUnitType.Star);
+            ResultsDataGrid.Columns[3].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
+            ResultsDataGrid.Columns[4].Width = new DataGridLength(7, DataGridLengthUnitType.Star);
         }
 
         protected async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
@@ -87,8 +112,21 @@ namespace XSharpPowerTools.View.Windows
                 {
                     var searchTerm = SearchTextBox.Text.Trim();
                     ReDoSearch = false;
-                    var currentFile = searchTerm.StartsWith("..") || searchTerm.StartsWith("::") ? await DocumentHelper.GetCurrentFileAsync() : null;
-                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, SolutionDirectory, currentFile, direction, orderBy);
+
+                    string currentFile;
+                    int caretPosition;
+                    if (searchTerm.StartsWith("..") || searchTerm.StartsWith("::"))
+                    {
+                        currentFile = await DocumentHelper.GetCurrentFileAsync();
+                        caretPosition = await DocumentHelper.GetCaretPositionAsync();
+                    }
+                    else
+                    {
+                        currentFile = null;
+                        caretPosition = -1;
+                    }
+
+                    var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, direction, orderBy);
 
                     ResultsDataGrid.ItemsSource = results;
                     ResultsDataGrid.SelectedItem = results.FirstOrDefault();
@@ -113,13 +151,14 @@ namespace XSharpPowerTools.View.Windows
                 return;
 
             using var waitCursor = new WithWaitCursor();
-            await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line);
+            var keyword = item.ResultType == XSModelResultType.Member ? item.MemberName : item.TypeName;
+            await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line, item.SourceCode, keyword);
             Close();
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (AllowReturn && e.Key == Key.Return && (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)))
+            if (AllowReturn && e.Key == Key.Return && Keyboard.Modifiers == ModifierKeys.Control)
             {
                 SaveResultsToToolWindow();
             }
@@ -141,6 +180,60 @@ namespace XSharpPowerTools.View.Windows
             {
                 ResultsDataGrid.SelectPrevious();
             }
+            else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                foreach (var typeFilterButton in TypeFilterButtons.Keys)
+                    typeFilterButton.ShowPopup();
+
+                foreach (var memberFilterButton in MemberFilterButtons.Keys)
+                    memberFilterButton.ShowPopup();
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                var filterButtonToToggle = e.Key switch
+                {
+                    Key.D1 => MethodFilterButton,
+                    Key.D2 => PropertyFilterButton,
+                    Key.D3 => FunctionFilterButton,
+                    Key.D4 => VariableFilterButton,
+                    Key.D5 => DefineFilterButton,
+                    Key.D6 => EnumValueFilterButton,
+                    Key.D7 => ClassFilterButton,
+                    Key.D8 => EnumFilterButton,
+                    Key.D9 => InterfaceFilterButton,
+                    Key.D0 => StructFilterButton,
+                    Key.NumPad1 => MethodFilterButton,
+                    Key.NumPad2 => PropertyFilterButton,
+                    Key.NumPad3 => FunctionFilterButton,
+                    Key.NumPad4 => VariableFilterButton,
+                    Key.NumPad5 => DefineFilterButton,
+                    Key.NumPad6 => EnumValueFilterButton,
+                    Key.NumPad7 => ClassFilterButton,
+                    Key.NumPad8 => EnumFilterButton,
+                    Key.NumPad9 => InterfaceFilterButton,
+                    Key.NumPad0 => StructFilterButton,
+                    _ => null
+                };
+
+                if (filterButtonToToggle != null)
+                {
+                    filterButtonToToggle.IsChecked = !filterButtonToToggle.IsChecked;
+                    FilterButton_Click(filterButtonToToggle, null);
+                    e.Handled = true;
+                }
+            }
+        }
+
+        private void Window_PreviewKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
+            {
+                foreach (var typeFilterButton in TypeFilterButtons.Keys)
+                    typeFilterButton.HidePopup();
+
+                foreach (var memberFilterButton in MemberFilterButtons.Keys)
+                    memberFilterButton.HidePopup();
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -156,11 +249,20 @@ namespace XSharpPowerTools.View.Windows
             { }
         }
 
+        private void Window_LostFocus(object sender, RoutedEventArgs e)
+        {
+            foreach (var typeFilterButton in TypeFilterButtons.Keys)
+                typeFilterButton.HidePopup();
+
+            foreach (var memberFilterButton in MemberFilterButtons.Keys)
+                memberFilterButton.HidePopup();
+        }
+
         private void HelpButton_Click(object sender, RoutedEventArgs e) =>
             HelpControl.Visibility = HelpControl.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
 
         protected override void OnTextChanged() => 
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChange");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
 
         private async Task DoSearchAsync()
         {
@@ -174,7 +276,7 @@ namespace XSharpPowerTools.View.Windows
                 DragMove();
         }
 
-        private void SearchTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) =>
+        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
             AllowReturn = false;
 
         public void OnReturn(object selectedItem)
@@ -206,10 +308,7 @@ namespace XSharpPowerTools.View.Windows
                 var toolWindowPane = await CodeBrowserResultsToolWindow.ShowAsync();
 
                 var items = ResultsDataGrid.ItemsSource as List<XSModelResultItem>;
-                if (items.Count < 100)
-                    (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContents(DisplayedResultType, items);
-                else
-                     await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, LastSearchTerm, SolutionDirectory);
+                await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, GetFilter(), LastSearchTerm, SolutionDirectory, items, DisplayedResultType);
 
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
@@ -233,6 +332,91 @@ namespace XSharpPowerTools.View.Windows
                 column.SortDirection = direction;
             }
             e.Handled = true;
+        }
+
+        private Filter GetFilter() 
+        {
+            var filter = new Filter { Type = ActiveFilterGroup };
+
+            if (ActiveFilterGroup == FilterType.Member)
+            {
+                filter.MemberFilters = new List<MemberFilter>();
+                filter.MemberFilters.AddRange(MemberFilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
+            }
+            else if (ActiveFilterGroup == FilterType.Type)
+            {
+                filter.TypeFilters = new List<TypeFilter>();
+                filter.TypeFilters.AddRange(TypeFilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
+            }
+            else if (ActiveFilterGroup == FilterType.Inactive)
+            {
+                filter.MemberFilters = new List<MemberFilter>
+                {
+                    MemberFilter.Method,
+                    MemberFilter.Property,
+                    MemberFilter.Function,
+                    MemberFilter.Variable,
+                    MemberFilter.Define
+                };
+                filter.TypeFilters = new List<TypeFilter>
+                {
+                    TypeFilter.Class,
+                    TypeFilter.Enum,
+                    TypeFilter.Interface,
+                    TypeFilter.Struct
+                };
+            }
+
+            return filter;
+        }
+
+        private void FilterButton_Click(object sender, RoutedEventArgs e) 
+        {
+            List<FilterButton> filterGroupToDeactivate = null;
+
+            if (TypeFilterButtons.ContainsKey(sender as FilterButton))
+            {
+                filterGroupToDeactivate = MemberFilterButtons.Keys.ToList();
+                if (TypeFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
+                    ActiveFilterGroup = FilterType.Type;
+                else
+                    ActiveFilterGroup = FilterType.Inactive;
+            }
+            else if (MemberFilterButtons.ContainsKey(sender as FilterButton))
+            {
+                filterGroupToDeactivate = TypeFilterButtons.Keys.ToList();
+                if (MemberFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
+                    ActiveFilterGroup = FilterType.Member;
+                else
+                    ActiveFilterGroup = FilterType.Inactive;
+            }
+
+            if (filterGroupToDeactivate == null || filterGroupToDeactivate.Count < 1)
+                return;
+
+            foreach (var filterButton in filterGroupToDeactivate) 
+                filterButton.IsChecked = false;
+
+            SearchTextBox.Focus();
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}FilterButton_Click");
+        }
+
+        private void RefreshButton_Click(object sender, RoutedEventArgs e) 
+        {
+            ClassFilterButton.IsChecked = false;
+            EnumFilterButton.IsChecked = false;
+            InterfaceFilterButton.IsChecked = false;
+            StructFilterButton.IsChecked = false;
+
+            MethodFilterButton.IsChecked = false;
+            PropertyFilterButton.IsChecked = false;
+            FunctionFilterButton.IsChecked = false;
+            VariableFilterButton.IsChecked = false;
+            DefineFilterButton.IsChecked = false;
+
+            ActiveFilterGroup = FilterType.Inactive;
+
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}RefreshButton_Click");
         }
     }
 }

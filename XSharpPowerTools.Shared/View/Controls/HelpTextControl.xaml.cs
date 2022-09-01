@@ -16,10 +16,10 @@ namespace XSharpPowerTools.View.Controls
 ex1.ex2       - searches for members similar to 'ex2' within classes similar to 'ex1' (""."" equal to "":"")
 .example     - searches for members 'example' within all classes
 ..example    - searches for members 'example' within current document
-" + "\"example\"" + @"   - matches whole word only
+""example""   - matches whole word only
 ex*Model    - * is a placeholder for multiple characters
-p example   - searches for procedures/functions similar to 'example'
-d example   - searches for defines similar to 'example'";
+
+Ctrl + 1,2,3,... to activate/deactivate filters";
         }
     }
 }

@@ -83,17 +83,14 @@ namespace XSharpPowerTools.Helpers
         private class TypeCompareHelper : ICodeBrowserCompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
-                a.TypeName.Length == b.TypeName.Length
-                    ? a.TypeName.CompareTo(b.TypeName)
-                    : a.TypeName.Length.CompareTo(b.TypeName.Length);
+                a.TypeName.CompareTo(b.TypeName);
+
         }
 
         private class MemberCompareHelper : ICodeBrowserCompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
-                a.MemberName.Length == b.MemberName.Length
-                    ? a.MemberName.CompareTo(b.MemberName)
-                    : a.MemberName.Length.CompareTo(b.MemberName.Length);
+                a.MemberName.CompareTo(b.MemberName);
         }
 
         private class KindCompareHelper : ICodeBrowserCompareHelper
@@ -104,14 +101,8 @@ namespace XSharpPowerTools.Helpers
 
         private class FileCompareHelper : ICodeBrowserCompareHelper
         {
-            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) 
-            {
-                var aLvl = a.ContainingFile.Count(q => q == Path.DirectorySeparatorChar);
-                var bLvl = b.ContainingFile.Count(q => q == Path.DirectorySeparatorChar);
-                return aLvl == bLvl
-                    ? a.ContainingFile.Length.CompareTo(b.ContainingFile.Length)
-                    : aLvl.CompareTo(bLvl);
-            }
+            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
+                a.ContainingFile.CompareTo(b.ContainingFile);
         }
 
         #endregion

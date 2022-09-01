@@ -2,20 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace XSharpPowerTools.Helpers
 {
     public static class LinqExtensions
     {
-        public static async Task<bool> AnyAsync<T>(this IEnumerable<T> source, Func<T, Task<bool>> func)
+        public static IEnumerable<T> GetRange<T>(this IEnumerable<T> source, int startIndex, int length)
         {
-            foreach (var element in source)
+            using var enumerator = source.Skip(startIndex).GetEnumerator();
+            
+            var endIndex = startIndex + length;
+            for (var i = startIndex; enumerator.MoveNext(); i++)
             {
-                if (await func(element))
-                    return true;
+                if (i >= endIndex)
+                    yield break;
+                else
+                    yield return enumerator.Current;
             }
-            return false;
+
+            yield break;
         }
     }
 }

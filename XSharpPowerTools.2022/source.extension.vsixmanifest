@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="XSharpPowerTools{1BDABBCB-67EC-4260-981D-E88D773490E3" Version="2.2" Language="en-US" Publisher="Infominds Ag" />
+        <Identity Id="XSharpPowerTools{1BDABBCB-67EC-4260-981D-E88D773490E3" Version="2.3" Language="en-US" Publisher="Infominds Ag" />
         <DisplayName>XSharpPowerTools.2022</DisplayName>
         <Description xml:space="preserve">A set of Visual Studio 2022 Tools for XSharp Developers</Description>
         <MoreInfo>https://github.com/InfomindsAg/XSharpPowerTools2022</MoreInfo>
@@ -11,7 +11,7 @@
         <PreviewImage>Resources\Icon.png</PreviewImage>
     </Metadata>
     <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,18.0)">
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.3.32804.467,18.0)">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
     </Installation>

@@ -1,8 +1,11 @@
 ﻿using Microsoft.VisualStudio.Shell;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Forms;
 using XSharpPowerTools.Helpers;
+using DataGrid = System.Windows.Controls.DataGrid;
 
 namespace XSharpPowerTools.View.Controls
 {
@@ -47,5 +50,13 @@ namespace XSharpPowerTools.View.Controls
 
         protected void SortHandler(object sender, DataGridSortingEventArgs e) =>
             Parent?.OnSort(this, e);
+
+        protected void CopyRowClipboardContentHandler(object sender, DataGridRowClipboardEventArgs e)
+        {
+            var column = Columns[CurrentCell.Column.DisplayIndex];
+            var cellContent = e.ClipboardRowContent.Where(item => item.Column == column).First();
+            e.ClipboardRowContent.Clear();
+            e.ClipboardRowContent.Add(cellContent);
+        }
     }
 }

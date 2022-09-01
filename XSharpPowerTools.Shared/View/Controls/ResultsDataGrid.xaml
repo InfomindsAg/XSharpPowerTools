@@ -16,7 +16,8 @@
     HeadersVisibility="Column"
     HorizontalScrollBarVisibility="Hidden"
     KeyboardNavigation.TabNavigation="None"
-    Sorting="SortHandler">
+    Sorting="SortHandler"
+    CopyingRowClipboardContent="CopyRowClipboardContentHandler">
 
     <DataGrid.Resources>
         <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
@@ -48,10 +49,11 @@
                             <ControlTemplate TargetType="{x:Type GroupItem}">
                                 <Expander IsExpanded="True" BorderThickness="1" Style="{StaticResource ResourceKey=DataGridGroupExpander}">
                                     <Expander.Header>
-                                        <DockPanel>
-                                            <TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0" Width="100"/>
-                                            <TextBlock FontWeight="Bold" Text="{Binding Path=ItemCount}"/>
-                                        </DockPanel>
+                                        <StackPanel Orientation="Horizontal" FlowDirection="LeftToRight">
+                                            <TextBlock FontWeight="Bold" Text="{Binding Path=ItemCount}" Margin="5,0,5,0"/>
+                                            <TextBlock Text="in"/>
+                                            <TextBlock FontWeight="Bold" Text="{Binding Path=Name}" Margin="5,0,0,0"/>
+                                        </StackPanel>
                                     </Expander.Header>
                                     <Expander.Content>
                                         <ItemsPresenter />

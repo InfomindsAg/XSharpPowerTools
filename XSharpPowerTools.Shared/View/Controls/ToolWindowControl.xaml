@@ -7,13 +7,24 @@
              xmlns:local="clr-namespace:XSharpPowerTools.View.Controls"
              mc:Ignorable="d" 
              toolkit:Themes.UseVsTheme="{Binding UseVsTheme}"
-             d:DesignHeight="450" 
-             d:DesignWidth="800">
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch">
     <UserControl.Resources>
         <local:Results x:Key="Results"/>
         <CollectionViewSource x:Key="CvsResults" Source="{StaticResource Results}"/>
     </UserControl.Resources>
     <Grid>
+        <Label
+            x:Name="NoResultsLabel"
+            Grid.Column="1"
+            Grid.ColumnSpan="2"
+            Grid.Row="3"
+            Content="No results found"
+            Visibility="Collapsed"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            HorizontalContentAlignment="Center"
+            VerticalContentAlignment="Center"/>
         <local:ResultsDataGrid
             x:Name="ResultsDataGrid"
             Width="Auto"
@@ -24,26 +35,24 @@
             <DataGrid.Resources>
                 <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
             </DataGrid.Resources>
-            <DataGrid.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Toggle grouping" Click="ContextMenu_Click"/>
-                </ContextMenu>
-            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn
-                        Header=" Type"
-                        Binding="{Binding TypeName}"/>
+                    Header=" Type"
+                    Binding="{Binding TypeName}"/>
                 <DataGridTextColumn
-                        Header=" Member"
-                        Binding="{Binding MemberName}"/>
+                    Header=" Member"
+                    Binding="{Binding MemberName}"/>
                 <DataGridTextColumn
-                        Header=" Kind"
-                        Binding="{Binding KindName}"
-                        ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
-                        CanUserResize="False"/>
+                    Header=" Params"
+                    Binding="{Binding ParametersCount}"/>
                 <DataGridTextColumn
-                        Header=" File"
-                        Binding="{Binding RelativePath}">
+                    Header=" Kind"
+                    Binding="{Binding KindName}"
+                    ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
+                    CanUserResize="False"/>
+                <DataGridTextColumn
+                    Header=" File"
+                    Binding="{Binding RelativePath}">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource ResourceKey=GenericDataGridCell}">
                             <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Content.Text}"/>
@@ -53,6 +62,10 @@
                         </Style>
                     </DataGridTextColumn.CellStyle>
                 </DataGridTextColumn>
+                <DataGridTextColumn
+                    Header=" SourceCode"
+                    Binding="{Binding SourceCodeDisplay}"
+                    Width="80"/>
             </DataGrid.Columns>
         </local:ResultsDataGrid>
     </Grid>

@@ -8,26 +8,32 @@ namespace XSharpPowerTools.Helpers
         public static (string, string) EvaluateSearchTerm(string searchTerm)
         {
             var memberName = string.Empty;
-            var className = string.Empty;
+            var typeName = string.Empty;
 
             searchTerm = searchTerm.Trim().Replace(':', '.');
             searchTerm = searchTerm.Replace(' ', '.');
             searchTerm = searchTerm.Replace('*', '%');
             searchTerm = searchTerm.Replace('\'', '"');
-            var keyWords = searchTerm.Split(new[] { '.' }, 2, StringSplitOptions.RemoveEmptyEntries);
-            if (keyWords.Length > 1)
+            var keyWords = searchTerm.Split(new[] { '.' }, 2);
+
+            if (searchTerm.EndsWith(".."))
             {
-                if (keyWords[keyWords.Length - 1].Equals("ctor", StringComparison.OrdinalIgnoreCase))
+                typeName = searchTerm.Substring(0, searchTerm.Length - 2);
+                memberName = ".ctor";
+            }
+            else if (keyWords.Length > 1)
+            {
+                if (keyWords[keyWords.Length - 1].Trim().Equals(".c", StringComparison.OrdinalIgnoreCase))
                     memberName = ".ctor";
-                else if (keyWords[keyWords.Length - 1].Equals("dtor", StringComparison.OrdinalIgnoreCase))
+                else if (keyWords[keyWords.Length - 1].Trim().Equals(".d", StringComparison.OrdinalIgnoreCase))
                     memberName = ".dtor";
                 else
                     memberName = keyWords[keyWords.Length - 1];
-                className = keyWords[keyWords.Length - 2];
+                typeName = keyWords[keyWords.Length - 2];
             }
             else if (searchTerm.StartsWith("."))
             {
-                memberName = searchTerm.Substring(searchTerm.TakeWhile(q => q == '.').Count());
+                memberName = searchTerm.Substring(1);
                 if (memberName.Equals("ctor", StringComparison.OrdinalIgnoreCase))
                     memberName = ".ctor";
                 else if (memberName.Equals("dtor", StringComparison.OrdinalIgnoreCase))
@@ -35,20 +41,40 @@ namespace XSharpPowerTools.Helpers
             }
             else
             {
-                className = searchTerm;
+                typeName = searchTerm;
             }
 
-            if (className.Contains('"'))
-                className = className.Replace("\"", "");
-            else if (!string.IsNullOrWhiteSpace(className) && !className.Contains("%"))
-                className = $"%{className}%";
+            if (typeName.Contains('"'))
+                typeName = typeName.Replace("\"", "");
+            else if (!string.IsNullOrWhiteSpace(typeName) && !typeName.Contains("%"))
+                typeName = $"%{typeName}%";
 
-            if (memberName.Contains('"'))
-                memberName = memberName.Replace("\"", "");
-            else if (!string.IsNullOrWhiteSpace(memberName) && !memberName.Contains("%"))
-                memberName = $"%{memberName}%";
+            if (!memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase) && !memberName.Equals(".dtor", StringComparison.OrdinalIgnoreCase))
+            {
+                if (memberName.Contains('"'))
+                    memberName = memberName.Replace("\"", "");
+                else if (!string.IsNullOrWhiteSpace(memberName) && !memberName.Contains("%"))
+                    memberName = $"%{memberName}%";
+            }
 
-            return (className, memberName);
+            return (typeName, memberName);
+        }
+
+        public static string EvaluateSearchTermLocal(string searchTerm)
+        {
+            searchTerm = searchTerm.Trim().Replace(':', '.');
+            searchTerm = searchTerm.Replace(' ', '.');
+            searchTerm = searchTerm.Replace('\'', '"');
+
+            var memberName = searchTerm.Substring(searchTerm.TakeWhile(q => q == '.').Count());
+            if (memberName.Equals("ctor", StringComparison.OrdinalIgnoreCase))
+                memberName = ".ctor";
+            else if (memberName.Equals("dtor", StringComparison.OrdinalIgnoreCase))
+                memberName = ".dtor";
+            else if (searchTerm.Equals("..."))
+                memberName = ".ctor";
+
+            return memberName;
         }
     }
 }

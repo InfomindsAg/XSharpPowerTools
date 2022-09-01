@@ -79,7 +79,15 @@ namespace XSharpPowerTools.View.Windows
         {
             if (item == null)
                 return;
-            await DocumentHelper.InsertUsingAsync(item.Namespace, XSModel);
+            await DocumentHelper.InsertUsingAsync(item.Namespace, item.TypeName, XSModel);
+            Close();
+        }
+
+        private async Task InsertNamespaceReferenceAsync(NamespaceResultItem item)
+        {
+            if (item == null)
+                return;
+            await DocumentHelper.InsertNamespaceReferenceAsync(item.Namespace, item.TypeName);
             Close();
         }
 
@@ -88,7 +96,11 @@ namespace XSharpPowerTools.View.Windows
             if (AllowReturn && e.Key == Key.Return)
             {
                 var item = ResultsDataGrid.SelectedItem as NamespaceResultItem;
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertUsingAsync(item)).FileAndForget($"{FileReference}Window_PreviewKeyDown");
+
+                if (Keyboard.Modifiers == ModifierKeys.Control)
+                    XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertNamespaceReferenceAsync(item)).FileAndForget($"{FileReference}Window_PreviewKeyDown");
+                else
+                    XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertUsingAsync(item)).FileAndForget($"{FileReference}Window_PreviewKeyDown");
             }
             else if (e.Key == Key.Down)
             {
