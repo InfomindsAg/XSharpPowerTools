@@ -106,110 +106,15 @@
                 VerticalAlignment="Center"
                 Orientation="Horizontal"
                 FlowDirection="LeftToRight">
-                <controls:FilterButton
-                    x:Name="MethodFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Method (Ctrl + 1)"
-                    HotkeyText="1"
-                    PopupText="Method"
-                    Margin="0,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}"/>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="PropertyFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Property (Ctrl + 2)"
-                    HotkeyText="2"
-                    PopupText="Property"
-                    Margin="1,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Property}"/>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="FunctionFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Function (Ctrl + 3)"
-                    HotkeyText="3"
-                    PopupText="Function"
-                    Margin="1,0,1,0">
-                    <Grid>
-                        <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Method}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <TextBlock Text="f" FontSize="9" FontWeight="DemiBold" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-                    </Grid>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="VariableFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Variable (Ctrl + 4)"
-                    HotkeyText="4"
-                    PopupText="Variable"
-                    Margin="1,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Field}"/>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="DefineFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Define (Ctrl + 5)"
-                    HotkeyText="5"
-                    PopupText="Define"
-                    Margin="1,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Constant}"/>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="EnumValueFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Enum values (Ctrl + 6)"
-                    HotkeyText="6"
-                    PopupText="Enum values"
-                    Margin="1,0,6,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Enumeration}"/>
-                </controls:FilterButton>
-                <Rectangle Height="20" Width="1.5" RadiusX="1" RadiusY="1" Style="{StaticResource GenericRectangle}" VerticalAlignment="Center"/>
-                <controls:FilterButton
-                    x:Name="ClassFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Class (Ctrl + 7)"
-                    HotkeyText="7"
-                    PopupText="Class"
-                    Margin="6,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Class}"/>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="EnumFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Enum (Ctrl + 8)"
-                    HotkeyText="8"
-                    PopupText="Enum"
-                    Margin="1,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.EnumerationPublic}"/>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="InterfaceFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Interface (Ctrl + 9)"
-                    HotkeyText="9"
-                    PopupText="Interface"
-                    Margin="1,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Interface}"/>
-                </controls:FilterButton>
-                <controls:FilterButton
-                    x:Name="StructFilterButton"
-                    VerticalAlignment="Center"
-                    Click="FilterButton_Click"
-                    ToolTip="Struct (Ctrl + 0)"
-                    HotkeyText="0"
-                    PopupText="Struct"
-                    Margin="1,0,1,0">
-                    <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.ValueType}"/>
-                </controls:FilterButton>
+                <controls:MemberFilterControl
+                    x:Name="MemberFilterGroup"
+                    Click="FilterGroup_Click"
+                    VerticalAlignment="Center"/>
+                <Rectangle Height="20" Width="1.5" RadiusX="1" RadiusY="1" Style="{StaticResource GenericRectangle}" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                <controls:TypeFilterControl
+                    x:Name="TypeFilterGroup"
+                    Click="FilterGroup_Click"
+                    VerticalAlignment="Center"/>
             </StackPanel>
             <controls:SearchTextBox
                 x:Name="SearchTextBox"

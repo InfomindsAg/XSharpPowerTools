@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.PlatformUI;
+﻿using Community.VisualStudio.Toolkit;
+using Microsoft.VisualStudio.PlatformUI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,8 +25,6 @@ namespace XSharpPowerTools.View.Windows
         const string FileReference = "vs/XSharpPowerTools/CodeBrowser/";
         readonly string SolutionDirectory;
         FilterType ActiveFilterGroup;
-        readonly Dictionary<FilterButton, TypeFilter> TypeFilterButtons;
-        readonly Dictionary<FilterButton, MemberFilter> MemberFilterButtons;
         XSModelResultType DisplayedResultType;
         string LastSearchTerm;
         volatile bool SearchActive = false;
@@ -49,24 +48,6 @@ namespace XSharpPowerTools.View.Windows
             SearchTextBox.WhenTextChanged
                 .Throttle(TimeSpan.FromMilliseconds(500))
                 .Subscribe(x => OnTextChanged());
-
-            MemberFilterButtons = new Dictionary<FilterButton, MemberFilter>
-            {
-                { MethodFilterButton, MemberFilter.Method },
-                { PropertyFilterButton, MemberFilter.Property },
-                { FunctionFilterButton, MemberFilter.Function },
-                { VariableFilterButton, MemberFilter.Variable },
-                { DefineFilterButton, MemberFilter.Define },
-                { EnumValueFilterButton, MemberFilter.EnumValue }
-            };
-
-            TypeFilterButtons = new Dictionary<FilterButton, TypeFilter>
-            {
-                { ClassFilterButton, TypeFilter.Class },
-                { EnumFilterButton, TypeFilter.Enum },
-                { InterfaceFilterButton, TypeFilter.Interface },
-                { StructFilterButton, TypeFilter.Struct }
-            };
 
             ActiveFilterGroup = FilterType.Inactive;
         }
@@ -182,43 +163,25 @@ namespace XSharpPowerTools.View.Windows
             }
             else if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
-                foreach (var typeFilterButton in TypeFilterButtons.Keys)
-                    typeFilterButton.ShowPopup();
-
-                foreach (var memberFilterButton in MemberFilterButtons.Keys)
-                    memberFilterButton.ShowPopup();
+                MemberFilterGroup.ShowPopups();
+                TypeFilterGroup.ShowPopups();
             }
             else if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                var filterButtonToToggle = e.Key switch
-                {
-                    Key.D1 => MethodFilterButton,
-                    Key.D2 => PropertyFilterButton,
-                    Key.D3 => FunctionFilterButton,
-                    Key.D4 => VariableFilterButton,
-                    Key.D5 => DefineFilterButton,
-                    Key.D6 => EnumValueFilterButton,
-                    Key.D7 => ClassFilterButton,
-                    Key.D8 => EnumFilterButton,
-                    Key.D9 => InterfaceFilterButton,
-                    Key.D0 => StructFilterButton,
-                    Key.NumPad1 => MethodFilterButton,
-                    Key.NumPad2 => PropertyFilterButton,
-                    Key.NumPad3 => FunctionFilterButton,
-                    Key.NumPad4 => VariableFilterButton,
-                    Key.NumPad5 => DefineFilterButton,
-                    Key.NumPad6 => EnumValueFilterButton,
-                    Key.NumPad7 => ClassFilterButton,
-                    Key.NumPad8 => EnumFilterButton,
-                    Key.NumPad9 => InterfaceFilterButton,
-                    Key.NumPad0 => StructFilterButton,
-                    _ => null
-                };
+                var isMemberHotKey = MemberFilterGroup.TryHandleHotKey(e.Key);
+                var isTypeHotKey = TypeFilterGroup.TryHandleHotKey(e.Key);
 
-                if (filterButtonToToggle != null)
+                if (isMemberHotKey && isTypeHotKey)
+                    return;
+
+                if (isMemberHotKey) 
                 {
-                    filterButtonToToggle.IsChecked = !filterButtonToToggle.IsChecked;
-                    FilterButton_Click(filterButtonToToggle, null);
+                    FilterGroup_Click(MemberFilterGroup, null);
+                    e.Handled = true;
+                }
+                else if (isTypeHotKey) 
+                {
+                    FilterGroup_Click(TypeFilterGroup, null);
                     e.Handled = true;
                 }
             }
@@ -228,11 +191,8 @@ namespace XSharpPowerTools.View.Windows
         {
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
-                foreach (var typeFilterButton in TypeFilterButtons.Keys)
-                    typeFilterButton.HidePopup();
-
-                foreach (var memberFilterButton in MemberFilterButtons.Keys)
-                    memberFilterButton.HidePopup();
+                MemberFilterGroup.HidePopups();
+                TypeFilterGroup.HidePopups();
             }
         }
 
@@ -251,11 +211,8 @@ namespace XSharpPowerTools.View.Windows
 
         private void Window_LostFocus(object sender, RoutedEventArgs e)
         {
-            foreach (var typeFilterButton in TypeFilterButtons.Keys)
-                typeFilterButton.HidePopup();
-
-            foreach (var memberFilterButton in MemberFilterButtons.Keys)
-                memberFilterButton.HidePopup();
+            MemberFilterGroup.HidePopups();
+            TypeFilterGroup.HidePopups();
         }
 
         private void HelpButton_Click(object sender, RoutedEventArgs e) =>
@@ -340,62 +297,37 @@ namespace XSharpPowerTools.View.Windows
 
             if (ActiveFilterGroup == FilterType.Member)
             {
-                filter.MemberFilters = new List<MemberFilter>();
-                filter.MemberFilters.AddRange(MemberFilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
+                filter.MemberFilters = MemberFilterGroup.GetFilters();
             }
             else if (ActiveFilterGroup == FilterType.Type)
             {
-                filter.TypeFilters = new List<TypeFilter>();
-                filter.TypeFilters.AddRange(TypeFilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
+                filter.TypeFilters = TypeFilterGroup.GetFilters();
             }
             else if (ActiveFilterGroup == FilterType.Inactive)
             {
-                filter.MemberFilters = new List<MemberFilter>
-                {
-                    MemberFilter.Method,
-                    MemberFilter.Property,
-                    MemberFilter.Function,
-                    MemberFilter.Variable,
-                    MemberFilter.Define
-                };
-                filter.TypeFilters = new List<TypeFilter>
-                {
-                    TypeFilter.Class,
-                    TypeFilter.Enum,
-                    TypeFilter.Interface,
-                    TypeFilter.Struct
-                };
+                filter.MemberFilters = MemberFilterGroup.GetAllFilters();
+                filter.TypeFilters = TypeFilterGroup.GetAllFilters();
             }
 
             return filter;
         }
 
-        private void FilterButton_Click(object sender, RoutedEventArgs e) 
+        private void FilterGroup_Click(object sender, RoutedEventArgs e) 
         {
-            List<FilterButton> filterGroupToDeactivate = null;
-
-            if (TypeFilterButtons.ContainsKey(sender as FilterButton))
+            if (sender == MemberFilterGroup)
             {
-                filterGroupToDeactivate = MemberFilterButtons.Keys.ToList();
-                if (TypeFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
-                    ActiveFilterGroup = FilterType.Type;
-                else
-                    ActiveFilterGroup = FilterType.Inactive;
+                TypeFilterGroup.Deactivate();
+                ActiveFilterGroup = MemberFilterGroup.IsActive() ? FilterType.Member : FilterType.Inactive;
             }
-            else if (MemberFilterButtons.ContainsKey(sender as FilterButton))
+            else if (sender == TypeFilterGroup)
             {
-                filterGroupToDeactivate = TypeFilterButtons.Keys.ToList();
-                if (MemberFilterButtons.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value))
-                    ActiveFilterGroup = FilterType.Member;
-                else
-                    ActiveFilterGroup = FilterType.Inactive;
+                MemberFilterGroup.Deactivate();
+                ActiveFilterGroup = TypeFilterGroup.IsActive() ? FilterType.Type : FilterType.Inactive;
             }
-
-            if (filterGroupToDeactivate == null || filterGroupToDeactivate.Count < 1)
+            else 
+            {
                 return;
-
-            foreach (var filterButton in filterGroupToDeactivate) 
-                filterButton.IsChecked = false;
+            }
 
             SearchTextBox.Focus();
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}FilterButton_Click");
@@ -403,17 +335,8 @@ namespace XSharpPowerTools.View.Windows
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e) 
         {
-            ClassFilterButton.IsChecked = false;
-            EnumFilterButton.IsChecked = false;
-            InterfaceFilterButton.IsChecked = false;
-            StructFilterButton.IsChecked = false;
-
-            MethodFilterButton.IsChecked = false;
-            PropertyFilterButton.IsChecked = false;
-            FunctionFilterButton.IsChecked = false;
-            VariableFilterButton.IsChecked = false;
-            DefineFilterButton.IsChecked = false;
-
+            MemberFilterGroup.Deactivate();
+            TypeFilterGroup.Deactivate();
             ActiveFilterGroup = FilterType.Inactive;
 
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}RefreshButton_Click");

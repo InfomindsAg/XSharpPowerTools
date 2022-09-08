@@ -1,0 +1,70 @@
+﻿<controls:FilterControl
+    x:TypeArguments="xspt:TypeFilter"
+    x:Class="XSharpPowerTools.View.Controls.TypeFilterControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:xspt="clr-namespace:XSharpPowerTools"
+    xmlns:controls="clr-namespace:XSharpPowerTools.View.Controls"
+    xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+    xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
+    xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
+    mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <controls:FilterButton
+            x:Name="ClassFilterButton"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Click="FilterButton_Click"
+            ToolTip="Class (Ctrl + 7)"
+            HotkeyText="7"
+            PopupText="Class"
+            Margin="0,0,1,0">
+            <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Class}"/>
+        </controls:FilterButton>
+        <controls:FilterButton
+            x:Name="EnumFilterButton"
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            Click="FilterButton_Click"
+            ToolTip="Enum (Ctrl + 8)"
+            HotkeyText="8"
+            PopupText="Enum"
+            Margin="1,0,1,0">
+            <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.EnumerationPublic}"/>
+        </controls:FilterButton>
+        <controls:FilterButton
+            x:Name="InterfaceFilterButton"
+            Grid.Column="2"
+            VerticalAlignment="Center"
+            Click="FilterButton_Click"
+            ToolTip="Interface (Ctrl + 9)"
+            HotkeyText="9"
+            PopupText="Interface"
+            Margin="1,0,1,0">
+            <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.Interface}"/>
+        </controls:FilterButton>
+        <controls:FilterButton
+            x:Name="StructFilterButton"
+            Grid.Column="3"
+            VerticalAlignment="Center"
+            Click="FilterButton_Click"
+            ToolTip="Struct (Ctrl + 0)"
+            HotkeyText="0"
+            PopupText="Struct"
+            Margin="1,0,1,0">
+            <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.ValueType}"/>
+        </controls:FilterButton>
+    </Grid>
+</controls:FilterControl>

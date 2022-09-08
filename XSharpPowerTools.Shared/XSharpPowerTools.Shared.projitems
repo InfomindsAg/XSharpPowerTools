@@ -17,6 +17,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\MemberFilterControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\Controls\ResultsDataGrid.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -26,6 +30,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\Controls\ToolWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\TypeFilterControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -56,10 +64,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml.cs">
       <DependentUpon>FilterButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml.cs">
       <DependentUpon>HelpTextControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\IResultsDataGridParent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\MemberFilterControl.xaml.cs">
+      <DependentUpon>MemberFilterControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ResultsDataGrid.xaml.cs">
       <DependentUpon>ResultsDataGrid.xaml</DependentUpon>
     </Compile>
@@ -68,6 +80,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\TypeFilterControl.xaml.cs">
+      <DependentUpon>TypeFilterControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Windows\BaseWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserResultsToolWindow.cs" />
