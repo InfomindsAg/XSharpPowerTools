@@ -45,6 +45,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Windows\CodeSuggestionsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -88,6 +92,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserResultsToolWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserWindow.xaml.cs">
       <DependentUpon>CodeBrowserWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeSuggestionsWindow.xaml.cs">
+      <DependentUpon>CodeSuggestionsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml.cs">
       <DependentUpon>FindNamespaceWindow.xaml</DependentUpon>
