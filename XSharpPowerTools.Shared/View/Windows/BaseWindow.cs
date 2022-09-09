@@ -11,25 +11,16 @@ namespace XSharpPowerTools.View.Windows
         public abstract string SearchTerm { set; }
         protected bool AllowReturn;
 
-        public BaseWindow() => 
+        public BaseWindow()
+        {
+            Community.VisualStudio.Toolkit.Themes.SetUseVsTheme(this, true);
             PreviewKeyDown += BaseWindow_PreviewKeyDown;
-
+        }
 
         private void BaseWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
                 Close();
-        }
-
-        protected override void OnDeactivated(EventArgs e)
-        {
-            base.OnDeactivated(e);
-            try
-            {
-                //Close();
-            }
-            catch (InvalidOperationException)
-            { }
         }
 
         protected abstract void OnTextChanged();

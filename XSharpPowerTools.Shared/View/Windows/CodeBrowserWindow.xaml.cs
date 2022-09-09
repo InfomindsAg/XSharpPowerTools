@@ -324,7 +324,7 @@ namespace XSharpPowerTools.View.Windows
                 MemberFilterGroup.Deactivate();
                 ActiveFilterGroup = TypeFilterGroup.IsActive() ? FilterType.Type : FilterType.Inactive;
             }
-            else 
+            else
             {
                 return;
             }
