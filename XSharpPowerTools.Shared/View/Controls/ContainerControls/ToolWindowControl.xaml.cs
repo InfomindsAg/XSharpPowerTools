@@ -67,8 +67,8 @@ namespace XSharpPowerTools.View.Controls
             }
 
             var methodFilterMenuItem = new MenuItem { Header = "Methods", IsCheckable = true, StaysOpenOnClick = true };
-            var functionFilterMenuItem = new MenuItem { Header = "Properties", IsCheckable = true, StaysOpenOnClick = true };
-            var propertyFilterMenuItem = new MenuItem { Header = "Functions", IsCheckable = true, StaysOpenOnClick = true };
+            var propertyFilterMenuItem = new MenuItem { Header = "Properties", IsCheckable = true, StaysOpenOnClick = true };
+            var functionFilterMenuItem = new MenuItem { Header = "Functions", IsCheckable = true, StaysOpenOnClick = true };
             var variableFilterMenuItem = new MenuItem { Header = "Variables", IsCheckable = true, StaysOpenOnClick = true };
             var defineFilterMenuItem = new MenuItem { Header = "Defines", IsCheckable = true, StaysOpenOnClick = true };
             var enumValueFilterMenuItem = new MenuItem { Header = "Enum values", IsCheckable = true, StaysOpenOnClick = true };
@@ -112,8 +112,8 @@ namespace XSharpPowerTools.View.Controls
             ContextMenu.Items.Add(structFilterMenuItem);
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(methodFilterMenuItem);
-            ContextMenu.Items.Add(functionFilterMenuItem);
             ContextMenu.Items.Add(propertyFilterMenuItem);
+            ContextMenu.Items.Add(functionFilterMenuItem);
             ContextMenu.Items.Add(variableFilterMenuItem);
             ContextMenu.Items.Add(defineFilterMenuItem);
             ContextMenu.Items.Add(enumValueFilterMenuItem);

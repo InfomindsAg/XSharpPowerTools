@@ -7,7 +7,6 @@
     xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
     xmlns:local="clr-namespace:XSharpPowerTools.View.Controls"
     mc:Ignorable="d" 
-    toolkit:Themes.UseVsTheme="{Binding UseVsTheme}"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch">
     <UserControl.Resources>
