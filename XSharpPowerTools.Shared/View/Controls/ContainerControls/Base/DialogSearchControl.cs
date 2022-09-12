@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using Task = System.Threading.Tasks.Task;
 
 namespace XSharpPowerTools.View.Controls
@@ -12,6 +13,7 @@ namespace XSharpPowerTools.View.Controls
     public abstract class DialogSearchControl : BaseSearchControl
     {
         protected abstract SearchTextBox SearchTextBox { get; }
+        protected bool AllowReturn;
 
         public string SearchTerm
         {
@@ -23,7 +25,9 @@ namespace XSharpPowerTools.View.Controls
         }
 
         public DialogSearchControl(DialogWindow parentWindow) : base(parentWindow) 
-        { }
+        {
+            Loaded += DialogSearchControl_Loaded;
+        }
 
         protected virtual void InitializeSearchTextBox() => 
             SearchTextBox?.WhenTextChanged
@@ -33,13 +37,16 @@ namespace XSharpPowerTools.View.Controls
         protected virtual void OnTextChanged() =>
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
 
+        protected virtual void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
+            AllowReturn = false;
+
         protected async Task DoSearchAsync()
         {
             await XSharpPowerToolsPackage.Instance.JoinableTaskFactory.SwitchToMainThreadAsync();
             await SearchAsync();
         }
 
-        private void Control_Loaded(object sender, RoutedEventArgs e)
+        private void DialogSearchControl_Loaded(object sender, RoutedEventArgs e)
         {
             if (SearchTextBox == null)
                 return;

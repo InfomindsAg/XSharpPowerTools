@@ -7,14 +7,12 @@
     xmlns:controls="clr-namespace:XSharpPowerTools.View.Controls"
     xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
     mc:Ignorable="d"
-    Loaded="Control_Loaded"
-    PreviewKeyDown="Control_PreviewKeyDown"
     ui:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource self}, Converter={StaticResource BrushToColorConverter}}">
     
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
+                <ResourceDictionary Source="../../VsThemeDictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <ui:BrushToColorConverter x:Key="BrushToColorConverter"/>
         </ResourceDictionary>
@@ -95,7 +93,7 @@
             Visibility="Collapsed"
             HorizontalAlignment="Center"/>
         <controls:ResultsDataGrid
-            x:Name="ResultsDataGrid"
+            x:Name="_resultsDataGrid"
             Margin="0,0,0,0"
             Grid.Row="3"
             Grid.Column="1">

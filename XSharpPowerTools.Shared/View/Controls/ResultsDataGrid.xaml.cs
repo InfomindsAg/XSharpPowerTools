@@ -14,7 +14,7 @@ namespace XSharpPowerTools.View.Controls
     /// </summary>
     public partial class ResultsDataGrid : DataGrid
     {
-        public new IResultsDataGridParent Parent { private get; set; }
+        public new BaseSearchControl Parent { private get; set; }
 
         public ResultsDataGrid() =>
             InitializeComponent();

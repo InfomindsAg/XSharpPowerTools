@@ -36,6 +36,8 @@ namespace XSharpPowerTools.View.Controls
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
 
+        protected override ResultsDataGrid ResultsDataGrid => _resultsDataGrid;
+
         public ToolWindowControl()
         {
             InitializeComponent();

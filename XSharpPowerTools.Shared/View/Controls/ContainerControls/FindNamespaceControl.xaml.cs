@@ -28,6 +28,7 @@ namespace XSharpPowerTools.View.Controls
         volatile bool ReDoSearch = false;
 
         protected override SearchTextBox SearchTextBox => _searchTextBox;
+        protected override ResultsDataGrid ResultsDataGrid => _resultsDataGrid;
 
         public FindNamespaceControl(DialogWindow parentWindow) : base(parentWindow)
         {
@@ -85,19 +86,6 @@ namespace XSharpPowerTools.View.Controls
             await DocumentHelper.InsertNamespaceReferenceAsync(item.Namespace, item.TypeName);
             Close();
         }
-
-        private void Control_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Return)
-                OnReturn(ResultsDataGrid.SelectedItem);
-            else if (e.Key == Key.Down)
-                ResultsDataGrid.SelectNext();
-            else if (e.Key == Key.Up)
-                ResultsDataGrid.SelectPrevious();
-        }
-
-        private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
-            AllowReturn = false;
 
         public override void OnReturn(object selectedItem)
         {

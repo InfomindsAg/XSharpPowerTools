@@ -9,11 +9,10 @@
     xmlns:controls="clr-namespace:XSharpPowerTools.View.Controls"
     xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
     xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
-    xmlns:toolkit="clr-namespace:Community.VisualStudio.Toolkit;assembly=Community.VisualStudio.Toolkit"
     mc:Ignorable="d">
     
     <UserControl.Resources>
-        <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
+        <ResourceDictionary Source="../../VsThemeDictionary.xaml"/>
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
