@@ -70,6 +70,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DocumentHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\FindNamespaceResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\CodeBrowserResultComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\CodeBrowserControl.xaml.cs">
       <DependentUpon>CodeBrowserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\DialogSearchControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml.cs">
       <DependentUpon>FilterButton.xaml</DependentUpon>
     </Compile>

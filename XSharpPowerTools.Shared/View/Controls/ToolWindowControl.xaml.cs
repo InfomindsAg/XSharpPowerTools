@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -21,7 +22,7 @@ namespace XSharpPowerTools.View.Controls
     /// </summary>
     public partial class ToolWindowControl : BaseSearchControl
     {
-        const string FileReference = "vs/XSharpPowerTools/ToolWindowControl/";
+        protected override string FileReference => "vs/XSharpPowerTools/ToolWindowControl/";
         private XSModelResultType DisplayedResultType;
         private string LastSearchTerm;
         private string SolutionDirectory;
@@ -35,21 +36,11 @@ namespace XSharpPowerTools.View.Controls
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
 
-        #region Unused
-        public override string SearchTerm
-        {
-            set => throw new NotImplementedException();
-        }
-
-        protected override void OnTextChanged() =>
-            throw new NotImplementedException();
-        #endregion
-
         public ToolWindowControl()
         {
             InitializeComponent();
             InitializeContextMenu();
-            ResultsDataGrid.Parent = this as IResultsDataGridParent;
+            ResultsDataGrid.Parent = this;
         }
 
         private void InitializeContextMenu() 
@@ -222,28 +213,10 @@ namespace XSharpPowerTools.View.Controls
             _results.Clear();
         }
 
-        public override void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e)
-        {
-            var column = e.Column;
+        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) => 
+            new CodeBrowserResultComparer(direction, column, DisplayedResultType);
 
-            var direction = (column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
-            var lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(sender.ItemsSource);
-            var comparer = new CodeBrowserResultComparer(direction, column, DisplayedResultType);
-
-            if (lcv.Count < 2000)
-            {
-                lcv.CustomSort = comparer;
-                column.SortDirection = direction;
-            }
-            else
-            {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
-                column.SortDirection = direction;
-            }
-            e.Handled = true;
-        }
-
-        protected async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
+        protected override async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
             if (string.IsNullOrWhiteSpace(LastSearchTerm))
                 return;

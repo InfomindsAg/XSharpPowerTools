@@ -21,9 +21,9 @@ namespace XSharpPowerTools.View.Controls
     /// <summary>
     /// Interaction logic for CodeBrowserControl.xaml
     /// </summary>
-    public partial class CodeBrowserControl : BaseSearchControl
+    public partial class CodeBrowserControl : DialogSearchControl
     {
-        const string FileReference = "vs/XSharpPowerTools/CodeBrowser/";
+        protected override string FileReference => "vs/XSharpPowerTools/CodeBrowser/";
         readonly string SolutionDirectory;
         FilterType ActiveFilterGroup;
         XSModelResultType DisplayedResultType;
@@ -31,14 +31,7 @@ namespace XSharpPowerTools.View.Controls
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
 
-        public override string SearchTerm
-        {
-            set
-            {
-                if (!string.IsNullOrWhiteSpace(value))
-                    SearchTextBox.Text = value;
-            }
-        }
+        protected override SearchTextBox SearchTextBox => _searchTextBox;
 
         public CodeBrowserControl(string solutionDirectory, DialogWindow parentWindow) : base(parentWindow)
         {
@@ -75,7 +68,7 @@ namespace XSharpPowerTools.View.Controls
             ResultsDataGrid.Columns[4].Width = new DataGridLength(7, DataGridLengthUnitType.Star);
         }
 
-        protected async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
+        protected override async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
             if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
                 return;
@@ -187,19 +180,6 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        private void Control_Loaded(object sender, RoutedEventArgs e)
-        {
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}Control_Loaded");
-            SearchTextBox.CaretIndex = int.MaxValue;
-            try
-            {
-                SearchTextBox.Focus();
-                SearchTextBox.SelectAll();
-            }
-            catch (Exception)
-            { }
-        }
-
         private void Control_LostFocus(object sender, RoutedEventArgs e)
         {
             MemberFilterGroup.HidePopups();
@@ -208,15 +188,6 @@ namespace XSharpPowerTools.View.Controls
 
         private void HelpButton_Click(object sender, RoutedEventArgs e) =>
             HelpControl.Visibility = HelpControl.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
-
-        protected override void OnTextChanged() =>
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
-
-        private async Task DoSearchAsync()
-        {
-            await XSharpPowerToolsPackage.Instance.JoinableTaskFactory.SwitchToMainThreadAsync();
-            await SearchAsync();
-        }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
             AllowReturn = false;
@@ -258,26 +229,8 @@ namespace XSharpPowerTools.View.Controls
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
 
-        public override void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e)
-        {
-            var column = e.Column;
-
-            var direction = (column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
-            var lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(sender.ItemsSource);
-            var comparer = new CodeBrowserResultComparer(direction, column, DisplayedResultType);
-
-            if (lcv.Count < 100)
-            {
-                lcv.CustomSort = comparer;
-                column.SortDirection = direction;
-            }
-            else
-            {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
-                column.SortDirection = direction;
-            }
-            e.Handled = true;
-        }
+        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
+            new CodeBrowserResultComparer(direction, column, DisplayedResultType);
 
         private Filter GetFilter()
         {

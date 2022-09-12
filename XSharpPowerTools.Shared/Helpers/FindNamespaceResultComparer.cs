@@ -7,7 +7,7 @@ using System.Windows.Controls;
 
 namespace XSharpPowerTools.Helpers
 {
-    public class FindNamespaceResultComparer : IComparer
+    public class FindNamespaceResultComparer : IResultComparer
     {
         private readonly ListSortDirection Direction;
         private readonly IFindNamespaceCompareHelper CompareHelper;

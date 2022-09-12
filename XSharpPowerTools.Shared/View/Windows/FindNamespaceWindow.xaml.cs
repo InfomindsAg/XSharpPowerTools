@@ -19,8 +19,7 @@ namespace XSharpPowerTools.View.Windows
     /// </summary>
     public partial class FindNamespaceWindow : BaseWindow
     {
-        const string FileReference = "vs/XSharpPowerTools/FindNamespace/";
-        readonly BaseSearchControl SearchControl;
+        readonly DialogSearchControl SearchControl;
 
         public override string SearchTerm
         {

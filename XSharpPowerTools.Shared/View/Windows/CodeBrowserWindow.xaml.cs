@@ -22,8 +22,7 @@ namespace XSharpPowerTools.View.Windows
     /// </summary>
     public partial class CodeBrowserWindow : BaseWindow
     {
-        const string FileReference = "vs/XSharpPowerTools/CodeBrowser/";
-        readonly BaseSearchControl SearchControl;
+        readonly DialogSearchControl SearchControl;
 
         public override string SearchTerm
         {

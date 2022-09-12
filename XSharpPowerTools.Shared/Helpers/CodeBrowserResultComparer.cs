@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace XSharpPowerTools.Helpers
 {
-    public class CodeBrowserResultComparer : IComparer
+    public class CodeBrowserResultComparer : IResultComparer
     {
         private readonly ListSortDirection Direction;
         private readonly XSModelResultType ResultType;
