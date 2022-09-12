@@ -7,7 +7,7 @@ namespace XSharpPowerTools.View.Windows
 {
     public abstract class BaseWindow : DialogWindow
     {
-        public XSModel XSModel { get; set; }
+        public virtual XSModel XSModel { get; set; }
         public abstract string SearchTerm { set; }
         protected bool AllowReturn;
 
@@ -23,6 +23,6 @@ namespace XSharpPowerTools.View.Windows
                 Close();
         }
 
-        protected abstract void OnTextChanged();
+        //protected abstract void OnTextChanged();
     }
 }

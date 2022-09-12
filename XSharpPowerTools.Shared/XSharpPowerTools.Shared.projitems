@@ -9,7 +9,15 @@
     <Import_RootNamespace>XSharpPowerTools</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\CodeBrowserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\FindNamespaceControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -65,8 +73,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\BaseSearchControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\CodeBrowserControl.xaml.cs">
+      <DependentUpon>CodeBrowserControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml.cs">
       <DependentUpon>FilterButton.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FindNamespaceControl.xaml.cs">
+      <DependentUpon>FindNamespaceControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml.cs">
