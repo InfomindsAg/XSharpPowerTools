@@ -18,13 +18,13 @@ using static Microsoft.VisualStudio.Shell.VsTaskLibraryHelper;
 namespace XSharpPowerTools.View.Windows
 {
     /// <summary>
-    /// Interaction logic for CodeBrowserWindow.xaml
+    /// Interaction logic for DialogSearchWindow.xaml
     /// </summary>
-    public partial class CodeBrowserWindow : BaseWindow
+    public partial class DialogSearchWindow : DialogWindow
     {
-        readonly DialogSearchControl SearchControl;
+        protected DialogSearchControl SearchControl;
 
-        public override string SearchTerm
+        public string SearchTerm
         {
             set
             {
@@ -33,7 +33,7 @@ namespace XSharpPowerTools.View.Windows
             }
         }
 
-        public override XSModel XSModel
+        public XSModel XSModel
         {
             get => SearchControl.XSModel;
             set
@@ -43,10 +43,16 @@ namespace XSharpPowerTools.View.Windows
             }
         }
 
-        public CodeBrowserWindow(string solutionDirectory) : base()
+        public DialogSearchWindow()
         {
+            Themes.SetUseVsTheme(this, true);
             InitializeComponent();
-            SearchControl = new CodeBrowserControl(solutionDirectory, this);
+            PreviewKeyDown += Window_PreviewKeyDown;
+        }
+
+        public void ShowControl(DialogSearchControl searchControl) 
+        {
+            SearchControl = searchControl;
             WindowBorder.Child = SearchControl;
         }
 
@@ -54,6 +60,12 @@ namespace XSharpPowerTools.View.Windows
         {
             if (e.ChangedButton == MouseButton.Left)
                 DragMove();
+        }
+
+        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+                Close();
         }
     }
 }

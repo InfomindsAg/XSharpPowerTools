@@ -16,14 +16,14 @@ namespace XSharpPowerTools.Commands
     {
         const string FileReference = "vs/XSharpPowerTools/CommandBase/";
 
-        public static async Task ShowBaseWindowAsync(BaseWindow window)
+        public static async Task ShowDialogSearchWindowAsync(DialogSearchWindow window)
         {
             var solution = await VS.Solutions.GetCurrentSolutionAsync();
             
             if (solution != null)
             {
                 var solutionDirectory = Path.GetDirectoryName(solution.FullPath);
-                var dbFile = solutionDirectory + @"\.vs\" + Path.GetFileNameWithoutExtension(solution.FullPath) + @"\X#Model.xsdb";
+                var dbFile = $@"{solutionDirectory}\.vs\{Path.GetFileNameWithoutExtension(solution.FullPath)}\X#Model.xsdb";
                 if (File.Exists(dbFile))
                 {
                     window.XSModel = new XSModel(dbFile);

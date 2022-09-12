@@ -49,15 +49,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)View\Windows\CodeSuggestionsWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)View\Windows\DialogSearchWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -105,16 +97,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\TypeFilterControl.xaml.cs">
       <DependentUpon>TypeFilterControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\BaseWindow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserResultsToolWindow.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserWindow.xaml.cs">
-      <DependentUpon>CodeBrowserWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeSuggestionsWindow.xaml.cs">
-      <DependentUpon>CodeSuggestionsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml.cs">
-      <DependentUpon>FindNamespaceWindow.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\DialogSearchWindow.xaml.cs">
+      <DependentUpon>DialogSearchWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)XSharpPowerToolsPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XSModel.cs" />
