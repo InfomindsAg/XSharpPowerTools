@@ -39,7 +39,7 @@ namespace XSharpPowerTools.View.Controls
             set => SetValue(HotkeyTextProperty, value);
         }
 
-        public bool? IsChecked 
+        public bool? IsChecked
         {
             get => FilterToggleButton.IsChecked;
             set => FilterToggleButton.IsChecked = value;
@@ -51,7 +51,7 @@ namespace XSharpPowerTools.View.Controls
             DataContext = this;
         }
 
-        protected void RaiseClickEvent() 
+        protected void RaiseClickEvent()
         {
             var newEventArgs = new RoutedEventArgs(FilterButton.ClickEvent);
             RaiseEvent(newEventArgs);
@@ -59,11 +59,11 @@ namespace XSharpPowerTools.View.Controls
 
         protected void FilterButton_Click(object sender, RoutedEventArgs e) =>
             RaiseClickEvent();
-    
-        public void ShowPopup() => 
+
+        public void ShowPopup() =>
             HotkeyPopup.IsOpen = true;
 
-        public void HidePopup() => 
+        public void HidePopup() =>
             HotkeyPopup.IsOpen = false;
     }
 }

@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using XSharpPowerTools.Helpers;
 using XSharpPowerTools.View.Windows;
@@ -19,7 +18,7 @@ namespace XSharpPowerTools.Commands
         public static async Task ShowDialogSearchWindowAsync(DialogSearchWindow window)
         {
             var solution = await VS.Solutions.GetCurrentSolutionAsync();
-            
+
             if (solution != null)
             {
                 var solutionDirectory = Path.GetDirectoryName(solution.FullPath);

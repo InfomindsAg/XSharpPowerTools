@@ -114,7 +114,7 @@ namespace XSharpPowerTools.Helpers
             }
         }
 
-        public static async Task InsertNamespaceReferenceAsync(string namespaceRef, string type) 
+        public static async Task InsertNamespaceReferenceAsync(string namespaceRef, string type)
         {
             var documentView = await VS.Documents.GetActiveDocumentViewAsync();
             var fileName = documentView?.FilePath;
@@ -170,8 +170,8 @@ namespace XSharpPowerTools.Helpers
 
             var lengthSum = 0;
             var caretWord = string.Empty;
-            foreach (var word in words) 
-            { 
+            foreach (var word in words)
+            {
                 if (lengthSum <= relativeCaretPosition && lengthSum + word.Length >= relativeCaretPosition && !Regex.IsMatch(word, @"\W"))
                 {
                     caretWord = word;
@@ -183,7 +183,7 @@ namespace XSharpPowerTools.Helpers
             return caretWord;
         }
 
-        private static int GetRelativeCaretWordPosition(ITextSnapshotLine caretLine, int caretPosition) 
+        private static int GetRelativeCaretWordPosition(ITextSnapshotLine caretLine, int caretPosition)
         {
             var lineText = caretLine?.GetText();
 

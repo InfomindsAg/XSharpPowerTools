@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows.Controls;
 
 namespace XSharpPowerTools.Helpers
@@ -24,7 +19,7 @@ namespace XSharpPowerTools.Helpers
             ResultType = resultType;
 
             ColumnIdentifier = column.Header.ToString().Trim();
-            if (ColumnIdentifier.Equals("Type", StringComparison.OrdinalIgnoreCase)) 
+            if (ColumnIdentifier.Equals("Type", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new TypeCompareHelper();
                 SqlOrderBy = ResultType == XSModelResultType.Type
@@ -55,7 +50,7 @@ namespace XSharpPowerTools.Helpers
             }
         }
 
-        public int Compare(object x, object y) 
+        public int Compare(object x, object y)
         {
             var retVal = 0;
             if (x == null && y == null)
@@ -64,7 +59,7 @@ namespace XSharpPowerTools.Helpers
                 retVal = -1;
             else if (y == null)
                 retVal = 1;
-            else if (x is XSModelResultItem a && y is XSModelResultItem b) 
+            else if (x is XSModelResultItem a && y is XSModelResultItem b)
                 retVal = CompareHelper.ExecuteComparison(a, b);
 
             if (Direction == ListSortDirection.Descending)
@@ -95,7 +90,7 @@ namespace XSharpPowerTools.Helpers
 
         private class KindCompareHelper : ICodeBrowserCompareHelper
         {
-            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) => 
+            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.Kind.CompareTo(b.Kind);
         }
 

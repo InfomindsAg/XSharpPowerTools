@@ -1,11 +1,7 @@
-﻿using Microsoft.VisualStudio.Experimentation;
-using Microsoft.VisualStudio.Shell;
-using System;
+﻿using Microsoft.VisualStudio.Shell;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Common;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -45,7 +41,7 @@ namespace XSharpPowerTools.View.Controls
             ResultsDataGrid.Parent = this;
         }
 
-        private void InitializeContextMenu() 
+        private void InitializeContextMenu()
         {
             var classFilterMenuItem = new MenuItem { Header = "Classes", IsCheckable = true, StaysOpenOnClick = true };
             var enumFilterMenuItem = new MenuItem { Header = "Enums", IsCheckable = true, StaysOpenOnClick = true };
@@ -121,15 +117,15 @@ namespace XSharpPowerTools.View.Controls
             ContextMenu.Items.Add(applyChanges);
         }
 
-        private void SearchAgain_Click(object sender, RoutedEventArgs e) 
+        private void SearchAgain_Click(object sender, RoutedEventArgs e)
         {
             var filter = new Filter { Type = FilterType.Inactive };
             SetFilter(filter);
             ApplyChanges_ContextMenu_Click(sender, e);
         }
 
-        private void ContextMenu_Closed(object sender, RoutedEventArgs e) 
-        { 
+        private void ContextMenu_Closed(object sender, RoutedEventArgs e)
+        {
             if (FiltersChanged)
                 ApplyChanges_ContextMenu_Click(sender, e);
         }
@@ -151,7 +147,7 @@ namespace XSharpPowerTools.View.Controls
             SolutionDirectory = solutionDirectory;
             SetFilter(filter);
 
-            if (results == null || results.Count >= 100 || results.Count < 1) 
+            if (results == null || results.Count >= 100 || results.Count < 1)
             {
                 if (LastSearchTerm.StartsWith("..") || LastSearchTerm.StartsWith("::"))
                 {
@@ -215,7 +211,7 @@ namespace XSharpPowerTools.View.Controls
             _results.Clear();
         }
 
-        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) => 
+        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
             new CodeBrowserResultComparer(direction, column, DisplayedResultType);
 
         protected override async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
@@ -265,13 +261,13 @@ namespace XSharpPowerTools.View.Controls
                         }
                     }
 
-                    if (results.Count < 1) 
+                    if (results.Count < 1)
                     {
-                        NoResultsLabel.Visibility =  Visibility.Visible;
+                        NoResultsLabel.Visibility = Visibility.Visible;
                     }
-                    else 
+                    else
                     {
-                        NoResultsLabel.Visibility =  Visibility.Collapsed;
+                        NoResultsLabel.Visibility = Visibility.Collapsed;
                         ResultsDataGrid.SelectedItem = results.FirstOrDefault();
                     }
                 } while (ReDoSearch);
@@ -282,7 +278,7 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        public void Grouping_ContextMenu_Click(object sender, RoutedEventArgs e) 
+        public void Grouping_ContextMenu_Click(object sender, RoutedEventArgs e)
         {
             var cvResults = CollectionViewSource.GetDefaultView(ResultsDataGrid.ItemsSource);
             if (cvResults != null && cvResults.CanGroup)
@@ -336,7 +332,7 @@ namespace XSharpPowerTools.View.Controls
             return filter;
         }
 
-        private void SetFilter(Filter filter) 
+        private void SetFilter(Filter filter)
         {
             foreach (var typeMenuItem in TypeMenuItems.Values)
                 typeMenuItem.IsChecked = false;
@@ -358,7 +354,7 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        public void TypeFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
+        public void TypeFilter_ContextMenu_Checked(object sender, RoutedEventArgs e)
         {
             FiltersChanged = true;
             ActiveFilterGroup = FilterType.Type;
@@ -366,7 +362,7 @@ namespace XSharpPowerTools.View.Controls
                 memberMenuItem.IsChecked = false;
         }
 
-        public void MemberFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
+        public void MemberFilter_ContextMenu_Checked(object sender, RoutedEventArgs e)
         {
             FiltersChanged = true;
             ActiveFilterGroup = FilterType.Member;
@@ -374,7 +370,7 @@ namespace XSharpPowerTools.View.Controls
                 typeMenuItem.IsChecked = false;
         }
 
-        public void Filter_ContextMenu_Unchecked(object sender, RoutedEventArgs e) 
+        public void Filter_ContextMenu_Unchecked(object sender, RoutedEventArgs e)
         {
             FiltersChanged = true;
             if (TypeMenuItems.All(q => !q.Value.IsChecked) && MemberMenuItems.All(q => !q.Value.IsChecked))

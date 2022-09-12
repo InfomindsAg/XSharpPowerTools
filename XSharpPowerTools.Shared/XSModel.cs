@@ -1,13 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
-using Microsoft.VisualStudio.PlatformUI.OleComponentSupport;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using XSharpPowerTools.Helpers;
 
 namespace XSharpPowerTools
@@ -32,7 +29,7 @@ namespace XSharpPowerTools
         public int Kind { get; set; }
 
         private string _typeName;
-        public string TypeName 
+        public string TypeName
         {
             get => _typeName;
             set => _typeName = "(Global Scope)".Equals(value?.Trim(), StringComparison.OrdinalIgnoreCase) ? string.Empty : value?.Trim();
@@ -43,13 +40,13 @@ namespace XSharpPowerTools
 
         public string ParametersCount
         {
-            get 
+            get
             {
                 if (!KindsWithParams.Contains(Kind) || !SourceCode.Contains("(") || !SourceCode.Contains(")"))
                     return string.Empty;
 
                 var paramDeclaration = SourceCode.Substring(SourceCode.IndexOf("(") + 1, SourceCode.IndexOf(")") - SourceCode.IndexOf("(") - 1);
-                
+
                 var paramCount = string.IsNullOrWhiteSpace(paramDeclaration) ? 0 : 1;
                 paramCount += paramDeclaration.Count(q => q == ',');
 
@@ -59,15 +56,15 @@ namespace XSharpPowerTools
 
         public string SourceCodeDisplay
         {
-            get 
+            get
             {
                 if (string.IsNullOrEmpty(SourceCode))
                     return string.Empty;
 
                 var sourceCodeLines = SourceCode.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
-                return sourceCodeLines.Length > 1 
-                    ? string.Join(" ", sourceCodeLines.Select(q => q.Trim())) 
+                return sourceCodeLines.Length > 1
+                    ? string.Join(" ", sourceCodeLines.Select(q => q.Trim()))
                     : SourceCode.Trim();
             }
         }
@@ -160,8 +157,8 @@ namespace XSharpPowerTools
             else
             {
                 var (typeName, memberName) = SearchTermHelper.EvaluateSearchTerm(searchTerm);
-                                    
-                if (!filtersApplied) 
+
+                if (!filtersApplied)
                 {
                     if (string.IsNullOrWhiteSpace(memberName))
                         filter.Type = FilterType.Type;
@@ -171,7 +168,7 @@ namespace XSharpPowerTools
 
                 var (results, resultType) = await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit);
 
-                if (!filtersApplied && filter.Type == FilterType.Type && results.Count < 1) 
+                if (!filtersApplied && filter.Type == FilterType.Type && results.Count < 1)
                 {
                     filter.Type = FilterType.Member;
                     (results, resultType) = await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit);
@@ -220,28 +217,28 @@ namespace XSharpPowerTools
 
             if (searchingForMember)
             {
-                if (!string.IsNullOrWhiteSpace(currentFile)) 
+                if (!string.IsNullOrWhiteSpace(currentFile))
                 {
-                    if (caretPosition < 0) 
+                    if (caretPosition < 0)
                     {
                         command.CommandText += @$" AND LOWER(TRIM(FileName)) = $fileName";
                         command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
                     }
-                    else 
+                    else
                     {
                         var idType = await GetContaingClassAsync(currentFile, caretPosition);
                         if (idType > 0)
                         {
                             command.CommandText += @$" AND IdType = {idType}";
                         }
-                        else 
+                        else
                         {
                             command.CommandText += @$" AND LOWER(TRIM(FileName)) = $fileName";
                             command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
                         }
                     }
                 }
-                else if (!string.IsNullOrWhiteSpace(typeName)) 
+                else if (!string.IsNullOrWhiteSpace(typeName))
                 {
                     command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $typeName  ESCAPE '\'";
                     command.Parameters.AddWithValue("$typeName", typeName.Trim().ToLower());
@@ -278,7 +275,7 @@ namespace XSharpPowerTools
                         resultItem.MemberName = reader.GetString(0);
                         resultItem.TypeName = reader.GetString(6);
                     }
-                    else 
+                    else
                     {
                         resultItem.TypeName = reader.GetString(0);
                         resultItem.MemberName = string.Empty;
@@ -362,7 +359,7 @@ namespace XSharpPowerTools
             return results;
         }
 
-        public async Task<bool> FileContainsUsingAsync(string file, string usingToInsert) 
+        public async Task<bool> FileContainsUsingAsync(string file, string usingToInsert)
         {
             if (string.IsNullOrWhiteSpace(file) || string.IsNullOrWhiteSpace(usingToInsert))
                 return false;

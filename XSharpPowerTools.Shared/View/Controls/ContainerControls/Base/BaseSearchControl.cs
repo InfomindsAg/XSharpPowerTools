@@ -1,10 +1,6 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -15,15 +11,26 @@ namespace XSharpPowerTools.View.Controls
 {
     public abstract class BaseSearchControl : UserControl
     {
+
+        /* Unmerged change from project 'XSharpPowerTools.2022'
+        Before:
+                public XSModel XSModel { get; set; }
+
+                protected abstract ResultsDataGrid ResultsDataGrid { get; }
+        After:
+                public XSModel XSModel { get; set; }
+
+                protected abstract ResultsDataGrid ResultsDataGrid { get; }
+        */
         public XSModel XSModel { get; set; }
-        
+
         protected abstract ResultsDataGrid ResultsDataGrid { get; }
         protected abstract string FileReference { get; }
 
         protected DialogWindow ParentWindow;
 
-        public BaseSearchControl(DialogWindow parentWindow = null) 
-        { 
+        public BaseSearchControl(DialogWindow parentWindow = null)
+        {
             Community.VisualStudio.Toolkit.Themes.SetUseVsTheme(this, true);
             ParentWindow = parentWindow;
             PreviewKeyDown += BaseSearchControl_PreviewKeyDown;
@@ -43,7 +50,7 @@ namespace XSharpPowerTools.View.Controls
                 ResultsDataGrid.SelectPrevious();
         }
 
-        public virtual void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) 
+        public virtual void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e)
         {
             var column = e.Column;
 
@@ -64,7 +71,7 @@ namespace XSharpPowerTools.View.Controls
             e.Handled = true;
         }
 
-        protected void Close() => 
+        protected void Close() =>
             ParentWindow?.Close();
     }
 }

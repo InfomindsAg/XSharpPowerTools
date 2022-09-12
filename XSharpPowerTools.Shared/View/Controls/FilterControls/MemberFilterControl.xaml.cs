@@ -1,10 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Markup;
 
 namespace XSharpPowerTools.View.Controls
 {
@@ -27,7 +23,7 @@ namespace XSharpPowerTools.View.Controls
             InitializeDictionaries();
         }
 
-        protected override void InitializeDictionaries() 
+        protected override void InitializeDictionaries()
         {
             FilterButtons = new Dictionary<FilterButton, MemberFilter>
             {

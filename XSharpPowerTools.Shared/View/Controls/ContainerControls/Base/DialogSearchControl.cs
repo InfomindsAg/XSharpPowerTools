@@ -1,9 +1,7 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using System;
-using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Task = System.Threading.Tasks.Task;
@@ -24,12 +22,12 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        public DialogSearchControl(DialogWindow parentWindow) : base(parentWindow) 
+        public DialogSearchControl(DialogWindow parentWindow) : base(parentWindow)
         {
             Loaded += DialogSearchControl_Loaded;
         }
 
-        protected virtual void InitializeSearchTextBox() => 
+        protected virtual void InitializeSearchTextBox() =>
             SearchTextBox?.WhenTextChanged
                 .Throttle(TimeSpan.FromMilliseconds(500))
                 .Subscribe(x => OnTextChanged());

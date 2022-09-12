@@ -41,7 +41,7 @@ namespace XSharpPowerTools
         public string GetFilterSql(string memberName = null)
         {
             var sb = new StringBuilder().Append('(');
-            if (Type == FilterType.Member) 
+            if (Type == FilterType.Member)
             {
                 if (memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase))
                     return "Kind = 3";
@@ -59,7 +59,7 @@ namespace XSharpPowerTools
                 else
                     sb.Length = sb.Length - 4;
             }
-            else if (Type == FilterType.Type) 
+            else if (Type == FilterType.Type)
             {
                 foreach (var filter in TypeFilters)
                 {

@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
 using System.Windows.Controls;
 
 namespace XSharpPowerTools.Helpers
@@ -30,7 +27,7 @@ namespace XSharpPowerTools.Helpers
             }
         }
 
-        public int Compare(object x, object y) 
+        public int Compare(object x, object y)
         {
             var retVal = 0;
             if (x == null && y == null)
@@ -57,7 +54,7 @@ namespace XSharpPowerTools.Helpers
 
         private class TypeCompareHelper : IFindNamespaceCompareHelper
         {
-            public int ExecuteComparison(NamespaceResultItem a, NamespaceResultItem b) => 
+            public int ExecuteComparison(NamespaceResultItem a, NamespaceResultItem b) =>
                 a.TypeName.Length == b.TypeName.Length
                     ? a.TypeName.CompareTo(b.TypeName)
                     : a.TypeName.Length.CompareTo(b.TypeName.Length);
@@ -65,7 +62,7 @@ namespace XSharpPowerTools.Helpers
 
         private class NamespaceCompareHelper : IFindNamespaceCompareHelper
         {
-            public int ExecuteComparison(NamespaceResultItem a, NamespaceResultItem b) => 
+            public int ExecuteComparison(NamespaceResultItem a, NamespaceResultItem b) =>
                 a.Namespace.Length == b.Namespace.Length
                     ? a.Namespace.CompareTo(b.Namespace)
                     : a.Namespace.Length.CompareTo(b.Namespace.Length);

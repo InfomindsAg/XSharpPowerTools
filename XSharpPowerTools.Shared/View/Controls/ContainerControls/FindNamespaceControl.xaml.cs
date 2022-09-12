@@ -1,19 +1,12 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
-using System.Windows.Markup;
 using XSharpPowerTools.Helpers;
-using XSharpPowerTools.View.Windows;
 using Task = System.Threading.Tasks.Task;
 
 namespace XSharpPowerTools.View.Controls

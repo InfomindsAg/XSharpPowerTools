@@ -1,10 +1,5 @@
-﻿using Microsoft.VisualStudio.Shell;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.Linq;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Forms;
-using XSharpPowerTools.Helpers;
 using DataGrid = System.Windows.Controls.DataGrid;
 
 namespace XSharpPowerTools.View.Controls

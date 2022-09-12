@@ -1,8 +1,5 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -39,7 +36,7 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        private void CodeSearchControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e) 
+        private void CodeSearchControl_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (MemberFilterGroup == null || TypeFilterGroup == null)
             {

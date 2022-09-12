@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,7 +28,7 @@ namespace XSharpPowerTools.View.Controls
             RaiseEvent(newEventArgs);
         }
 
-        public bool TryHandleHotKey(Key key) 
+        public bool TryHandleHotKey(Key key)
         {
             if (HotKeys == null)
                 return false;
