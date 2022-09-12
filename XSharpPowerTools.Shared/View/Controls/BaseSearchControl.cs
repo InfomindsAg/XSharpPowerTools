@@ -14,7 +14,7 @@ namespace XSharpPowerTools.View.Controls
         protected bool AllowReturn;
         protected DialogWindow ParentWindow;
 
-        public BaseSearchControl(DialogWindow parentWindow) 
+        public BaseSearchControl(DialogWindow parentWindow = null) 
         { 
             Community.VisualStudio.Toolkit.Themes.SetUseVsTheme(this, true);
             ParentWindow = parentWindow;

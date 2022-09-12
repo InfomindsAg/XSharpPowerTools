@@ -19,28 +19,41 @@ namespace XSharpPowerTools.View.Controls
     /// <summary>
     /// Interaction logic for ToolWindowControl.xaml
     /// </summary>
-    public partial class ToolWindowControl : UserControl, IResultsDataGridParent
+    public partial class ToolWindowControl : BaseSearchControl
     {
         const string FileReference = "vs/XSharpPowerTools/ToolWindowControl/";
-        private XSModel XSModel;
         private XSModelResultType DisplayedResultType;
-        private string SearchTerm;
+        private string LastSearchTerm;
         private string SolutionDirectory;
         private FilterType ActiveFilterGroup;
         private bool FiltersChanged = false;
 
-        private readonly Dictionary<TypeFilter, MenuItem> TypeMenuItems;
-        private readonly Dictionary<MemberFilter, MenuItem> MemberMenuItems;
-        private readonly MenuItem GroupingMenuItem;
+        private Dictionary<TypeFilter, MenuItem> TypeMenuItems;
+        private Dictionary<MemberFilter, MenuItem> MemberMenuItems;
+        private MenuItem GroupingMenuItem;
 
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
 
+        #region Unused
+        public override string SearchTerm
+        {
+            set => throw new NotImplementedException();
+        }
+
+        protected override void OnTextChanged() =>
+            throw new NotImplementedException();
+        #endregion
+
         public ToolWindowControl()
         {
             InitializeComponent();
-            ResultsDataGrid.Parent = this;
+            InitializeContextMenu();
+            ResultsDataGrid.Parent = this as IResultsDataGridParent;
+        }
 
+        private void InitializeContextMenu() 
+        {
             var classFilterMenuItem = new MenuItem { Header = "Classes", IsCheckable = true, StaysOpenOnClick = true };
             var enumFilterMenuItem = new MenuItem { Header = "Enums", IsCheckable = true, StaysOpenOnClick = true };
             var interfaceFilterMenuItem = new MenuItem { Header = "Interfaces", IsCheckable = true, StaysOpenOnClick = true };
@@ -128,7 +141,7 @@ namespace XSharpPowerTools.View.Controls
                 ApplyChanges_ContextMenu_Click(sender, e);
         }
 
-        public void OnReturn(object selectedItem)
+        public override void OnReturn(object selectedItem)
         {
             if (selectedItem == null)
                 return;
@@ -141,13 +154,13 @@ namespace XSharpPowerTools.View.Controls
         public async Task UpdateToolWindowContentsAsync(XSModel xsModel, Filter filter, string searchTerm, string solutionDirectory, List<XSModelResultItem> results, XSModelResultType resultType)
         {
             XSModel = xsModel;
-            SearchTerm = searchTerm;
+            LastSearchTerm = searchTerm;
             SolutionDirectory = solutionDirectory;
             SetFilter(filter);
 
             if (results == null || results.Count >= 100 || results.Count < 1) 
             {
-                if (SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::"))
+                if (LastSearchTerm.StartsWith("..") || LastSearchTerm.StartsWith("::"))
                 {
                     var currentFile = await DocumentHelper.GetCurrentFileAsync();
                     var caretPosition = await DocumentHelper.GetCaretPositionAsync();
@@ -209,7 +222,7 @@ namespace XSharpPowerTools.View.Controls
             _results.Clear();
         }
 
-        public void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e)
+        public override void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e)
         {
             var column = e.Column;
 
@@ -232,7 +245,7 @@ namespace XSharpPowerTools.View.Controls
 
         protected async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
-            if (string.IsNullOrWhiteSpace(SearchTerm))
+            if (string.IsNullOrWhiteSpace(LastSearchTerm))
                 return;
 
             if (SearchActive)
@@ -251,15 +264,15 @@ namespace XSharpPowerTools.View.Controls
 
                     List<XSModelResultItem> results;
                     XSModelResultType resultType;
-                    if (SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::"))
+                    if (LastSearchTerm.StartsWith("..") || LastSearchTerm.StartsWith("::"))
                     {
                         var currentFile = await DocumentHelper.GetCurrentFileAsync();
                         var caretPosition = await DocumentHelper.GetCaretPositionAsync();
-                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
+                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(LastSearchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
                     }
                     else
                     {
-                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, 2000, direction, orderBy);
+                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(LastSearchTerm, GetFilter(), SolutionDirectory, 2000, direction, orderBy);
                     }
 
                     SetTableColumns(resultType);
