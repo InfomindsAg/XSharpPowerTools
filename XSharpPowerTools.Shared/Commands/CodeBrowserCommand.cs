@@ -22,7 +22,7 @@ namespace XSharpPowerTools.Commands
             if (solution != null)
             {
                 var solutionDirectory = Path.GetDirectoryName(solution.FullPath);
-                var window = new DialogSearchWindow();
+                var window = new DialogSearchWindow("X# Code Browser");
                 var control = new CodeBrowserControl(solutionDirectory, window);
                 window.ShowControl(control);
                 await CommandBase.ShowDialogSearchWindowAsync(window);

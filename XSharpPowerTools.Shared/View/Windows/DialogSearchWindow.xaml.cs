@@ -31,10 +31,11 @@ namespace XSharpPowerTools.View.Windows
             }
         }
 
-        public DialogSearchWindow()
+        public DialogSearchWindow(string title)
         {
             Themes.SetUseVsTheme(this, true);
             InitializeComponent();
+            Title = title;
             PreviewKeyDown += Window_PreviewKeyDown;
         }
 
