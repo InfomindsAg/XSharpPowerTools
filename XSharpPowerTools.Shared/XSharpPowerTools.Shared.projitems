@@ -13,6 +13,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\CodeSuggestionsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\FilterButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -56,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Commands\CodeBrowserCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\CodeSuggestionsCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\FindNamespaceCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Filter.cs" />
@@ -72,6 +77,9 @@
       <DependentUpon>CodeBrowserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\Base\DialogSearchControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\CodeSuggestionsControl.xaml.cs">
+      <DependentUpon>CodeSuggestionsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\FilterButton.xaml.cs">
       <DependentUpon>FilterButton.xaml</DependentUpon>
     </Compile>

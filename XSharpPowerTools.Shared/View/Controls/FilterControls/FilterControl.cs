@@ -36,8 +36,11 @@ namespace XSharpPowerTools.View.Controls
             if (HotKeys.ContainsKey(key))
             {
                 var filterButtonToToggle = HotKeys[key];
-                filterButtonToToggle.IsChecked = !filterButtonToToggle.IsChecked;
-                return true;
+                if (filterButtonToToggle.Visibility == Visibility.Visible) 
+                {
+                    filterButtonToToggle.IsChecked = !filterButtonToToggle.IsChecked;
+                    return true;
+                }
             }
             return false;
         }

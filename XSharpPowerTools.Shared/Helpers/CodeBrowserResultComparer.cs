@@ -41,6 +41,11 @@ namespace XSharpPowerTools.Helpers
                 CompareHelper = new FileCompareHelper();
                 SqlOrderBy = "FileName";
             }
+            else if (ColumnIdentifier.Equals("Namespace", StringComparison.OrdinalIgnoreCase))
+            {
+                CompareHelper = new NamespaceCompareHelper();
+                SqlOrderBy = "Namespace";
+            }
             else
             {
                 CompareHelper = ResultType == XSModelResultType.Type
@@ -97,6 +102,12 @@ namespace XSharpPowerTools.Helpers
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.ContainingFile.CompareTo(b.ContainingFile);
+        }
+
+        private class NamespaceCompareHelper : ICodeBrowserCompareHelper
+        {
+            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
+                a.Namespace.CompareTo(b.Namespace);
         }
 
         #endregion

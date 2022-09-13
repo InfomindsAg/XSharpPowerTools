@@ -35,9 +35,6 @@ namespace XSharpPowerTools.View.Controls
         protected virtual void OnTextChanged() =>
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
 
-        protected virtual void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
-            AllowReturn = false;
-
         protected async Task DoSearchAsync()
         {
             await XSharpPowerToolsPackage.Instance.JoinableTaskFactory.SwitchToMainThreadAsync();

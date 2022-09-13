@@ -125,6 +125,9 @@ namespace XSharpPowerTools.View.Controls
         private void ResultsViewButton_Click(object sender, RoutedEventArgs e) =>
             SaveResultsToToolWindow();
 
+        protected void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
+            AllowReturn = false;
+
         private void SaveResultsToToolWindow()
         {
             if (ResultsDataGrid.Items.Count < 1)

@@ -92,6 +92,9 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
+        protected void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
+            AllowReturn = false;
+
         protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
             new FindNamespaceResultComparer(direction, column);
     }

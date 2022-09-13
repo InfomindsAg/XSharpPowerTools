@@ -9,12 +9,64 @@ namespace XSharpPowerTools.View.Controls
     /// </summary>
     public partial class MemberFilterControl : FilterControl<MemberFilter>
     {
+        public enum DisplayMode 
+        { 
+            Default,
+            ContainedInType,
+            GlobalScope
+        }
+
         public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(MemberFilterControl));
+        public static DependencyProperty ModeProperty = DependencyProperty.Register("Mode", typeof(DisplayMode), typeof(MemberFilterControl), new PropertyMetadata(new PropertyChangedCallback(MemberFilterControl.OnModeChanged)));
 
         public override event RoutedEventHandler Click
         {
-            add { base.AddHandler(ClickEvent, value); }
-            remove { base.RemoveHandler(ClickEvent, value); }
+            add { AddHandler(ClickEvent, value); }
+            remove { RemoveHandler(ClickEvent, value); }
+        }
+
+        public DisplayMode Mode
+        {
+            get { return (DisplayMode)GetValue(ModeProperty); }
+            set { SetValue(ModeProperty, value); }
+        }
+
+        private static void OnModeChanged(DependencyObject control, DependencyPropertyChangedEventArgs e)
+        {
+            var ctrl = control as MemberFilterControl;
+            switch ((DisplayMode)e.NewValue)
+            {
+                case DisplayMode.Default:
+                {
+                    ctrl.MethodFilterButton.Visibility = Visibility.Visible;
+                    ctrl.PropertyFilterButton.Visibility = Visibility.Visible;
+                    ctrl.FunctionFilterButton.Visibility = Visibility.Visible;
+                    ctrl.VariableFilterButton.Visibility = Visibility.Visible;
+                    ctrl.DefineFilterButton.Visibility = Visibility.Visible;
+                    ctrl.EnumValueFilterButton.Visibility = Visibility.Visible;
+                    break;
+                }
+                case DisplayMode.ContainedInType:
+                {
+                    ctrl.MethodFilterButton.Visibility = Visibility.Visible;
+                    ctrl.PropertyFilterButton.Visibility = Visibility.Visible;
+                    ctrl.FunctionFilterButton.Visibility = Visibility.Collapsed;
+                    ctrl.VariableFilterButton.Visibility = Visibility.Visible;
+                    ctrl.DefineFilterButton.Visibility = Visibility.Collapsed;
+                    ctrl.EnumValueFilterButton.Visibility = Visibility.Visible;
+                    break;
+                }
+                case DisplayMode.GlobalScope:
+                {
+                    ctrl.MethodFilterButton.Visibility = Visibility.Collapsed;
+                    ctrl.PropertyFilterButton.Visibility = Visibility.Collapsed;
+                    ctrl.FunctionFilterButton.Visibility = Visibility.Visible;
+                    ctrl.VariableFilterButton.Visibility = Visibility.Collapsed;
+                    ctrl.DefineFilterButton.Visibility = Visibility.Visible;
+                    ctrl.EnumValueFilterButton.Visibility = Visibility.Collapsed;
+                    break;
+                }
+            }
         }
 
         public MemberFilterControl() : base()
