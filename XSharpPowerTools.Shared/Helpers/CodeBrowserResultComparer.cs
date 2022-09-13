@@ -18,25 +18,25 @@ namespace XSharpPowerTools.Helpers
             Direction = direction;
             ResultType = resultType;
 
-            ColumnIdentifier = column.Header.ToString().Trim();
-            if (ColumnIdentifier.Equals("Type", StringComparison.OrdinalIgnoreCase))
+            ColumnIdentifier = column.SortMemberPath.Trim();
+            if (ColumnIdentifier.Equals("TypeName", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new TypeCompareHelper();
                 SqlOrderBy = ResultType == XSModelResultType.Type
                     ? "Name"
                     : "TypeName";
             }
-            else if (ColumnIdentifier.Equals("Member", StringComparison.OrdinalIgnoreCase))
+            else if (ColumnIdentifier.Equals("MemberName", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new MemberCompareHelper();
                 SqlOrderBy = "Name";
             }
-            else if (ColumnIdentifier.Equals("Kind", StringComparison.OrdinalIgnoreCase))
+            else if (ColumnIdentifier.Equals("KindName", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new KindCompareHelper();
                 SqlOrderBy = "Kind";
             }
-            else if (ColumnIdentifier.Equals("File", StringComparison.OrdinalIgnoreCase))
+            else if (ColumnIdentifier.Equals("RelativePath", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new FileCompareHelper();
                 SqlOrderBy = "FileName";
@@ -79,7 +79,6 @@ namespace XSharpPowerTools.Helpers
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.TypeName.CompareTo(b.TypeName);
-
         }
 
         private class MemberCompareHelper : ICodeBrowserCompareHelper

@@ -188,11 +188,11 @@
                 <DataGridTextColumn
                     Header=" Type"
                     Binding="{Binding TypeName}"
-                    SortMemberPath="TypeName.Length"/>
+                    SortMemberPath="TypeName"/>
                 <DataGridTextColumn
                     Header=" Member"
                     Binding="{Binding MemberName}"
-                    SortMemberPath="MemberName.Length"/>
+                    SortMemberPath="MemberName"/>
                 <DataGridTextColumn
                     Header=" Params"
                     Binding="{Binding ParametersCount}"
@@ -202,11 +202,11 @@
                     Binding="{Binding KindName}"
                     ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
                     CanUserResize="False"
-                    SortMemberPath="KindName.Length"/>
+                    SortMemberPath="KindName"/>
                 <DataGridTextColumn
                     Header=" File"
                     Binding="{Binding RelativePath}"
-                    SortMemberPath="RelativePath.Length">
+                    SortMemberPath="RelativePath">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource ResourceKey=GenericDataGridCell}">
                             <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Content.Text}"/>

@@ -14,7 +14,7 @@ namespace XSharpPowerTools.Helpers
         public FindNamespaceResultComparer(ListSortDirection direction, DataGridColumn column)
         {
             Direction = direction;
-            ColumnIdentifier = column.Header.ToString().Trim();
+            ColumnIdentifier = column.SortMemberPath.Trim();
             if (ColumnIdentifier.Equals("Namespace", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new NamespaceCompareHelper();
@@ -55,17 +55,13 @@ namespace XSharpPowerTools.Helpers
         private class TypeCompareHelper : IFindNamespaceCompareHelper
         {
             public int ExecuteComparison(NamespaceResultItem a, NamespaceResultItem b) =>
-                a.TypeName.Length == b.TypeName.Length
-                    ? a.TypeName.CompareTo(b.TypeName)
-                    : a.TypeName.Length.CompareTo(b.TypeName.Length);
+                a.TypeName.CompareTo(b.TypeName);
         }
 
         private class NamespaceCompareHelper : IFindNamespaceCompareHelper
         {
             public int ExecuteComparison(NamespaceResultItem a, NamespaceResultItem b) =>
-                a.Namespace.Length == b.Namespace.Length
-                    ? a.Namespace.CompareTo(b.Namespace)
-                    : a.Namespace.Length.CompareTo(b.Namespace.Length);
+                a.Namespace.CompareTo(b.Namespace);
         }
 
         #endregion

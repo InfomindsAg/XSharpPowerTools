@@ -101,11 +101,13 @@
                 <DataGridTextColumn 
                     Header=" Type"
                     Width="*"
-                    Binding="{Binding TypeName}"/>
+                    Binding="{Binding TypeName}"
+                    SortMemberPath="TypeName"/>
                 <DataGridTextColumn
                     Header=" Namespace"
                     Width="*"
-                    Binding="{Binding Namespace}"/>
+                    Binding="{Binding Namespace}"
+                    SortMemberPath="Namespace"/>
             </DataGrid.Columns>
         </controls:ResultsDataGrid>
     </Grid>
