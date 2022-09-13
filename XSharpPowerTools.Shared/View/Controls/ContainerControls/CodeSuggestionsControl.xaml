@@ -45,6 +45,7 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Left"/>
         <StackPanel
+            x:Name="FilterContainer"
             Grid.Row="0"
             Grid.Column="1"
             Grid.ColumnSpan="2"

@@ -66,14 +66,17 @@ namespace XSharpPowerTools.View.Controls
 
         public void ShowPopups()
         {
+            if (Visibility != Visibility.Visible)
+                return;
+
             foreach (var filterButton in FilterButtons.Keys)
-                filterButton.HotkeyPopup.IsOpen = true;
+                filterButton.ShowPopup();
         }
 
         public void HidePopups()
         {
             foreach (var filterButton in FilterButtons.Keys)
-                filterButton.HotkeyPopup.IsOpen = false;
+                filterButton.HidePopup();
         }
     }
 }

@@ -60,8 +60,11 @@ namespace XSharpPowerTools.View.Controls
         protected void FilterButton_Click(object sender, RoutedEventArgs e) =>
             RaiseClickEvent();
 
-        public void ShowPopup() =>
-            HotkeyPopup.IsOpen = true;
+        public void ShowPopup()
+        {
+            if (Visibility == Visibility.Visible)
+                HotkeyPopup.IsOpen = true;
+        }
 
         public void HidePopup() =>
             HotkeyPopup.IsOpen = false;
