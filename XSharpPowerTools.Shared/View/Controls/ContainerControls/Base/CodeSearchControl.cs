@@ -1,8 +1,10 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using XSharpPowerTools.Helpers;
 
 namespace XSharpPowerTools.View.Controls
 {
@@ -68,7 +70,7 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        protected void SetTableColumns(XSModelResultType resultType)
+        protected virtual void SetTableColumns(XSModelResultType resultType)
         {
             if (ResultsDataGrid == null)
                 return;
@@ -80,17 +82,7 @@ namespace XSharpPowerTools.View.Controls
             ResultsDataGrid.Columns[1].Visibility = memberSpecificColumnsVisibility;
             ResultsDataGrid.Columns[2].Visibility = memberSpecificColumnsVisibility;
 
-            ResultsDataGrid.Columns[0].Width = 0;
-            ResultsDataGrid.Columns[1].Width = 0;
-            ResultsDataGrid.Columns[2].Width = 0;
-            ResultsDataGrid.Columns[3].Width = 0;
-            ResultsDataGrid.Columns[4].Width = 0;
-            ResultsDataGrid.UpdateLayout();
-            ResultsDataGrid.Columns[0].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
-            ResultsDataGrid.Columns[1].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
-            ResultsDataGrid.Columns[2].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
-            ResultsDataGrid.Columns[3].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
-            ResultsDataGrid.Columns[4].Width = new DataGridLength(7, DataGridLengthUnitType.Star);
+            ResultsDataGrid.RenderColumns();
         }
 
         protected virtual Filter GetFilter()
@@ -144,5 +136,7 @@ namespace XSharpPowerTools.View.Controls
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}RefreshButton_Click");
         }
 
+        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
+            new CodeBrowserResultComparer(direction, column, DisplayedResultType);
     }
 }

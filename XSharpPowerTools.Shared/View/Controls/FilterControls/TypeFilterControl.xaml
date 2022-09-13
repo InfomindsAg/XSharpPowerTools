@@ -62,7 +62,7 @@
             ToolTip="Struct (Ctrl + 0)"
             HotkeyText="0"
             PopupText="Struct"
-            Margin="1,0,1,0">
+            Margin="1,0,0,0">
             <imaging:CrispImage Width="16" Height="16" Moniker="{x:Static catalog:KnownMonikers.ValueType}"/>
         </controls:FilterButton>
     </Grid>

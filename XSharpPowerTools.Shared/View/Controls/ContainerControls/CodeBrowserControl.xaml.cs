@@ -146,8 +146,5 @@ namespace XSharpPowerTools.View.Controls
 
             }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
         }
-
-        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
-            new CodeBrowserResultComparer(direction, column, DisplayedResultType);
     }
 }

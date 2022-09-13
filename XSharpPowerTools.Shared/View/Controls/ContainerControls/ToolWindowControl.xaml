@@ -38,21 +38,31 @@
             <DataGrid.Columns>
                 <DataGridTextColumn
                     Header=" Type"
-                    Binding="{Binding TypeName}"/>
+                    Binding="{Binding TypeName}"
+                    SortMemberPath="TypeName"
+                    Width="4*"/>
                 <DataGridTextColumn
                     Header=" Member"
-                    Binding="{Binding MemberName}"/>
+                    Binding="{Binding MemberName}"
+                    SortMemberPath="MemberName"
+                    Width="4*"/>
                 <DataGridTextColumn
                     Header=" Params"
-                    Binding="{Binding ParametersCount}"/>
+                    Binding="{Binding ParametersCount}"
+                    CanUserSort="False"
+                    Width="SizeToCells"/>
                 <DataGridTextColumn
                     Header=" Kind"
                     Binding="{Binding KindName}"
                     ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
-                    CanUserResize="False"/>
+                    CanUserResize="False"
+                    SortMemberPath="KindName"
+                    Width="SizeToCells"/>
                 <DataGridTextColumn
                     Header=" File"
-                    Binding="{Binding RelativePath}">
+                    Binding="{Binding RelativePath}"
+                    SortMemberPath="RelativePath"
+                    Width="7*">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource ResourceKey=GenericDataGridCell}">
                             <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Content.Text}"/>

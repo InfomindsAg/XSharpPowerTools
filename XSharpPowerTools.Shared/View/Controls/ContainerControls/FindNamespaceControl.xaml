@@ -27,42 +27,9 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
             <RowDefinition Height="22" />
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="0" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
-                                <Setter Property="Height" Value="Auto" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="Auto" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
-                                <Setter Property="Height" Value="0" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="2" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
-                                <Setter Property="Height" Value="0" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2" />
@@ -94,7 +61,6 @@
             HorizontalAlignment="Center"/>
         <controls:ResultsDataGrid
             x:Name="_resultsDataGrid"
-            Margin="0,0,0,0"
             Grid.Row="3"
             Grid.Column="1">
             <DataGrid.Columns>

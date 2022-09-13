@@ -23,6 +23,7 @@ namespace XSharpPowerTools
         public XSModelResultType ResultType { get; set; }
         public string MemberName { get; set; }
         public string ContainingFile { get; set; }
+        public string Namespace { get; set; }
         public string Project { get; set; }
         public string SourceCode { get; set; }
         public int Line { get; set; }

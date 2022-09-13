@@ -13,8 +13,8 @@ namespace XSharpPowerTools.View.Controls
 
         public override event RoutedEventHandler Click
         {
-            add { base.AddHandler(ClickEvent, value); }
-            remove { base.RemoveHandler(ClickEvent, value); }
+            add { AddHandler(ClickEvent, value); }
+            remove { RemoveHandler(ClickEvent, value); }
         }
 
         public TypeFilterControl() : base()

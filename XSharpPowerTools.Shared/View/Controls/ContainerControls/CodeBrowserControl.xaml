@@ -26,49 +26,15 @@
         VerticalAlignment="Center">
         <Grid.RowDefinitions>
             <RowDefinition Height="24" />
-            <RowDefinition Height="22" />
+            <RowDefinition Height="20" />
             <RowDefinition Height="Auto"/>
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="0" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
-                                <Setter Property="Height" Value="Auto" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="Auto" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
-                                <Setter Property="Height" Value="0" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
-            <RowDefinition>
-                <RowDefinition.Style>
-                    <Style TargetType="{x:Type RowDefinition}">
-                        <Setter Property="Height" Value="2" />
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ElementName=ResultsDataGrid, Path=Items.Count}" Value="0">
-                                <Setter Property="Height" Value="0" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </RowDefinition.Style>
-            </RowDefinition>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2" />
             <ColumnDefinition Width="870"/>
-            <ColumnDefinition Width="64"/>
+            <ColumnDefinition Width="65"/>
             <ColumnDefinition Width="2"/>
         </Grid.ColumnDefinitions>
         <TextBlock
@@ -81,7 +47,7 @@
         <StackPanel
             Grid.Row="0"
             Grid.Column="1"
-            Grid.ColumnSpan="3"
+            Grid.ColumnSpan="2"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
             Orientation="Horizontal"
@@ -109,7 +75,6 @@
         <StackPanel
             Grid.Row="1"
             Grid.Column="2"
-            Grid.ColumnSpan="2"
             HorizontalAlignment="Right"
             VerticalAlignment="Top"
             Orientation="Horizontal"
@@ -151,7 +116,7 @@
                 Grid.Column="2"
                 Height="20"
                 Width="20"
-                Margin="1,0,1,0"
+                Margin="1,0,0,0"
                 IsTabStop="False"
                 Click="RefreshButton_Click"
                 VerticalAlignment="Center"
@@ -162,7 +127,7 @@
                 FontFamily="Segoe MDL2 Assets"
                 Content="&#xE72C;"/>
         </StackPanel>
-        <controls:HelpTextControl
+        <controls:CodeBrowserHelpText
             x:Name="HelpControl"
             Grid.Column="1"
             Grid.ColumnSpan="2"
@@ -178,8 +143,7 @@
             HorizontalAlignment="Center"/>
         <controls:ResultsDataGrid
             x:Name="_resultsDataGrid"
-            Margin="0,0,0,0"
-            Grid.Row="4"
+            Grid.Row="3"
             Grid.Column="1"
             Grid.ColumnSpan="2"
             Width="Auto"
@@ -188,25 +152,30 @@
                 <DataGridTextColumn
                     Header=" Type"
                     Binding="{Binding TypeName}"
-                    SortMemberPath="TypeName"/>
+                    SortMemberPath="TypeName"
+                    Width="4*"/>
                 <DataGridTextColumn
                     Header=" Member"
                     Binding="{Binding MemberName}"
-                    SortMemberPath="MemberName"/>
+                    SortMemberPath="MemberName"
+                    Width="4*"/>
                 <DataGridTextColumn
                     Header=" Params"
                     Binding="{Binding ParametersCount}"
-                    CanUserSort="False"/>
+                    CanUserSort="False"
+                    Width="SizeToCells"/>
                 <DataGridTextColumn
                     Header=" Kind"
                     Binding="{Binding KindName}"
                     ElementStyle="{StaticResource ResourceKey=ColumnElementStyle}"
                     CanUserResize="False"
-                    SortMemberPath="KindName"/>
+                    SortMemberPath="KindName"
+                    Width="SizeToCells"/>
                 <DataGridTextColumn
                     Header=" File"
                     Binding="{Binding RelativePath}"
-                    SortMemberPath="RelativePath">
+                    SortMemberPath="RelativePath"
+                    Width="7*">
                     <DataGridTextColumn.CellStyle>
                         <Style TargetType="DataGridCell" BasedOn="{StaticResource ResourceKey=GenericDataGridCell}">
                             <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Content.Text}"/>
