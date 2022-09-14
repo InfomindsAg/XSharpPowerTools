@@ -52,45 +52,44 @@ namespace XSharpPowerTools.View.Controls
                 return;
             }
 
-            //using var waitCursor = new WithWaitCursor();
-            //SearchActive = true;
-            //try
-            //{
-            //    do
-            //    {
-            //        var searchTerm = SearchTextBox.Text.Trim();
-            //        ReDoSearch = false;
+            using var waitCursor = new WithWaitCursor();
+            SearchActive = true;
+            try
+            {
+                do
+                {
+                    var searchTerm = SearchTextBox.Text.Trim();
+                    ReDoSearch = false;
 
-            //        string currentFile;
-            //        int caretPosition;
-            //        if (searchTerm.StartsWith("..") || searchTerm.StartsWith("::"))
-            //        {
-            //            currentFile = await DocumentHelper.GetCurrentFileAsync();
-            //            caretPosition = await DocumentHelper.GetCaretPositionAsync();
-            //        }
-            //        else
-            //        {
-            //            currentFile = null;
-            //            caretPosition = -1;
-            //        }
+                    string currentFile;
+                    int caretPosition;
+                    if (searchTerm.StartsWith("..") || searchTerm.StartsWith("::"))
+                    {
+                        currentFile = await DocumentHelper.GetCurrentFileAsync();
+                        caretPosition = await DocumentHelper.GetCaretPositionAsync();
+                    }
+                    else
+                    {
+                        currentFile = null;
+                        caretPosition = -1;
+                    }
 
-            //        var (results, resultType) = await XSModel.GetSearchTermMatchesAsync(searchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, direction, orderBy);
+                    var (results, resultType) = await XSModel.GetCodeSuggestionsAsync(searchTerm, GetFilter(), direction, orderBy, currentFile, caretPosition);
 
-            //        ResultsDataGrid.ItemsSource = results;
-            //        ResultsDataGrid.SelectedItem = results.FirstOrDefault();
-            //        SetTableColumns(resultType);
-            //        DisplayedResultType = resultType;
-            //        LastSearchTerm = searchTerm;
+                    ResultsDataGrid.ItemsSource = results;
+                    ResultsDataGrid.SelectedItem = results.FirstOrDefault();
+                    SetTableColumns(resultType);
+                    DisplayedResultType = resultType;
 
-            //        NoResultsLabel.Visibility = results.Count < 1 ? Visibility.Visible : Visibility.Collapsed;
+                    NoResultsLabel.Visibility = results.Count < 1 ? Visibility.Visible : Visibility.Collapsed;
 
-            //    } while (ReDoSearch);
-            //}
-            //finally
-            //{
-            //    SearchActive = false;
-            //    AllowReturn = true;
-            //}
+                } while (ReDoSearch);
+            }
+            finally
+            {
+                SearchActive = false;
+                AllowReturn = true;
+            }
         }
 
         private void HelpButton_Click(object sender, RoutedEventArgs e) =>

@@ -192,36 +192,40 @@ namespace XSharpPowerTools
             var filtersApplied = filter.Type != FilterType.Inactive;
             var limit = 100;
 
-            searchTerm = searchTerm.Trim().Replace(' ', '.');
+            searchTerm = searchTerm.Replace(' ', '.');
 
             var separators = new[] { '.', ':' };
             if (separators.Any(searchTerm.Contains))
             {
+                if (filter.Type == FilterType.Inactive)
+                    filter.Type = FilterType.Member;
+
                 (List<XSModelResultItem>, XSModelResultType) resultsAndResultType;
                 if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::"))) 
                 {
-                    if (filter.Type == FilterType.Inactive)
-                    {
-                        filter.Type = FilterType.Member;
-                        filter.MemberFilters = new List<MemberFilter> { MemberFilter.Function, MemberFilter.Define };
-                    }
                     var memberName = searchTerm.Substring(searchTerm.TakeWhile(q => q == '.' || q == ':').Count()).Trim().Replace('*', '%');
-                    resultsAndResultType = await SearchMemberInHierarchy(null, memberName, filter, orderBy, sqlSortDirection, currentFile, caretPosition);
+                    resultsAndResultType = await SearchMemberInHierarchyAsync(null, memberName, filter, orderBy, sqlSortDirection, currentFile, caretPosition);
                 }
                 else 
                 {
                     var keyWords = searchTerm.Split(new[] { '.', ':' }, 2);
                     var typeName = keyWords[0].Trim();
                     var memberName = keyWords[1].Trim();
-                    memberName = memberName.Replace('*', '%');
-                    resultsAndResultType = await SearchMemberInHierarchy(typeName, memberName, filter, orderBy, sqlSortDirection);
+                    if (memberName.Contains('*'))
+                        memberName = memberName.Replace('*', '%');
+                    else
+                        memberName = $"%{memberName}%";
+                    resultsAndResultType = await SearchMemberInHierarchyAsync(typeName, memberName, filter, orderBy, sqlSortDirection);
                 }
                 Connection.Close();
                 return resultsAndResultType;
             }
             else 
             {
-                searchTerm = searchTerm.Replace('*', '%');
+                if (searchTerm.Contains('*'))
+                    searchTerm = searchTerm.Replace('*', '%');
+                else
+                    searchTerm = $"%{searchTerm}%";
 
                 string typeName, memberName;
                 if (filter.Type == FilterType.Member)
@@ -292,7 +296,7 @@ namespace XSharpPowerTools
                 {
                     if (caretPosition < 0)
                     {
-                        command.CommandText += @$" AND LOWER(TRIM(FileName)) = $fileName";
+                        command.CommandText += " AND LOWER(TRIM(FileName)) = $fileName";
                         command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
                     }
                     else
@@ -302,26 +306,28 @@ namespace XSharpPowerTools
                         {
                             if (searchInHierarchy)
                             { 
-                                command.CommandText += @$" 
-                                    AND TypeName IN (
-	                                    WITH RECURSIVE BaseClasses(BaseTypeName) AS(
-		                                    SELECT Name FROM ProjectTypes WHERE Id = {idType}
-		                                    UNION
-		                                    SELECT ProjectTypes.BaseTypeName
-		                                    FROM ProjectTypes, BaseClasses
-		                                    WHERE TRIM(BaseClasses.BaseTypeName) = TRIM(ProjectTypes.Name) AND ProjectTypes.BaseTypeName IS NOT NULL AND TRIM(ProjectTypes.BaseTypeName) != """"
-	                                    )
-	                                    SELECT * FROM BaseClasses
-                                    )";
+                                command.CommandText += 
+                                    @$" 
+                                        AND TypeName IN (
+	                                        WITH RECURSIVE BaseClasses(BaseTypeName) AS(
+		                                        SELECT Name FROM ProjectTypes WHERE Id = {idType}
+		                                        UNION
+		                                        SELECT ProjectTypes.BaseTypeName
+		                                        FROM ProjectTypes, BaseClasses
+		                                        WHERE LOWER(TRIM(BaseClasses.BaseTypeName)) = LOWER(TRIM(ProjectTypes.Name)) AND ProjectTypes.BaseTypeName IS NOT NULL AND TRIM(ProjectTypes.BaseTypeName) != """"
+	                                        )
+	                                        SELECT * FROM BaseClasses
+                                        )
+                                    ";
                             }
                             else 
                             {
-                                command.CommandText += @$" AND IdType = {idType}";
+                                command.CommandText += $" AND IdType = {idType}";
                             }
                         }
                         else
                         {
-                            command.CommandText += @$" AND LOWER(TRIM(FileName)) = $fileName";
+                            command.CommandText += " AND LOWER(TRIM(FileName)) = $fileName";
                             command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
                         }
                     }
@@ -330,17 +336,19 @@ namespace XSharpPowerTools
                 {
                     if (searchInHierarchy)
                     {
-                        command.CommandText += @" 
-                            AND TypeName IN (
-	                            WITH RECURSIVE BaseClasses(BaseTypeName) AS(
-		                            SELECT $typeName
-		                            UNION
-		                            SELECT ProjectTypes.BaseTypeName
-		                            FROM ProjectTypes, BaseClasses
-		                            WHERE TRIM(BaseClasses.BaseTypeName) = TRIM(ProjectTypes.Name) AND ProjectTypes.BaseTypeName IS NOT NULL AND TRIM(ProjectTypes.BaseTypeName) != """"
-	                            )
-	                            SELECT * FROM BaseClasses
-                            )";
+                        command.CommandText += 
+                            @" 
+                                AND TypeName IN (
+	                                WITH RECURSIVE BaseClasses(BaseTypeName) AS(
+		                                SELECT $typeName
+		                                UNION
+		                                SELECT ProjectTypes.BaseTypeName
+		                                FROM ProjectTypes, BaseClasses
+		                                WHERE LOWER(TRIM(BaseClasses.BaseTypeName)) = LOWER(TRIM(ProjectTypes.Name)) AND ProjectTypes.BaseTypeName IS NOT NULL AND TRIM(ProjectTypes.BaseTypeName) != """"
+	                                )
+	                                SELECT * FROM BaseClasses
+                                )
+                            ";
                     }
                     else
                     {
@@ -348,11 +356,23 @@ namespace XSharpPowerTools
                     }
                     command.Parameters.AddWithValue("$typeName", typeName.Trim().ToLower());
                 }
+
+                if (searchInHierarchy) 
+                {
+                    command.CommandText +=
+                        @"
+					        AND LOWER(TRIM(Sourcecode)) NOT LIKE 'private%'
+					        AND LOWER(TRIM(Sourcecode)) NOT LIKE 'hidden%'
+					        AND LOWER(TRIM(Sourcecode)) NOT LIKE 'protected%'
+                        ";
+                }
             }
             command.CommandText +=
                 @$"
                     AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
                     AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
+                    AND LOWER(TRIM(FileName)) NOT LIKE '%{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}%'
+                    AND LOWER(TRIM(ProjectFileName)) NOT LIKE '%.(orphanedfiles).xsproj'
                     ORDER BY {orderBy}
                     LIMIT {limit}
                 ";
@@ -363,36 +383,33 @@ namespace XSharpPowerTools
             var resultType = searchingForMember ? XSModelResultType.Member : XSModelResultType.Type;
             while (await reader.ReadAsync())
             {
-                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
+                var resultItem = new XSModelResultItem
                 {
-                    var resultItem = new XSModelResultItem
-                    {
-                        ContainingFile = reader.GetString(1),
-                        Line = reader.GetInt32(2),
-                        Project = Path.GetFileNameWithoutExtension(reader.GetString(3)),
-                        Kind = reader.GetInt32(4),
-                        Namespace = reader.GetString(5),
-                        SourceCode = reader.GetString(6),
-                        ResultType = resultType,
-                        SolutionDirectory = solutionDirectory
-                    };
-                    if (searchingForMember)
-                    {
-                        resultItem.MemberName = reader.GetString(0);
-                        resultItem.TypeName = reader.GetString(6);
-                    }
-                    else
-                    {
-                        resultItem.TypeName = reader.GetString(0);
-                        resultItem.MemberName = string.Empty;
-                    }
-                    results.Add(resultItem);
+                    ContainingFile = reader.GetString(1),
+                    Line = reader.GetInt32(2),
+                    Project = Path.GetFileNameWithoutExtension(reader.GetString(3)),
+                    Kind = reader.GetInt32(4),
+                    Namespace = reader.GetString(5),
+                    SourceCode = reader.GetString(6),
+                    ResultType = resultType,
+                    SolutionDirectory = solutionDirectory
+                };
+                if (searchingForMember)
+                {
+                    resultItem.MemberName = reader.GetString(0);
+                    resultItem.TypeName = reader.GetString(7);
                 }
+                else
+                {
+                    resultItem.TypeName = reader.GetString(0);
+                    resultItem.MemberName = string.Empty;
+                }
+                results.Add(resultItem);
             }
             return (results, resultType);
         }
 
-        private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchy(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string currentFile = null, int caretPosition = -1) =>
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string currentFile = null, int caretPosition = -1) =>
             await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, -1, true);
 
         private async Task<int> GetContaingClassAsync(string currentFile, int caretPosition)
