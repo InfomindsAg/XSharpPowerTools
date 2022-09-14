@@ -107,6 +107,7 @@ namespace XSharpPowerTools.View.Controls
                     MemberFilterGroup.Mode = MemberFilterControl.DisplayMode.ContainedInType;
                     FilterSeparator.Visibility = Visibility.Collapsed;
                     TypeFilterGroup.Visibility = Visibility.Collapsed;
+                    ActiveFilterGroup = FilterType.Inactive;
                 }
             }
             else if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.ContainedInType) 
@@ -114,7 +115,13 @@ namespace XSharpPowerTools.View.Controls
                 MemberFilterGroup.Mode = MemberFilterControl.DisplayMode.GlobalScope;
                 FilterSeparator.Visibility = Visibility.Visible;
                 TypeFilterGroup.Visibility = Visibility.Visible;
+                ActiveFilterGroup = FilterType.Inactive;
             }
+        }
+
+        private void ResetFilters(MemberFilterControl.DisplayMode displayMode) 
+        { 
+            
         }
 
         public override void OnReturn(object selectedItem)

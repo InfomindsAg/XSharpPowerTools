@@ -43,9 +43,9 @@ namespace XSharpPowerTools
             var sb = new StringBuilder().Append('(');
             if (Type == FilterType.Member)
             {
-                if (memberName.Equals(".ctor", StringComparison.OrdinalIgnoreCase))
+                if (".ctor".Equals(memberName, StringComparison.OrdinalIgnoreCase))
                     return "Kind = 3";
-                else if (memberName.Equals(".dtor", StringComparison.OrdinalIgnoreCase))
+                else if (".dtor".Equals(memberName, StringComparison.OrdinalIgnoreCase))
                     return "Kind = 4";
 
                 foreach (var filter in MemberFilters)
@@ -54,7 +54,7 @@ namespace XSharpPowerTools
                     sb.Append(" OR ");
                 }
 
-                if (memberName.Equals("%"))
+                if ("%".Equals(memberName))
                     sb.Append("Kind = 3 OR Kind = 4");
                 else
                     sb.Length = sb.Length - 4;

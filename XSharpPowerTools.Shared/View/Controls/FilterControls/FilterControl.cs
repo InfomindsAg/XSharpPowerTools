@@ -48,7 +48,8 @@ namespace XSharpPowerTools.View.Controls
         public List<T> GetFilters()
         {
             var filters = new List<T>();
-            filters.AddRange(FilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
+            if (Visibility == Visibility.Visible)
+                filters.AddRange(FilterButtons.Where(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value).Select(q => q.Value));
             return filters;
         }
 
