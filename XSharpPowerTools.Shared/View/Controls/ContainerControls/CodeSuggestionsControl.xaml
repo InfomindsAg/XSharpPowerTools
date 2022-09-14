@@ -34,7 +34,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2" />
             <ColumnDefinition Width="870"/>
-            <ColumnDefinition Width="64"/>
+            <ColumnDefinition Width="43"/>
             <ColumnDefinition Width="2"/>
         </Grid.ColumnDefinitions>
         <TextBlock
@@ -45,7 +45,6 @@
             VerticalAlignment="Center"
             HorizontalAlignment="Left"/>
         <StackPanel
-            x:Name="FilterContainer"
             Grid.Row="0"
             Grid.Column="1"
             Grid.ColumnSpan="2"
@@ -102,7 +101,7 @@
                 Grid.Column="2"
                 Height="20"
                 Width="20"
-                Margin="1,0,1,0"
+                Margin="1,0,0,0"
                 IsTabStop="False"
                 Click="RefreshButton_Click"
                 VerticalAlignment="Center"
@@ -129,8 +128,7 @@
             HorizontalAlignment="Center"/>
         <controls:ResultsDataGrid
             x:Name="_resultsDataGrid"
-            Margin="0,0,0,0"
-            Grid.Row="4"
+            Grid.Row="3"
             Grid.Column="1"
             Grid.ColumnSpan="2"
             Width="Auto"

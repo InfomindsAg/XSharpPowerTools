@@ -107,7 +107,6 @@ namespace XSharpPowerTools.View.Controls
                     MemberFilterGroup.Mode = MemberFilterControl.DisplayMode.ContainedInType;
                     FilterSeparator.Visibility = Visibility.Collapsed;
                     TypeFilterGroup.Visibility = Visibility.Collapsed;
-                    //FilterContainer.UpdateLayout();
                 }
             }
             else if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.ContainedInType) 
@@ -115,7 +114,6 @@ namespace XSharpPowerTools.View.Controls
                 MemberFilterGroup.Mode = MemberFilterControl.DisplayMode.GlobalScope;
                 FilterSeparator.Visibility = Visibility.Visible;
                 TypeFilterGroup.Visibility = Visibility.Visible;
-                //FilterContainer.UpdateLayout();
             }
         }
 
