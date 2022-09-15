@@ -54,7 +54,7 @@ namespace XSharpPowerTools.View.Controls
         }
 
         public List<T> GetAllFilters() =>
-            FilterButtons.Values.ToList();
+            FilterButtons.Where(q => q.Key.Visibility == Visibility.Visible).Select(q => q.Value).ToList();
 
         public bool IsActive() =>
             FilterButtons?.Any(q => q.Key.IsChecked.HasValue && q.Key.IsChecked.Value) ?? false;

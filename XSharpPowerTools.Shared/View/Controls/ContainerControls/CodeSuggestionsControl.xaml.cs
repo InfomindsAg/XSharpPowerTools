@@ -109,10 +109,17 @@ namespace XSharpPowerTools.View.Controls
         {
             AllowReturn = false;
             var separators = new[] { '.', ':' };
-            if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.GlobalScope && separators.Any(SearchTextBox.Text.Contains))
+            if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.GlobalScope 
+                && (SearchTextBox.Text.StartsWith("..") 
+                    || SearchTextBox.Text.StartsWith("::") 
+                    || (separators.Any(SearchTextBox.Text.Contains) && !(SearchTextBox.Text.StartsWith(".") || SearchTextBox.Text.StartsWith(":")))))
+            {
                 ResetFilters(MemberFilterControl.DisplayMode.ContainedInType);
+            }
             else if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.ContainedInType)
+            {
                 ResetFilters(MemberFilterControl.DisplayMode.GlobalScope);
+            }
         }
 
         private void ResetFilters(MemberFilterControl.DisplayMode displayMode) 

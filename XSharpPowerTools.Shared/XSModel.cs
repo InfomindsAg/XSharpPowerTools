@@ -151,7 +151,7 @@ namespace XSharpPowerTools
                     memberName = memberName.ToLower().Replace("*", "%");
                 }
 
-                var resultsAndResultType = await BuildAndExecuteSqlAsync(null, memberName, filter, orderBy, sqlSortDirection, limit, solutionDirectory, currentFile, caretPostion);
+                var resultsAndResultType = await BuildAndExecuteSqlAsync(string.Empty, memberName, filter, orderBy, sqlSortDirection, limit, solutionDirectory, currentFile, caretPostion);
 
                 Connection.Close();
 
@@ -192,7 +192,7 @@ namespace XSharpPowerTools
             var filtersApplied = filter.Type != FilterType.Inactive;
             var limit = 100;
 
-            searchTerm = searchTerm.Replace(' ', '.');
+            searchTerm = searchTerm.Replace(' ', '.').Trim();
 
             var separators = new[] { '.', ':' };
             if (separators.Any(searchTerm.Contains))
@@ -201,20 +201,24 @@ namespace XSharpPowerTools
                     filter.Type = FilterType.Member;
 
                 (List<XSModelResultItem>, XSModelResultType) resultsAndResultType;
-                if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.Trim().StartsWith("..") || searchTerm.Trim().StartsWith("::"))) 
+                if (!string.IsNullOrWhiteSpace(currentFile) && (searchTerm.StartsWith("..") || searchTerm.StartsWith("::")))
                 {
-                    var memberName = searchTerm.Substring(searchTerm.TakeWhile(q => q == '.' || q == ':').Count()).Trim().Replace('*', '%');
-                    resultsAndResultType = await SearchMemberInHierarchyAsync(null, memberName, filter, orderBy, sqlSortDirection, currentFile, caretPosition);
+                    var memberName = searchTerm.Substring(searchTerm.TakeWhile(q => q == '.' || q == ':').Count()).Trim();
+                    memberName = PrepareForSqlLike(memberName);
+                    resultsAndResultType = await SearchMemberInHierarchyAsync(string.Empty, memberName, filter, orderBy, sqlSortDirection, currentFile, caretPosition);
                 }
-                else 
+                else if (searchTerm.StartsWith(".") || searchTerm.StartsWith(":"))
+                {
+                    var memberName = searchTerm.Substring(1).Trim();
+                    memberName = PrepareForSqlLike(memberName);
+                    resultsAndResultType = await BuildAndExecuteSqlAsync(string.Empty, memberName, filter, orderBy, sqlSortDirection, limit);
+                }
+                else
                 {
                     var keyWords = searchTerm.Split(new[] { '.', ':' }, 2);
                     var typeName = keyWords[0].Trim();
                     var memberName = keyWords[1].Trim();
-                    if (memberName.Contains('*'))
-                        memberName = memberName.Replace('*', '%');
-                    else
-                        memberName = $"%{memberName}%";
+                    memberName = PrepareForSqlLike(memberName);
                     resultsAndResultType = await SearchMemberInHierarchyAsync(typeName, memberName, filter, orderBy, sqlSortDirection);
                 }
                 Connection.Close();
@@ -222,10 +226,7 @@ namespace XSharpPowerTools
             }
             else 
             {
-                if (searchTerm.Contains('*'))
-                    searchTerm = searchTerm.Replace('*', '%');
-                else
-                    searchTerm = $"%{searchTerm}%";
+                searchTerm = PrepareForSqlLike(searchTerm);
 
                 string typeName, memberName;
                 if (filter.Type == FilterType.Member)
@@ -410,7 +411,7 @@ namespace XSharpPowerTools
         }
 
         private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string currentFile = null, int caretPosition = -1) =>
-            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, -1, true);
+            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, caretPosition, true);
 
         private async Task<int> GetContaingClassAsync(string currentFile, int caretPosition)
         {
@@ -521,5 +522,10 @@ namespace XSharpPowerTools
             var connection = new SqliteConnection(connectionSB.ConnectionString);
             return connection;
         }
+
+        private string PrepareForSqlLike(string value) => 
+            value.Contains('*')
+                ? value.Replace('*', '%')
+                : $"%{value}%";
     }
 }
