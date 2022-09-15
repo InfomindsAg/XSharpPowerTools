@@ -117,7 +117,6 @@ namespace XSharpPowerTools.Helpers
         public static async Task InsertNamespaceReferenceAsync(string namespaceRef, string type)
         {
             var documentView = await VS.Documents.GetActiveDocumentViewAsync();
-            var fileName = documentView?.FilePath;
             var textView = documentView?.TextView;
 
             if (textView == null)
@@ -144,6 +143,44 @@ namespace XSharpPowerTools.Helpers
                 edit.Insert(insertPos, $"{namespaceRef}.");
                 if (!textView.Selection.IsEmpty)
                     edit.Replace(textView.Selection.SelectedSpans.FirstOrDefault(), type);
+                edit.Apply();
+            }
+            catch (Exception)
+            {
+                edit.Cancel();
+            }
+        }
+
+        public static async Task InsertCodeSuggestionAsync(string codeSuggestion)
+        {
+            var documentView = await VS.Documents.GetActiveDocumentViewAsync();
+            var textView = documentView?.TextView;
+
+            if (textView == null)
+                return;
+
+            ITextEdit edit;
+            try
+            {
+                edit = textView.TextBuffer?.CreateEdit();
+            }
+            catch (InvalidOperationException)
+            {
+                return;
+            }
+
+            var lines = textView.TextBuffer?.CurrentSnapshot?.Lines;
+            var caretPosition = textView.Caret.Position.BufferPosition.Position;
+            var caretLine = lines?.FirstOrDefault(q => q.Start.Position <= caretPosition && q.End.Position >= caretPosition);
+            var relativeCaretWordPosition = GetRelativeCaretWordPosition(caretLine, caretPosition);
+
+            try
+            {
+                var spanToReplace = textView.Selection.IsEmpty 
+                    ? new Span(caretLine.Start + relativeCaretWordPosition, GetCaretWord(lines, caretPosition).Length)
+                    : textView.Selection.SelectedSpans.FirstOrDefault();
+
+                edit.Replace(spanToReplace, codeSuggestion);
                 edit.Apply();
             }
             catch (Exception)

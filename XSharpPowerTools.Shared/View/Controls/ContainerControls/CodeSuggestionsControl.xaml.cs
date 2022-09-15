@@ -41,6 +41,16 @@ namespace XSharpPowerTools.View.Controls
             ActiveFilterGroup = FilterType.Inactive;
         }
 
+        protected override void SetTableColumns(XSModelResultType resultType)
+        {
+            var typeSpecificColumnsVisibility = resultType == XSModelResultType.Type
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+
+            ResultsDataGrid.Columns[0].Visibility = typeSpecificColumnsVisibility;
+            base.SetTableColumns(resultType); 
+        }
+
         protected override async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
             if (string.IsNullOrWhiteSpace(SearchTextBox.Text))
@@ -99,39 +109,37 @@ namespace XSharpPowerTools.View.Controls
         {
             AllowReturn = false;
             var separators = new[] { '.', ':' };
-            if (separators.Any(SearchTextBox.Text.Contains))
-            {
-                if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.GlobalScope) 
-                {
-                    MemberFilterGroup.Mode = MemberFilterControl.DisplayMode.ContainedInType;
-                    FilterSeparator.Visibility = Visibility.Collapsed;
-                    TypeFilterGroup.Visibility = Visibility.Collapsed;
-                    ActiveFilterGroup = FilterType.Inactive;
-                }
-            }
-            else if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.ContainedInType) 
-            {
-                MemberFilterGroup.Mode = MemberFilterControl.DisplayMode.GlobalScope;
-                FilterSeparator.Visibility = Visibility.Visible;
-                TypeFilterGroup.Visibility = Visibility.Visible;
-                ActiveFilterGroup = FilterType.Inactive;
-            }
+            if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.GlobalScope && separators.Any(SearchTextBox.Text.Contains))
+                ResetFilters(MemberFilterControl.DisplayMode.ContainedInType);
+            else if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.ContainedInType)
+                ResetFilters(MemberFilterControl.DisplayMode.GlobalScope);
         }
 
         private void ResetFilters(MemberFilterControl.DisplayMode displayMode) 
-        { 
-            
+        {
+            var typefiltersVisibility = displayMode == MemberFilterControl.DisplayMode.ContainedInType ? Visibility.Collapsed : Visibility.Visible;
+            MemberFilterGroup.Mode = displayMode;
+            FilterSeparator.Visibility = typefiltersVisibility;
+            TypeFilterGroup.Visibility = typefiltersVisibility;
+            ActiveFilterGroup = FilterType.Inactive;
         }
 
         public override void OnReturn(object selectedItem)
         {
             if (AllowReturn)
             {
-                //var item = selectedItem as XSModelResultItem;
-                //if (Keyboard.Modifiers == ModifierKeys.Control)
-                //    SaveResultsToToolWindow();
-                //else
-                //    XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await OpenItemAsync(item)).FileAndForget($"{FileReference}OnReturn");
+                var item = selectedItem as XSModelResultItem;
+                if (Keyboard.Modifiers == ModifierKeys.Control && DisplayedResultType == XSModelResultType.Type)
+                {
+                    SearchTextBox.Text = $"{item.TypeName}.";
+                    ResetFilters(MemberFilterControl.DisplayMode.ContainedInType);
+                    SearchTextBox.CaretIndex = int.MaxValue;
+                    return;
+                }
+
+                var codeSuggestion = DisplayedResultType == XSModelResultType.Type ? item.TypeName : item.MemberName;
+
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DocumentHelper.InsertCodeSuggestionAsync(codeSuggestion)).FileAndForget($"{FileReference}OnReturn");
             }
         }
     }
