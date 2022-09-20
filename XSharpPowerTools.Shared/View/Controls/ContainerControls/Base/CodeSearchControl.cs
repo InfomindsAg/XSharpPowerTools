@@ -136,7 +136,7 @@ namespace XSharpPowerTools.View.Controls
             XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}RefreshButton_Click");
         }
 
-        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
-            new CodeBrowserResultComparer(direction, column, DisplayedResultType);
+        protected override XSModelResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
+            new(direction, column, DisplayedResultType);
     }
 }

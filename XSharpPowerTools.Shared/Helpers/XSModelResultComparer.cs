@@ -1,19 +1,23 @@
 ﻿using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Windows.Controls;
 
 namespace XSharpPowerTools.Helpers
 {
-    public class CodeBrowserResultComparer : IResultComparer
+    public class XSModelResultComparer : IComparer
     {
         private readonly ListSortDirection Direction;
         private readonly XSModelResultType ResultType;
-        private readonly ICodeBrowserCompareHelper CompareHelper;
+        private readonly ICompareHelper CompareHelper;
         private readonly string ColumnIdentifier;
 
         public string SqlOrderBy { get; }
 
-        public CodeBrowserResultComparer(ListSortDirection direction, DataGridColumn column, XSModelResultType resultType)
+        public XSModelResultComparer(ListSortDirection direction, DataGridColumn column) : this(direction, column, XSModelResultType.Type)
+        { }
+
+        public XSModelResultComparer(ListSortDirection direction, DataGridColumn column, XSModelResultType resultType)
         {
             Direction = direction;
             ResultType = resultType;
@@ -75,36 +79,36 @@ namespace XSharpPowerTools.Helpers
 
         #region CompareHelpers
 
-        private interface ICodeBrowserCompareHelper
+        private interface ICompareHelper
         {
             int ExecuteComparison(XSModelResultItem a, XSModelResultItem b);
         }
 
-        private class TypeCompareHelper : ICodeBrowserCompareHelper
+        private class TypeCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.TypeName.CompareTo(b.TypeName);
         }
 
-        private class MemberCompareHelper : ICodeBrowserCompareHelper
+        private class MemberCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.MemberName.CompareTo(b.MemberName);
         }
 
-        private class KindCompareHelper : ICodeBrowserCompareHelper
+        private class KindCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.Kind.CompareTo(b.Kind);
         }
 
-        private class FileCompareHelper : ICodeBrowserCompareHelper
+        private class FileCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.ContainingFile.CompareTo(b.ContainingFile);
         }
 
-        private class NamespaceCompareHelper : ICodeBrowserCompareHelper
+        private class NamespaceCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.Namespace.CompareTo(b.Namespace);

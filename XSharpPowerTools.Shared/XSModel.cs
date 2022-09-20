@@ -109,15 +109,6 @@ namespace XSharpPowerTools
         };
     }
 
-    public class NamespaceResultItem
-    {
-        public string TypeName { get; set; }
-        public string Namespace { get; set; }
-
-        public override int GetHashCode() =>
-            TypeName.GetHashCode() + Namespace.GetHashCode();
-    }
-
     public class XSModel
     {
         private readonly SqliteConnection Connection;
@@ -567,7 +558,7 @@ namespace XSharpPowerTools
             return null;
         }
 
-        public async Task<List<NamespaceResultItem>> GetContainingNamespaceAsync(string searchTerm, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
+        public async Task<List<XSModelResultItem>> GetContainingNamespaceAsync(string searchTerm, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return null;
@@ -601,10 +592,10 @@ namespace XSharpPowerTools
             command.Parameters.AddWithValue("$typeName", $"%{searchTerm.Trim().ToLower()}%");
 
             var reader = await command.ExecuteReaderAsync();
-            var results = new List<NamespaceResultItem>();
+            var results = new List<XSModelResultItem>();
             while (await reader.ReadAsync())
             {
-                var result = new NamespaceResultItem
+                var result = new XSModelResultItem
                 {
                     TypeName = reader.GetString(0),
                     Namespace = reader.GetString(1)

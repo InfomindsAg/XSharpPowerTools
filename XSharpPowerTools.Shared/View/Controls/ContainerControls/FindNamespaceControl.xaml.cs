@@ -64,7 +64,7 @@ namespace XSharpPowerTools.View.Controls
             };
         }
 
-        private async Task InsertUsingAsync(NamespaceResultItem item)
+        private async Task InsertUsingAsync(XSModelResultItem item)
         {
             if (item == null)
                 return;
@@ -72,7 +72,7 @@ namespace XSharpPowerTools.View.Controls
             Close();
         }
 
-        private async Task InsertNamespaceReferenceAsync(NamespaceResultItem item)
+        private async Task InsertNamespaceReferenceAsync(XSModelResultItem item)
         {
             if (item == null)
                 return;
@@ -84,7 +84,7 @@ namespace XSharpPowerTools.View.Controls
         {
             if (AllowReturn)
             {
-                var item = selectedItem as NamespaceResultItem;
+                var item = selectedItem as XSModelResultItem;
                 if (Keyboard.Modifiers == ModifierKeys.Control)
                     XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertNamespaceReferenceAsync(item)).FileAndForget($"{FileReference}OnReturn");
                 else
@@ -95,7 +95,7 @@ namespace XSharpPowerTools.View.Controls
         protected void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e) =>
             AllowReturn = false;
 
-        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
-            new FindNamespaceResultComparer(direction, column);
+        protected override XSModelResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
+            new(direction, column);
     }
 }

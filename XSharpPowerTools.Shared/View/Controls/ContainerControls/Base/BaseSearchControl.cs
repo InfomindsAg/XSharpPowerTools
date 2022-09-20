@@ -36,7 +36,7 @@ namespace XSharpPowerTools.View.Controls
             PreviewKeyDown += BaseSearchControl_PreviewKeyDown;
         }
 
-        protected abstract IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column);
+        protected abstract XSModelResultComparer GetComparer(ListSortDirection direction, DataGridColumn column);
         protected abstract Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null);
         public abstract void OnReturn(object selectedItem);
 

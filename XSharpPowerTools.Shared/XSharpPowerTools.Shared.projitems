@@ -65,9 +65,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Commands\FindNamespaceCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Filter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DocumentHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\FindNamespaceResultComparer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\CodeBrowserResultComparer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\IResultComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\XSModelResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />

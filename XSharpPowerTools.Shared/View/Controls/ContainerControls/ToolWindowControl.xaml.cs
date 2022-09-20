@@ -201,8 +201,8 @@ namespace XSharpPowerTools.View.Controls
             _results.Clear();
         }
 
-        protected override IResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
-            new CodeBrowserResultComparer(direction, column, DisplayedResultType);
+        protected override XSModelResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
+            new(direction, column, DisplayedResultType);
 
         protected override async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
