@@ -33,7 +33,7 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2" />
-            <ColumnDefinition Width="870"/>
+            <ColumnDefinition Width="670"/>
             <ColumnDefinition Width="43"/>
             <ColumnDefinition Width="2"/>
         </Grid.ColumnDefinitions>
@@ -144,11 +144,6 @@
                     Binding="{Binding MemberName}"
                     SortMemberPath="MemberName"
                     Width="*"/>
-                <DataGridTextColumn
-                    Header=" Params"
-                    Binding="{Binding ParametersCount}"
-                    CanUserSort="False"
-                    Width="SizeToCells"/>
                 <DataGridTextColumn
                     Header=" Kind"
                     Binding="{Binding KindName}"

@@ -45,12 +45,17 @@ namespace XSharpPowerTools.View.Controls
 
         protected override void SetTableColumns(XSModelResultType resultType)
         {
-            var typeSpecificColumnsVisibility = resultType == XSModelResultType.Type
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-
-            ResultsDataGrid.Columns[0].Visibility = typeSpecificColumnsVisibility;
-            base.SetTableColumns(resultType); 
+            if (resultType == XSModelResultType.Type) 
+            {
+                ResultsDataGrid.Columns[0].Visibility = Visibility.Visible;
+                ResultsDataGrid.Columns[1].Visibility = Visibility.Collapsed;
+            }
+            else 
+            {
+                ResultsDataGrid.Columns[0].Visibility = Visibility.Collapsed;
+                ResultsDataGrid.Columns[1].Visibility = Visibility.Visible;
+            }
+            ResultsDataGrid.RenderColumns();
         }
 
         protected override async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
