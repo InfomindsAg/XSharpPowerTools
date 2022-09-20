@@ -147,9 +147,8 @@ namespace XSharpPowerTools.View.Controls
                 var item = selectedItem as XSModelResultItem;
                 if (Keyboard.Modifiers == ModifierKeys.Control && DisplayedResultType == XSModelResultType.Type)
                 {
-                    SearchTextBox.Text = $"{item.TypeName}.";
                     SelectedTypeInfo = item;
-                    ResetFilters(MemberFilterControl.DisplayMode.ContainedInType);
+                    SearchTextBox.Text = $"{item.TypeName}.";
                     SearchTextBox.CaretIndex = int.MaxValue;
                     return;
                 }

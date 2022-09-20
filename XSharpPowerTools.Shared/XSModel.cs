@@ -233,7 +233,7 @@ namespace XSharpPowerTools
                     var typeName = keyWords[0].Trim();
                     var memberName = keyWords[1].Trim();
                     memberName = PrepareForSqlLike(memberName);
-                    resultsAndResultType = await SearchMemberInHierarchyAsync(typeName, memberName, filter, orderBy, sqlSortDirection);
+                    resultsAndResultType = await SearchMemberInHierarchyAsync(typeName, memberName, filter, orderBy, sqlSortDirection, selectedTypeInfo);
                 }
                 Connection.Close();
                 return resultsAndResultType;
@@ -255,7 +255,7 @@ namespace XSharpPowerTools
                     memberName = string.Empty;
                 }
 
-                var (results, resultType) = await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, limit);
+                var (results, resultType) = await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, limit, null, null, -1, false, null, true);
 
                 if (!filtersApplied && filter.Type == FilterType.Type && results.Count < 1)
                 {
@@ -268,11 +268,18 @@ namespace XSharpPowerTools
             }
         }
 
-        private async Task<(List<XSModelResultItem>, XSModelResultType)> BuildAndExecuteSqlAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, int limit, string solutionDirectory = null, string currentFile = null, int caretPosition = -1, bool searchInHierarchy = false, XSModelResultItem hierarchyTypeInfo = null)
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string currentFile, int caretPosition) =>
+            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, caretPosition, true);
+
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, XSModelResultItem hierarchyTypeInfo = null) =>
+            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, null, -1, true, hierarchyTypeInfo);
+
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> BuildAndExecuteSqlAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, int limit, string solutionDirectory = null, string currentFile = null, int caretPosition = -1, bool searchInHierarchy = false, XSModelResultItem hierarchyTypeInfo = null, bool useGroupBy = false)
         {
             memberName = memberName.Replace("_", @"\_");
             typeName = typeName?.Replace("_", @"\_");
 
+            var groupByClause = string.Empty;
             var searchingForMember = filter.Type == FilterType.Member;
 
             if (searchingForMember && string.IsNullOrWhiteSpace(memberName))
@@ -296,7 +303,7 @@ namespace XSharpPowerTools
 
             command.CommandText =
                 @$"
-                    SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode{(searchingForMember ? ", TypeName" : string.Empty)}
+                    SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName{(searchingForMember ? ", TypeName" : string.Empty)}
                     FROM {filter.GetDbTable()} 
                     WHERE {filter.GetFilterSql(memberName)}
                     AND LOWER(TRIM(Name)) LIKE $name ESCAPE '\'
@@ -324,7 +331,7 @@ namespace XSharpPowerTools
                                 var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(typeInfo);
                                 command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ({string.Join(", ", hierarchyTypeInfos.Select(q => q.FullName.ToLower()))})";
                             }
-                            else 
+                            else
                             {
                                 command.CommandText += $" AND TRIM(TypeName) = {typeInfo.TypeName} AND TRIM(Namespace) = {typeInfo.Namespace.Trim()}";
                             }
@@ -340,7 +347,7 @@ namespace XSharpPowerTools
                 {
                     if (searchInHierarchy)
                     {
-                        if (hierarchyTypeInfo == null) 
+                        if (hierarchyTypeInfo == null)
                             hierarchyTypeInfo = await GetTypeInfoAsync(typeName);
 
                         var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(hierarchyTypeInfo);
@@ -353,7 +360,7 @@ namespace XSharpPowerTools
                     }
                 }
 
-                if (searchInHierarchy) 
+                if (searchInHierarchy)
                 {
                     command.CommandText +=
                         @"
@@ -363,12 +370,21 @@ namespace XSharpPowerTools
                         ";
                 }
             }
+            else if (useGroupBy) 
+            {
+                groupByClause = 
+                    @"
+                        GROUP BY Name, Namespace
+					    HAVING BaseTypeName = MAX(BaseTypeName)
+                    ";
+            }
             command.CommandText +=
                 @$"
                     AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
                     AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
                     AND LOWER(TRIM(FileName)) NOT LIKE '%{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}%'
                     AND LOWER(TRIM(ProjectFileName)) NOT LIKE '%.(orphanedfiles).xsproj'
+                    {groupByClause}
                     ORDER BY {orderBy}
                     LIMIT {limit}
                 ";
@@ -387,13 +403,14 @@ namespace XSharpPowerTools
                     Kind = reader.GetInt32(4),
                     Namespace = reader.GetString(5),
                     SourceCode = reader.GetString(6),
+                    BaseTypeName = reader.GetString(7),
                     ResultType = resultType,
                     SolutionDirectory = solutionDirectory
                 };
                 if (searchingForMember)
                 {
                     resultItem.MemberName = reader.GetString(0);
-                    resultItem.TypeName = reader.GetString(7);
+                    resultItem.TypeName = reader.GetString(8);
                 }
                 else
                 {
@@ -404,9 +421,6 @@ namespace XSharpPowerTools
             }
             return (results, resultType);
         }
-
-        private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string currentFile = null, int caretPosition = -1) =>
-            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, caretPosition, true);
 
         private async Task<List<XSModelResultItem>> GetClassHierarchyInfosAsync(XSModelResultItem typeInfo) 
         {
