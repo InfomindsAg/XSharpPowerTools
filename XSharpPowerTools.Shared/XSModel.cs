@@ -269,10 +269,10 @@ namespace XSharpPowerTools
         }
 
         private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string currentFile, int caretPosition) =>
-            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, caretPosition, true);
+            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, caretPosition, true, null, true);
 
         private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, XSModelResultItem hierarchyTypeInfo = null) =>
-            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, null, -1, true, hierarchyTypeInfo);
+            await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, null, -1, true, hierarchyTypeInfo, true);
 
         private async Task<(List<XSModelResultItem>, XSModelResultType)> BuildAndExecuteSqlAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, int limit, string solutionDirectory = null, string currentFile = null, int caretPosition = -1, bool searchInHierarchy = false, XSModelResultItem hierarchyTypeInfo = null, bool useGroupBy = false)
         {
@@ -299,11 +299,15 @@ namespace XSharpPowerTools
                 orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
             }
 
+            var kindSql = searchingForMember && useGroupBy
+                ? "REPLACE(REPLACE(Kind, 6, 8), 7, 8) AS DisplayKind"
+                : "Kind";
+
             var command = Connection.CreateCommand();
 
             command.CommandText =
                 @$"
-                    SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName{(searchingForMember ? ", TypeName" : string.Empty)}
+                    SELECT Name, FileName, StartLine, ProjectFileName, {kindSql}, Namespace, Sourcecode, BaseTypeName{(searchingForMember ? ", TypeName" : string.Empty)}
                     FROM {filter.GetDbTable()} 
                     WHERE {filter.GetFilterSql(memberName)}
                     AND LOWER(TRIM(Name)) LIKE $name ESCAPE '\'
@@ -369,10 +373,19 @@ namespace XSharpPowerTools
 					        AND LOWER(TRIM(Sourcecode)) NOT LIKE 'protected%'
                         ";
                 }
+
+                if (useGroupBy)
+                {
+                    groupByClause =
+                        @"
+                            GROUP BY Name, TypeName, Namespace, DisplayKind
+					        HAVING Id = MIN(Id)
+                        ";
+                }
             }
             else if (useGroupBy) 
             {
-                groupByClause = 
+                groupByClause =
                     @"
                         GROUP BY Name, Namespace
 					    HAVING BaseTypeName = MAX(BaseTypeName)
