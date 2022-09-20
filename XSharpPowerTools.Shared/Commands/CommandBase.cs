@@ -39,12 +39,12 @@ namespace XSharpPowerTools.Commands
                 }
                 else
                 {
-                    await VS.MessageBox.ShowWarningAsync("X# Code Browser", "Waiting for solution to be fully loaded.");
+                    await VS.MessageBox.ShowWarningAsync("X# Power Tools", "Waiting for solution to be fully loaded.");
                 }
             }
             else
             {
-                await VS.MessageBox.ShowWarningAsync("X# Code Browser", "X# Code Browser is only available with an opened solution.");
+                await VS.MessageBox.ShowWarningAsync("X# Power Tools", "X# Power Tools is only available with an opened solution.");
             }
         }
 

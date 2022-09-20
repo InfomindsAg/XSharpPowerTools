@@ -29,6 +29,8 @@ namespace XSharpPowerTools.View.Controls
         protected override MemberFilterControl MemberFilterGroup => _memberFilterGroup;
         protected override TypeFilterControl TypeFilterGroup => _typeFilterGroup;
 
+        private XSModelResultItem SelectedTypeInfo = null; 
+
         public CodeSuggestionsControl(DialogWindow parentWindow) : base(parentWindow)
         {
             InitializeComponent();
@@ -84,7 +86,7 @@ namespace XSharpPowerTools.View.Controls
                         caretPosition = -1;
                     }
 
-                    var (results, resultType) = await XSModel.GetCodeSuggestionsAsync(searchTerm, GetFilter(), direction, orderBy, currentFile, caretPosition);
+                    var (results, resultType) = await XSModel.GetCodeSuggestionsAsync(searchTerm, GetFilter(), direction, orderBy, SelectedTypeInfo, currentFile, caretPosition);
 
                     ResultsDataGrid.ItemsSource = results;
                     ResultsDataGrid.SelectedItem = results.FirstOrDefault();
@@ -109,12 +111,19 @@ namespace XSharpPowerTools.View.Controls
         {
             AllowReturn = false;
             var separators = new[] { '.', ':' };
-            if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.GlobalScope 
-                && (SearchTextBox.Text.StartsWith("..") 
+            if (SelectedTypeInfo != null
+                && (!SearchTextBox.Text.Trim().StartsWith(SelectedTypeInfo.TypeName) 
+                    || SearchTextBox.Text.Trim().IndexOfAny(separators) != SelectedTypeInfo.TypeName.Length))
+            {
+                SelectedTypeInfo = null;
+            }
+
+            if ((SearchTextBox.Text.StartsWith("..") 
                     || SearchTextBox.Text.StartsWith("::") 
                     || (separators.Any(SearchTextBox.Text.Contains) && !(SearchTextBox.Text.StartsWith(".") || SearchTextBox.Text.StartsWith(":")))))
             {
-                ResetFilters(MemberFilterControl.DisplayMode.ContainedInType);
+                if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.GlobalScope)
+                    ResetFilters(MemberFilterControl.DisplayMode.ContainedInType);
             }
             else if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.ContainedInType)
             {
@@ -139,6 +148,7 @@ namespace XSharpPowerTools.View.Controls
                 if (Keyboard.Modifiers == ModifierKeys.Control && DisplayedResultType == XSModelResultType.Type)
                 {
                     SearchTextBox.Text = $"{item.TypeName}.";
+                    SelectedTypeInfo = item;
                     ResetFilters(MemberFilterControl.DisplayMode.ContainedInType);
                     SearchTextBox.CaretIndex = int.MaxValue;
                     return;

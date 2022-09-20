@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using XSharpPowerTools.Helpers;
@@ -25,6 +26,7 @@ namespace XSharpPowerTools
         public XSModelResultType ResultType { get; set; }
         public string MemberName { get; set; }
         public string ContainingFile { get; set; }
+        public string BaseTypeName { get; set; }
         public string Namespace { get; set; }
         public string Project { get; set; }
         public string SourceCode { get; set; }
@@ -38,6 +40,19 @@ namespace XSharpPowerTools
             set => _typeName = "(Global Scope)".Equals(value?.Trim(), StringComparison.OrdinalIgnoreCase) ? string.Empty : value?.Trim();
         }
 
+        public string FullName
+        {
+            get 
+            {
+                if (ResultType != XSModelResultType.Type || string.IsNullOrWhiteSpace(TypeName))
+                    return string.Empty;
+
+                return string.IsNullOrWhiteSpace(Namespace)
+                    ? TypeName
+                    : $"{Namespace}.{TypeName}";
+            } 
+        }
+        
         public string RelativePath =>
             string.IsNullOrWhiteSpace(SolutionDirectory) || !ContainingFile.StartsWith(SolutionDirectory) ? ContainingFile : ContainingFile.Substring(SolutionDirectory.Length + 1);
 
@@ -98,7 +113,6 @@ namespace XSharpPowerTools
     {
         public string TypeName { get; set; }
         public string Namespace { get; set; }
-        public int ProjectId { get; set; }
 
         public override int GetHashCode() =>
             TypeName.GetHashCode() + Namespace.GetHashCode();
@@ -181,7 +195,7 @@ namespace XSharpPowerTools
             }
         }
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetCodeSuggestionsAsync(string searchTerm, Filter filter, ListSortDirection direction, string orderBy, string currentFile = null, int caretPosition = -1) 
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetCodeSuggestionsAsync(string searchTerm, Filter filter, ListSortDirection direction, string orderBy, XSModelResultItem selectedTypeInfo, string currentFile = null, int caretPosition = -1) 
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return (new(), 0);
@@ -254,7 +268,7 @@ namespace XSharpPowerTools
             }
         }
 
-        private async Task<(List<XSModelResultItem>, XSModelResultType)> BuildAndExecuteSqlAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, int limit, string solutionDirectory = null, string currentFile = null, int caretPosition = -1, bool searchInHierarchy = false)
+        private async Task<(List<XSModelResultItem>, XSModelResultType)> BuildAndExecuteSqlAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, int limit, string solutionDirectory = null, string currentFile = null, int caretPosition = -1, bool searchInHierarchy = false, XSModelResultItem hierarchyTypeInfo = null)
         {
             memberName = memberName.Replace("_", @"\_");
             typeName = typeName?.Replace("_", @"\_");
@@ -302,28 +316,17 @@ namespace XSharpPowerTools
                     }
                     else
                     {
-                        var idType = await GetContaingClassAsync(currentFile, caretPosition);
-                        if (idType > 0)
+                        var typeInfo = await GetContaingClassAsync(currentFile, caretPosition);
+                        if (typeInfo != null)
                         {
                             if (searchInHierarchy)
-                            { 
-                                command.CommandText += 
-                                    @$" 
-                                        AND TypeName IN (
-	                                        WITH RECURSIVE BaseClasses(BaseTypeName) AS(
-		                                        SELECT Name FROM ProjectTypes WHERE Id = {idType}
-		                                        UNION
-		                                        SELECT ProjectTypes.BaseTypeName
-		                                        FROM ProjectTypes, BaseClasses
-		                                        WHERE LOWER(TRIM(BaseClasses.BaseTypeName)) = LOWER(TRIM(ProjectTypes.Name)) AND ProjectTypes.BaseTypeName IS NOT NULL AND TRIM(ProjectTypes.BaseTypeName) != """"
-	                                        )
-	                                        SELECT * FROM BaseClasses
-                                        )
-                                    ";
+                            {
+                                var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(typeInfo);
+                                command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ({string.Join(", ", hierarchyTypeInfos.Select(q => q.FullName.ToLower()))})";
                             }
                             else 
                             {
-                                command.CommandText += $" AND IdType = {idType}";
+                                command.CommandText += $" AND TRIM(TypeName) = {typeInfo.TypeName} AND TRIM(Namespace) = {typeInfo.Namespace.Trim()}";
                             }
                         }
                         else
@@ -337,25 +340,17 @@ namespace XSharpPowerTools
                 {
                     if (searchInHierarchy)
                     {
-                        command.CommandText += 
-                            @" 
-                                AND TypeName IN (
-	                                WITH RECURSIVE BaseClasses(BaseTypeName) AS(
-		                                SELECT $typeName
-		                                UNION
-		                                SELECT ProjectTypes.BaseTypeName
-		                                FROM ProjectTypes, BaseClasses
-		                                WHERE LOWER(TRIM(BaseClasses.BaseTypeName)) = LOWER(TRIM(ProjectTypes.Name)) AND ProjectTypes.BaseTypeName IS NOT NULL AND TRIM(ProjectTypes.BaseTypeName) != """"
-	                                )
-	                                SELECT * FROM BaseClasses
-                                )
-                            ";
+                        if (hierarchyTypeInfo == null) 
+                            hierarchyTypeInfo = await GetTypeInfoAsync(typeName);
+
+                        var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(hierarchyTypeInfo);
+                        command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q.FullName.ToLower()))}')";
                     }
                     else
                     {
                         command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $typeName  ESCAPE '\'";
+                        command.Parameters.AddWithValue("$typeName", typeName.Trim().ToLower());
                     }
-                    command.Parameters.AddWithValue("$typeName", typeName.Trim().ToLower());
                 }
 
                 if (searchInHierarchy) 
@@ -413,28 +408,136 @@ namespace XSharpPowerTools
         private async Task<(List<XSModelResultItem>, XSModelResultType)> SearchMemberInHierarchyAsync(string typeName, string memberName, Filter filter, string orderBy, string sqlSortDirection, string currentFile = null, int caretPosition = -1) =>
             await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, 100, null, currentFile, caretPosition, true);
 
-        private async Task<int> GetContaingClassAsync(string currentFile, int caretPosition)
+        private async Task<List<XSModelResultItem>> GetClassHierarchyInfosAsync(XSModelResultItem typeInfo) 
         {
-            if (string.IsNullOrWhiteSpace(currentFile))
-                return 0;
+            //Find Type-Entry where BaseClass is set (partial classes), get BaseTypeName and FileName
+            //Get Usings from FileName
+            //Check in which Namespace BaseTypeName is included
+            //get Type-Entry from BaseTypeName and corresponding Namespace
+
+            //return List of Names AND Namespaces (IDs not working) for all BaseTypes
+            //Suche nach Members über ProjectMembers Tabelle, darin Type und Namespace enthalten, mit diesen einfach Fullname und IN return Val
+
+            var nextTypeInfo = typeInfo;
+            var typeInfos = new List<XSModelResultItem>();
+            if (string.IsNullOrEmpty(typeInfo.BaseTypeName))
+                nextTypeInfo = await GetTypeInfoAsync(typeInfo.FullName) ?? typeInfo;
+            
+            if (string.IsNullOrEmpty(nextTypeInfo.BaseTypeName))
+                return typeInfos;
+
+            do
+            {
+                typeInfos.Add(nextTypeInfo);
+
+                var baseNamespace = await FindBaseTypeNamespaceAsync(nextTypeInfo.ContainingFile, nextTypeInfo.BaseTypeName);
+                var fullBaseName = string.IsNullOrWhiteSpace(baseNamespace)
+                    ? nextTypeInfo.BaseTypeName
+                    : $"{baseNamespace}.{nextTypeInfo.BaseTypeName}";
+                nextTypeInfo = await GetTypeInfoAsync(fullBaseName);
+            }
+            while (nextTypeInfo != null && !string.IsNullOrEmpty(nextTypeInfo.BaseTypeName));
+
+            return typeInfos;
+        }
+
+        private async Task<string> FindBaseTypeNamespaceAsync(string fileName, string baseTypeName)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                return null;
 
             var command = Connection.CreateCommand();
             command.CommandText =
                 @"
-                    SELECT Id
-					FROM ProjectTypes
-					WHERE Kind = 1
-                    AND LOWER(TRIM(Sourcecode)) LIKE ""%class%""
-                    AND TRIM(LOWER(FileName)) = $fileName
-                    AND Start < $caretPos AND Stop > $caretPos
-                    ORDER BY Stop - Start ASC LIMIT 1
+                    WITH split(ns, usings) AS (
+	                    SELECT  '',  Usings||char(13) FROM Files WHERE LOWER(TRIM(FileName)) = $fileName
+	                    UNION ALL SELECT
+		                    substr(usings, 0, instr(usings, char(13))),
+		                    substr(usings, instr(usings, char(13)) + 1)
+	                    FROM split
+	                    WHERE usings != '' 
+                    )
+                    SELECT TRIM(ns, char(10)) AS Namespace 
+                    FROM split 
+                    WHERE TRIM(Namespace) in (
+	                    SELECT ReferencedTypes.Namespace FROM ReferencedTypes WHERE LOWER(TRIM(Name)) = $baseTypeName
+                    )
+                ";
+            command.Parameters.AddWithValue("$fileName", fileName.Trim().ToLower());
+            command.Parameters.AddWithValue("$baseTypeName", baseTypeName.Trim().ToLower());
+
+            var idTypeResult = await command.ExecuteScalarAsync();
+            idTypeResult = idTypeResult == DBNull.Value ? null : idTypeResult;
+            return idTypeResult?.ToString();
+        }
+
+        private async Task<XSModelResultItem> GetContaingClassAsync(string currentFile, int caretPosition)
+        {
+            if (string.IsNullOrWhiteSpace(currentFile))
+                return null;
+
+            var command = Connection.CreateCommand();
+            command.CommandText =
+                @"
+                    WITH ContainingClass(Name, Namespace) AS (
+	                    SELECT Name, Namespace
+	                    FROM ProjectTypes
+	                    WHERE Kind = 1
+	                    AND LOWER(TRIM(Sourcecode)) LIKE '%class%'
+	                    AND LOWER(TRIM(FileName)) = $fileName
+	                    AND Start < $caretPos AND Stop > $caretPos
+	                    ORDER BY Stop - Start ASC LIMIT 1
+                    )
+                    SELECT Name, Namespace, BaseTypeName, FileName 
+                    FROM ProjectTypes, ContainingClass 
+                    WHERE ProjectTypes.Name = ContainingClass.Name 
+                    AND ProjectTypes.Namespace = ContainingClass.Namespace 
+                    ORDER BY BaseTypeName DESC LIMIT 1
                 ";
             command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
             command.Parameters.AddWithValue("$caretPos", caretPosition);
 
-            var idTypeResult = await command.ExecuteScalarAsync();
-            idTypeResult = idTypeResult == DBNull.Value ? null : idTypeResult;
-            return Convert.ToInt32(idTypeResult);
+            var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new XSModelResultItem
+                {
+                    TypeName = reader.GetString(0),
+                    Namespace = reader.GetString(1),
+                    BaseTypeName = reader.GetString(2),
+                    ContainingFile = reader.GetString(3)
+                };
+            }
+            return null;
+        }
+
+        private async Task<XSModelResultItem> GetTypeInfoAsync(string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName))
+                return null;
+
+            var command = Connection.CreateCommand();
+            command.CommandText =
+                @"
+                    SELECT Name, Namespace, BaseTypeName, FileName
+					FROM ProjectTypes
+					WHERE LOWER(TRIM(COALESCE(Namespace, '') || '.' || Name, '.')) = $fullName
+                    ORDER BY BaseTypeName DESC LIMIT 1
+                ";
+            command.Parameters.AddWithValue("$fullName", fullName.ToLower());
+
+            var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new XSModelResultItem
+                {
+                    TypeName = reader.GetString(0),
+                    Namespace = reader.GetString(1),
+                    BaseTypeName = reader.GetString(2),
+                    ContainingFile = reader.GetString(3)
+                };
+            }
+            return null;
         }
 
         public async Task<List<NamespaceResultItem>> GetContainingNamespaceAsync(string searchTerm, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
@@ -457,13 +560,13 @@ namespace XSharpPowerTools
 	                    (SELECT DISTINCT Name, Namespace
 		                    FROM AssemblyTypes
 		                    WHERE Namespace IS NOT NULL
-			                    AND trim(Namespace) != ''
+			                    AND TRIM(Namespace) != ''
 			                    AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\'
 	                    UNION
 	                    SELECT DISTINCT Name, Namespace
 		                    FROM ProjectTypes 
 		                    WHERE Namespace IS NOT NULL
-			                    AND trim(Namespace) != ''
+			                    AND TRIM(Namespace) != ''
 			                    AND LOWER(TRIM(Name)) LIKE $typeName ESCAPE '\')
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT 100
@@ -497,7 +600,7 @@ namespace XSharpPowerTools
                 @"
                     SELECT Usings
 					FROM Files
-					WHERE TRIM(LOWER(FileName)) = $fileName
+					WHERE LOWER(TRIM(FileName)) = $fileName
                 ";
             command.Parameters.AddWithValue("$fileName", file.Trim().ToLower());
 
