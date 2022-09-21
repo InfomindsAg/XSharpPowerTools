@@ -26,7 +26,8 @@ ex1.ex2       - searches for members similar to 'ex2' within classes with the ex
 ..example    - searches for members 'example' within current type
 ex*Model    - * is a placeholder for multiple characters
 
-Ctrl + 1,2,3,... to activate/deactivate filters";
+Ctrl + 1,2,3,... to activate/deactivate filters
+Ctrl + Return to search within members of selected type";
 
         public CodeSuggestionsHelpText() : base(HelpText)
         { }

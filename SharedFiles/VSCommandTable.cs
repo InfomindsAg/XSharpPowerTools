@@ -32,8 +32,8 @@ namespace XSharpPowerTools
         public const int MySubMenu = 0x0002;
         public const int MySubMenuGroup = 0x0003;
         public const int MyContextMenuGroup = 0x0004;
-        public const int CodeSuggestionsCommand = 0x0100;
+        public const int CodeBrowserCommand = 0x0100;
         public const int FindNamespaceCommand = 0x0110;
-        public const int CodeBrowserCommand = 0x0120;
+        public const int CodeSuggestionsCommand = 0x0120;
     }
 }
