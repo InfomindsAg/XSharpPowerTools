@@ -87,7 +87,7 @@ namespace XSharpPowerTools
         private string GetFilterSqlConditions(TypeFilter filter) =>
             filter switch
             {
-                TypeFilter.Class => "(Kind = 1 AND LOWER(Sourcecode) LIKE '%class%')", //to exclude (Global Scope)-Type
+                TypeFilter.Class => "(Kind = 1 AND TRIM(LOWER(Sourcecode)) NOT LIKE '(global scope)')", //to exclude (Global Scope)-Type
                 TypeFilter.Interface => "Kind = 16",
                 TypeFilter.Enum => "Kind = 18",
                 TypeFilter.Struct => "Kind = 25",

@@ -161,6 +161,7 @@ namespace XSharpPowerTools.View.Controls
                 var codeSuggestion = DisplayedResultType == XSModelResultType.Type ? item.TypeName : item.MemberName;
 
                 XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DocumentHelper.InsertCodeSuggestionAsync(codeSuggestion)).FileAndForget($"{FileReference}OnReturn");
+                Close();
             }
         }
     }

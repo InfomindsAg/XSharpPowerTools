@@ -290,16 +290,41 @@ namespace XSharpPowerTools
                 orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
             }
 
-            var kindSql = searchingForMember && useGroupBy
-                ? "REPLACE(REPLACE(Kind, 6, 8), 7, 8) AS DisplayKind"
-                : "Kind";
+            var kindSql = "Kind";
+            var withClause = string.Empty;
+            var tableToQuery = filter.GetDbTable();
+
+            if (useGroupBy) //for Code Suggestions
+            {
+                if (searchingForMember)
+                {
+                    kindSql = "REPLACE(REPLACE(Kind, 6, 8), 7, 8) AS DisplayKind";
+                }
+                else 
+                {
+                    tableToQuery = "AllTypes";
+                    withClause =
+                        @"
+                        WITH AllTypes(Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName) AS (
+	                        SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName
+	                        FROM ProjectTypes
+	                        WHERE ((Kind = 1 AND TRIM(LOWER(Sourcecode)) NOT LIKE '%(global scope)%') OR Kind = 18 OR Kind = 16 OR Kind = 25)
+	                        UNION
+	                        SELECT Name, '', 0, '', Kind, Namespace, FullName, COALESCE(BaseTypeName,'')
+	                        FROM AssemblyTypes
+	                        WHERE (Kind = 1 OR Kind = 18 OR Kind = 16 OR Kind = 25)
+                        )
+                        ";
+                }
+            }
 
             var command = Connection.CreateCommand();
 
             command.CommandText =
                 @$"
+                    {withClause}
                     SELECT Name, FileName, StartLine, ProjectFileName, {kindSql}, Namespace, Sourcecode, BaseTypeName{(searchingForMember ? ", TypeName" : string.Empty)}
-                    FROM {filter.GetDbTable()} 
+                    FROM {tableToQuery} 
                     WHERE {filter.GetFilterSql(memberName)}
                     AND LOWER(TRIM(Name)) LIKE $name ESCAPE '\'
                 ";
@@ -324,11 +349,13 @@ namespace XSharpPowerTools
                             if (searchInHierarchy)
                             {
                                 var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(typeInfo);
-                                command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ({string.Join(", ", hierarchyTypeInfos.Select(q => q.FullName.ToLower()))})";
+                                command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q?.FullName?.ToLower()))}')";
                             }
                             else
                             {
-                                command.CommandText += $" AND TRIM(TypeName) = {typeInfo.TypeName} AND TRIM(Namespace) = {typeInfo.Namespace.Trim()}";
+                                command.CommandText += " AND TRIM(TypeName) = $typeName AND TRIM(Namespace) = $namespace";
+                                command.Parameters.AddWithValue("$typeName", typeInfo.TypeName.Trim()); 
+                                command.Parameters.AddWithValue("$namespace", typeInfo.Namespace.Trim());
                             }
                         }
                         else
@@ -346,7 +373,7 @@ namespace XSharpPowerTools
                             hierarchyTypeInfo = await GetTypeInfoAsync(typeName);
 
                         var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(hierarchyTypeInfo);
-                        command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q.FullName.ToLower()))}')";
+                        command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q?.FullName?.ToLower()))}')";
                     }
                     else
                     {
@@ -428,21 +455,16 @@ namespace XSharpPowerTools
 
         private async Task<List<XSModelResultItem>> GetClassHierarchyInfosAsync(XSModelResultItem typeInfo) 
         {
-            //Find Type-Entry where BaseClass is set (partial classes), get BaseTypeName and FileName
-            //Get Usings from FileName
-            //Check in which Namespace BaseTypeName is included
-            //get Type-Entry from BaseTypeName and corresponding Namespace
-
-            //return List of Names AND Namespaces (IDs not working) for all BaseTypes
-            //Suche nach Members über ProjectMembers Tabelle, darin Type und Namespace enthalten, mit diesen einfach Fullname und IN return Val
-
             var nextTypeInfo = typeInfo;
             var typeInfos = new List<XSModelResultItem>();
-            if (string.IsNullOrEmpty(typeInfo.BaseTypeName))
-                nextTypeInfo = await GetTypeInfoAsync(typeInfo.FullName) ?? typeInfo;
+            if (string.IsNullOrEmpty(typeInfo?.BaseTypeName))
+                nextTypeInfo = await GetTypeInfoAsync(typeInfo?.FullName) ?? typeInfo;
             
-            if (string.IsNullOrEmpty(nextTypeInfo.BaseTypeName))
+            if (string.IsNullOrEmpty(nextTypeInfo?.BaseTypeName)) 
+            {
+                typeInfos.Add(nextTypeInfo);
                 return typeInfos;
+            }
 
             do
             {
@@ -506,10 +528,10 @@ namespace XSharpPowerTools
 	                    AND Start < $caretPos AND Stop > $caretPos
 	                    ORDER BY Stop - Start ASC LIMIT 1
                     )
-                    SELECT Name, Namespace, BaseTypeName, FileName 
-                    FROM ProjectTypes, ContainingClass 
-                    WHERE ProjectTypes.Name = ContainingClass.Name 
-                    AND ProjectTypes.Namespace = ContainingClass.Namespace 
+                    SELECT p.Name, p.Namespace, p.BaseTypeName, p.FileName 
+                    FROM ProjectTypes p, ContainingClass c
+                    WHERE p.Name = c.Name 
+                    AND p.Namespace = c.Namespace 
                     ORDER BY BaseTypeName DESC LIMIT 1
                 ";
             command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());

@@ -224,7 +224,7 @@ namespace XSharpPowerTools.Helpers
         {
             var lineText = caretLine?.GetText();
 
-            if (string.IsNullOrWhiteSpace(lineText))
+            if (string.IsNullOrEmpty(lineText))
                 return 0;
 
             var relativeCaretPosition = caretPosition - caretLine.Start.Position;

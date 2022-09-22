@@ -12,7 +12,7 @@ namespace XSharpPowerTools
         public const string Name = "XSharpPowerTools.2019";
         public const string Description = @"A set of Visual Studio 2019 tools for XSharp Developers";
         public const string Language = "en-US";
-        public const string Version = "1.10.1";
+        public const string Version = "1.10.2";
         public const string Author = "Infominds Ag";
         public const string Tags = "";
     }
