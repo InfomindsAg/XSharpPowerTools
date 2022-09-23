@@ -44,9 +44,9 @@ namespace XSharpPowerTools
             if (Type == FilterType.Member)
             {
                 if (".ctor".Equals(memberName, StringComparison.OrdinalIgnoreCase))
-                    return "Kind = 3";
+                    return "Kind = '3'";
                 else if (".dtor".Equals(memberName, StringComparison.OrdinalIgnoreCase))
-                    return "Kind = 4";
+                    return "Kind = '4'";
 
                 foreach (var filter in MemberFilters)
                 {
@@ -55,7 +55,7 @@ namespace XSharpPowerTools
                 }
 
                 if ("%".Equals(memberName))
-                    sb.Append("Kind = 3 OR Kind = 4");
+                    sb.Append("Kind = '3' OR Kind = '4'");
                 else
                     sb.Length = sb.Length - 4;
             }
@@ -75,22 +75,22 @@ namespace XSharpPowerTools
         private string GetFilterSqlConditions(MemberFilter filter) =>
             filter switch
             {
-                MemberFilter.Method => "Kind = 5",
-                MemberFilter.Property => "(Kind = 6 OR Kind = 7 OR Kind = 8)",
-                MemberFilter.Function => "(Kind = 9 OR Kind = 10)",
-                MemberFilter.Variable => "(Kind = 11 OR Kind = 26)",
-                MemberFilter.Define => "Kind = 23",
-                MemberFilter.EnumValue => "Kind = 19",
+                MemberFilter.Method => "Kind = '5'",
+                MemberFilter.Property => "(Kind = '6' OR Kind = '7' OR Kind = '8')",
+                MemberFilter.Function => "(Kind = '9' OR Kind = '10')",
+                MemberFilter.Variable => "(Kind = '11' OR Kind = '26')",
+                MemberFilter.Define => "Kind = '23'",
+                MemberFilter.EnumValue => "Kind = '19'",
                 _ => null,
             };
 
         private string GetFilterSqlConditions(TypeFilter filter) =>
             filter switch
             {
-                TypeFilter.Class => "(Kind = 1 AND TRIM(LOWER(Sourcecode)) NOT LIKE '(global scope)')", //to exclude (Global Scope)-Type
-                TypeFilter.Interface => "Kind = 16",
-                TypeFilter.Enum => "Kind = 18",
-                TypeFilter.Struct => "Kind = 25",
+                TypeFilter.Class => "(Kind = '1' AND TRIM(LOWER(Sourcecode)) NOT LIKE '(global scope)')", //to exclude (Global Scope)-Type
+                TypeFilter.Interface => "Kind = '16'",
+                TypeFilter.Enum => "Kind = '18'",
+                TypeFilter.Struct => "Kind = '25'",
                 _ => null,
             };
 

@@ -32,6 +32,7 @@ namespace XSharpPowerTools
         public string SourceCode { get; set; }
         public int Line { get; set; }
         public int Kind { get; set; }
+        public bool IsExternal { get; set; }
 
         private string _typeName;
         public string TypeName
@@ -111,6 +112,18 @@ namespace XSharpPowerTools
 
     public class XSModel
     {
+        private class XSResultMemberComparer : IEqualityComparer<XSModelResultItem>
+        {
+            public bool Equals(XSModelResultItem x, XSModelResultItem y) =>
+                x?.Kind == y?.Kind
+                && (x?.MemberName?.Equals(y?.MemberName, StringComparison.OrdinalIgnoreCase) ?? false)
+                && (x?.TypeName?.Equals(y?.TypeName, StringComparison.OrdinalIgnoreCase) ?? false)
+                && (x?.Namespace?.Equals(y?.Namespace, StringComparison.OrdinalIgnoreCase) ?? false);
+            
+            public int GetHashCode(XSModelResultItem obj) => 
+                obj.GetHashCode();
+        }
+
         private readonly SqliteConnection Connection;
 
         public XSModel(string dbFile) =>
@@ -290,77 +303,50 @@ namespace XSharpPowerTools
                 orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
             }
 
-            var kindSql = "Kind";
-            var withClause = string.Empty;
-            var tableToQuery = filter.GetDbTable();
-
-            if (useGroupBy) //for Code Suggestions
-            {
-                if (searchingForMember)
-                {
-                    kindSql = "REPLACE(REPLACE(Kind, 6, 8), 7, 8) AS DisplayKind";
-                }
-                else 
-                {
-                    tableToQuery = "AllTypes";
-                    withClause =
-                        @"
-                        WITH AllTypes(Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName) AS (
-	                        SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName
-	                        FROM ProjectTypes
-	                        WHERE ((Kind = 1 AND TRIM(LOWER(Sourcecode)) NOT LIKE '%(global scope)%') OR Kind = 18 OR Kind = 16 OR Kind = 25)
-	                        UNION
-	                        SELECT Name, '', 0, '', Kind, Namespace, FullName, COALESCE(BaseTypeName,'')
-	                        FROM AssemblyTypes
-	                        WHERE (Kind = 1 OR Kind = 18 OR Kind = 16 OR Kind = 25)
-                        )
-                        ";
-                }
-            }
-
-            var command = Connection.CreateCommand();
-
-            command.CommandText =
+            var sql =
                 @$"
-                    {withClause}
-                    SELECT Name, FileName, StartLine, ProjectFileName, {kindSql}, Namespace, Sourcecode, BaseTypeName{(searchingForMember ? ", TypeName" : string.Empty)}
-                    FROM {tableToQuery} 
+                    SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, IsExternal, TypeName, Id
+                    FROM cte 
                     WHERE {filter.GetFilterSql(memberName)}
                     AND LOWER(TRIM(Name)) LIKE $name ESCAPE '\'
                 ";
+            var command = Connection.CreateCommand();
             command.Parameters.AddWithValue("$name", searchingForMember
                 ? memberName.Trim().ToLower()
                 : typeName.Trim().ToLower());
 
+            List<XSModelResultItem> hierarchyTypeInfos = null;
+            bool searchingWithinClass = false;
             if (searchingForMember)
             {
                 if (!string.IsNullOrWhiteSpace(currentFile))
                 {
                     if (caretPosition < 0)
                     {
-                        command.CommandText += " AND LOWER(TRIM(FileName)) = $fileName";
+                        sql += " AND LOWER(TRIM(FileName)) = $fileName";
                         command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
                     }
                     else
                     {
                         var typeInfo = await GetContaingClassAsync(currentFile, caretPosition);
-                        if (typeInfo != null)
+                        searchingWithinClass = typeInfo != null;
+                        if (searchingWithinClass)
                         {
                             if (searchInHierarchy)
                             {
-                                var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(typeInfo);
-                                command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q?.FullName?.ToLower()))}')";
+                                hierarchyTypeInfos = await GetClassHierarchyInfosAsync(typeInfo);
+                                sql += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q?.FullName?.ToLower()))}')";
                             }
                             else
                             {
-                                command.CommandText += " AND TRIM(TypeName) = $typeName AND TRIM(Namespace) = $namespace";
+                                sql += " AND TRIM(TypeName) = $typeName AND TRIM(Namespace) = $namespace";
                                 command.Parameters.AddWithValue("$typeName", typeInfo.TypeName.Trim()); 
                                 command.Parameters.AddWithValue("$namespace", typeInfo.Namespace.Trim());
                             }
                         }
                         else
                         {
-                            command.CommandText += " AND LOWER(TRIM(FileName)) = $fileName";
+                            sql += " AND LOWER(TRIM(FileName)) = $fileName";
                             command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
                         }
                     }
@@ -370,33 +356,35 @@ namespace XSharpPowerTools
                     if (searchInHierarchy)
                     {
                         if (hierarchyTypeInfo == null)
-                            hierarchyTypeInfo = await GetTypeInfoAsync(typeName);
+                            hierarchyTypeInfo = await GetTypeInfoAsync(typeName, isFullName: false);
 
-                        var hierarchyTypeInfos = await GetClassHierarchyInfosAsync(hierarchyTypeInfo);
-                        command.CommandText += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q?.FullName?.ToLower()))}')";
+                        hierarchyTypeInfos = await GetClassHierarchyInfosAsync(hierarchyTypeInfo);
+                        sql += $"AND LOWER(TRIM(COALESCE(Namespace, '') || '.' || TypeName, '.')) IN ('{string.Join("', '", hierarchyTypeInfos.Select(q => q?.FullName?.ToLower()))}')";
                     }
                     else
                     {
-                        command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $typeName  ESCAPE '\'";
+                        sql += @" AND LOWER(TRIM(TypeName)) LIKE $typeName  ESCAPE '\'";
                         command.Parameters.AddWithValue("$typeName", typeName.Trim().ToLower());
                     }
                 }
 
                 if (searchInHierarchy)
                 {
-                    command.CommandText +=
+                    sql +=
                         @"
 					        AND LOWER(TRIM(Sourcecode)) NOT LIKE 'private%'
 					        AND LOWER(TRIM(Sourcecode)) NOT LIKE 'hidden%'
-					        AND LOWER(TRIM(Sourcecode)) NOT LIKE 'protected%'
+                            AND LOWER(TRIM(Sourcecode)) NOT LIKE '%override%'
                         ";
+                    if (!searchingWithinClass)
+                        sql += "AND LOWER(TRIM(Sourcecode)) NOT LIKE 'protected%'";
                 }
 
                 if (useGroupBy)
                 {
                     groupByClause =
                         @"
-                            GROUP BY Name, TypeName, Namespace, DisplayKind
+                            GROUP BY Name, TypeName, Namespace, Kind
 					        HAVING Id = MIN(Id)
                         ";
                 }
@@ -409,17 +397,61 @@ namespace XSharpPowerTools
 					    HAVING BaseTypeName = MAX(BaseTypeName)
                     ";
             }
-            command.CommandText +=
+
+            sql +=
                 @$"
                     AND LOWER(TRIM(FileName)) NOT LIKE '%\_vo.prg' ESCAPE '\' 
                     AND LOWER(TRIM(FileName)) NOT LIKE '%.designer.prg'
                     AND LOWER(TRIM(FileName)) NOT LIKE '%{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}%'
                     AND LOWER(TRIM(ProjectFileName)) NOT LIKE '%.(orphanedfiles).xsproj'
+                ";
+
+            var externalMembersSql = string.Empty;
+            if (searchingForMember && searchInHierarchy && hierarchyTypeInfos != null && hierarchyTypeInfos.Any(q => (q?.IsExternal ?? false)))
+            {
+                var assemblyTypeInfo = hierarchyTypeInfos.First(q => q.IsExternal);
+                externalMembersSql = ReflectionHelper.GetExternalMembersSql(assemblyTypeInfo, memberName.Split(new[] { '%' }, StringSplitOptions.RemoveEmptyEntries), searchingWithinClass) ?? string.Empty;
+            }
+
+            string cte;
+            if (useGroupBy && !searchingForMember) //for Code Suggestions
+            {
+                cte =
+                    @"
+                        WITH cte(Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, IsExternal) AS 
+                        (
+	                        SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, false
+	                        FROM ProjectTypes
+	                        WHERE ((Kind = 1 AND TRIM(LOWER(Sourcecode)) NOT LIKE '(global scope)') OR Kind = 18 OR Kind = 16 OR Kind = 25)
+	                        UNION
+	                        SELECT Name, AssemblyFileName, 0, '', Kind, Namespace, FullName, COALESCE(BaseTypeName,''), true
+	                        FROM AssemblyTypes
+	                        WHERE (Kind = 1 OR Kind = 18 OR Kind = 16 OR Kind = 25)
+                        )
+                    ";
+            }
+            else
+            {
+                var kindSql = useGroupBy && searchingForMember ? "REPLACE(REPLACE(Kind, 6, 8), 7, 8) AS Kind" : "Kind";
+                cte =
+                    $@"
+                        WITH cte(Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, IsExternal, TypeName, Id) AS 
+                        (
+	                        SELECT Name, FileName, StartLine, ProjectFileName, {kindSql}, Namespace, Sourcecode, BaseTypeName, false, {(searchingForMember ? "TypeName" : "''")}, Id
+	                        FROM {filter.GetDbTable()}
+                            {externalMembersSql}
+                        )
+                    ";
+            }
+
+            command.CommandText =
+                @$"
+                    {cte}
+                    {sql}
                     {groupByClause}
                     ORDER BY {orderBy}
                     LIMIT {limit}
                 ";
-
             var reader = await command.ExecuteReaderAsync();
 
             var results = new List<XSModelResultItem>();
@@ -435,13 +467,14 @@ namespace XSharpPowerTools
                     Namespace = reader.GetString(5),
                     SourceCode = reader.GetString(6),
                     BaseTypeName = reader.GetString(7),
+                    IsExternal = reader.GetBoolean(8),
                     ResultType = resultType,
                     SolutionDirectory = solutionDirectory
                 };
                 if (searchingForMember)
                 {
                     resultItem.MemberName = reader.GetString(0);
-                    resultItem.TypeName = reader.GetString(8);
+                    resultItem.TypeName = reader.GetString(9);
                 }
                 else
                 {
@@ -450,6 +483,7 @@ namespace XSharpPowerTools
                 }
                 results.Add(resultItem);
             }
+
             return (results, resultType);
         }
 
@@ -466,17 +500,25 @@ namespace XSharpPowerTools
                 return typeInfos;
             }
 
+            string fullBaseName;
             do
             {
                 typeInfos.Add(nextTypeInfo);
 
                 var baseNamespace = await FindBaseTypeNamespaceAsync(nextTypeInfo.ContainingFile, nextTypeInfo.BaseTypeName);
-                var fullBaseName = string.IsNullOrWhiteSpace(baseNamespace)
+                fullBaseName = string.IsNullOrWhiteSpace(baseNamespace)
                     ? nextTypeInfo.BaseTypeName
                     : $"{baseNamespace}.{nextTypeInfo.BaseTypeName}";
                 nextTypeInfo = await GetTypeInfoAsync(fullBaseName);
             }
             while (nextTypeInfo != null && !string.IsNullOrEmpty(nextTypeInfo.BaseTypeName));
+
+            if (nextTypeInfo == null && !string.IsNullOrEmpty(fullBaseName)) 
+            {
+                nextTypeInfo = await GetAssemblyTypeInfoAsync(fullBaseName);
+                if (nextTypeInfo != null)
+                    typeInfos.Add(nextTypeInfo);
+            }
 
             return typeInfos;
         }
@@ -551,7 +593,37 @@ namespace XSharpPowerTools
             return null;
         }
 
-        private async Task<XSModelResultItem> GetTypeInfoAsync(string fullName)
+        private async Task<XSModelResultItem> GetTypeInfoAsync(string name, bool isFullName = true)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return null;
+
+            var command = Connection.CreateCommand();
+            command.CommandText =
+                $@"
+                    SELECT Name, Namespace, BaseTypeName, FileName
+					FROM ProjectTypes
+					WHERE LOWER(TRIM({(isFullName ? "COALESCE(Namespace, '') || '.' || Name, '.'" : "Name")})) = $name
+                    ORDER BY BaseTypeName DESC LIMIT 1
+                ";
+            command.Parameters.AddWithValue("$name", name.ToLower());
+
+            var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return new XSModelResultItem
+                {
+                    TypeName = reader.GetString(0),
+                    Namespace = reader.GetString(1),
+                    BaseTypeName = reader.GetString(2),
+                    ContainingFile = reader.GetString(3),
+                    IsExternal = false
+                };
+            }
+            return null;
+        }
+
+        private async Task<XSModelResultItem> GetAssemblyTypeInfoAsync(string fullName)
         {
             if (string.IsNullOrWhiteSpace(fullName))
                 return null;
@@ -559,9 +631,9 @@ namespace XSharpPowerTools
             var command = Connection.CreateCommand();
             command.CommandText =
                 @"
-                    SELECT Name, Namespace, BaseTypeName, FileName
-					FROM ProjectTypes
-					WHERE LOWER(TRIM(COALESCE(Namespace, '') || '.' || Name, '.')) = $fullName
+                    SELECT Name, Namespace, AssemblyFileName
+					FROM AssemblyTypes
+					WHERE LOWER(TRIM(FullName)) = $fullName
                     ORDER BY BaseTypeName DESC LIMIT 1
                 ";
             command.Parameters.AddWithValue("$fullName", fullName.ToLower());
@@ -573,8 +645,8 @@ namespace XSharpPowerTools
                 {
                     TypeName = reader.GetString(0),
                     Namespace = reader.GetString(1),
-                    BaseTypeName = reader.GetString(2),
-                    ContainingFile = reader.GetString(3)
+                    ContainingFile = reader.GetString(2),
+                    IsExternal = true
                 };
             }
             return null;
