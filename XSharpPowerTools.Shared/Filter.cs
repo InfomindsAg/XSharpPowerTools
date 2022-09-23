@@ -38,7 +38,7 @@ namespace XSharpPowerTools
         public string GetDbTable() =>
             Type == FilterType.Member ? "ProjectMembers" : "ProjectTypes";
 
-        public string GetFilterSql(string memberName = null)
+        public string GetFilterSql(string memberName = null, bool includeCtorDtor = true)
         {
             var sb = new StringBuilder().Append('(');
             if (Type == FilterType.Member)
@@ -54,7 +54,7 @@ namespace XSharpPowerTools
                     sb.Append(" OR ");
                 }
 
-                if ("%".Equals(memberName))
+                if (includeCtorDtor && "%".Equals(memberName))
                     sb.Append("Kind = '3' OR Kind = '4'");
                 else
                     sb.Length = sb.Length - 4;

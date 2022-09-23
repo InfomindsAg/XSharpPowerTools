@@ -304,7 +304,7 @@ namespace XSharpPowerTools
                 @$"
                     SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, IsExternal, TypeName, Id
                     FROM cte 
-                    WHERE {filter.GetFilterSql(memberName)}
+                    WHERE {filter.GetFilterSql(memberName, !useGroupBy)}
                     AND LOWER(TRIM(Name)) LIKE $name ESCAPE '\'
                 ";
             var command = Connection.CreateCommand();
