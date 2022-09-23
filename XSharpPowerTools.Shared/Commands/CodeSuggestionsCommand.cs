@@ -1,6 +1,5 @@
 ﻿using Community.VisualStudio.Toolkit;
 using Microsoft.VisualStudio.Shell;
-using System.IO;
 using XSharpPowerTools.View.Controls;
 using XSharpPowerTools.View.Windows;
 using Task = System.Threading.Tasks.Task;

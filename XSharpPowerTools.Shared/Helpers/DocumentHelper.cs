@@ -176,7 +176,7 @@ namespace XSharpPowerTools.Helpers
 
             try
             {
-                var spanToReplace = textView.Selection.IsEmpty 
+                var spanToReplace = textView.Selection.IsEmpty
                     ? new Span(caretLine.Start + relativeCaretWordPosition, GetCaretWord(lines, caretPosition).Length)
                     : textView.Selection.SelectedSpans.FirstOrDefault();
 

@@ -9,8 +9,8 @@ namespace XSharpPowerTools.View.Controls
     /// </summary>
     public partial class MemberFilterControl : FilterControl<MemberFilter>
     {
-        public enum DisplayMode 
-        { 
+        public enum DisplayMode
+        {
             Default,
             ContainedInType,
             GlobalScope

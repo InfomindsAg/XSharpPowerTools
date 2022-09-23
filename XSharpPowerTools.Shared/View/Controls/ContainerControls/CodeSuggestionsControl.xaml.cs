@@ -1,7 +1,6 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
@@ -9,7 +8,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using XSharpPowerTools.Helpers;
-using XSharpPowerTools.View.Windows;
 using Task = System.Threading.Tasks.Task;
 
 namespace XSharpPowerTools.View.Controls
@@ -29,7 +27,7 @@ namespace XSharpPowerTools.View.Controls
         protected override MemberFilterControl MemberFilterGroup => _memberFilterGroup;
         protected override TypeFilterControl TypeFilterGroup => _typeFilterGroup;
 
-        private XSModelResultItem SelectedTypeInfo = null; 
+        private XSModelResultItem SelectedTypeInfo = null;
 
         public CodeSuggestionsControl(DialogWindow parentWindow) : base(parentWindow)
         {
@@ -45,12 +43,12 @@ namespace XSharpPowerTools.View.Controls
 
         protected override void SetTableColumns(XSModelResultType resultType)
         {
-            if (resultType == XSModelResultType.Type) 
+            if (resultType == XSModelResultType.Type)
             {
                 ResultsDataGrid.Columns[0].Visibility = Visibility.Visible;
                 ResultsDataGrid.Columns[1].Visibility = Visibility.Collapsed;
             }
-            else 
+            else
             {
                 ResultsDataGrid.Columns[0].Visibility = Visibility.Collapsed;
                 ResultsDataGrid.Columns[1].Visibility = Visibility.Visible;
@@ -117,14 +115,14 @@ namespace XSharpPowerTools.View.Controls
             AllowReturn = false;
             var separators = new[] { '.', ':' };
             if (SelectedTypeInfo != null
-                && (!SearchTextBox.Text.Trim().StartsWith(SelectedTypeInfo.TypeName) 
+                && (!SearchTextBox.Text.Trim().StartsWith(SelectedTypeInfo.TypeName)
                     || SearchTextBox.Text.Trim().IndexOfAny(separators) != SelectedTypeInfo.TypeName.Length))
             {
                 SelectedTypeInfo = null;
             }
 
-            if ((SearchTextBox.Text.StartsWith("..") 
-                    || SearchTextBox.Text.StartsWith("::") 
+            if ((SearchTextBox.Text.StartsWith("..")
+                    || SearchTextBox.Text.StartsWith("::")
                     || (separators.Any(SearchTextBox.Text.Contains) && !(SearchTextBox.Text.StartsWith(".") || SearchTextBox.Text.StartsWith(":")))))
             {
                 if (MemberFilterGroup.Mode == MemberFilterControl.DisplayMode.GlobalScope)
@@ -136,7 +134,7 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        private void ResetFilters(MemberFilterControl.DisplayMode displayMode) 
+        private void ResetFilters(MemberFilterControl.DisplayMode displayMode)
         {
             var typefiltersVisibility = displayMode == MemberFilterControl.DisplayMode.ContainedInType ? Visibility.Collapsed : Visibility.Visible;
             MemberFilterGroup.Mode = displayMode;

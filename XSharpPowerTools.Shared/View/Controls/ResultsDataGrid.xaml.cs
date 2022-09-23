@@ -62,7 +62,7 @@ namespace XSharpPowerTools.View.Controls
             e.ClipboardRowContent.Add(cellContent);
         }
 
-        public void RenderColumns() 
+        public void RenderColumns()
         {
             foreach (var columnWidth in ColumnWidths)
                 columnWidth.Key.Width = 0;

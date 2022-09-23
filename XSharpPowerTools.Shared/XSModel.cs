@@ -1,13 +1,10 @@
 ﻿using Microsoft.Data.Sqlite;
-using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using XSharpPowerTools.Helpers;
 
 namespace XSharpPowerTools
@@ -43,7 +40,7 @@ namespace XSharpPowerTools
 
         public string FullName
         {
-            get 
+            get
             {
                 if (ResultType != XSModelResultType.Type || string.IsNullOrWhiteSpace(TypeName))
                     return string.Empty;
@@ -51,9 +48,9 @@ namespace XSharpPowerTools
                 return string.IsNullOrWhiteSpace(Namespace)
                     ? TypeName
                     : $"{Namespace}.{TypeName}";
-            } 
+            }
         }
-        
+
         public string RelativePath =>
             string.IsNullOrWhiteSpace(SolutionDirectory) || !ContainingFile.StartsWith(SolutionDirectory) ? ContainingFile : ContainingFile.Substring(SolutionDirectory.Length + 1);
 
@@ -119,8 +116,8 @@ namespace XSharpPowerTools
                 && (x?.MemberName?.Equals(y?.MemberName, StringComparison.OrdinalIgnoreCase) ?? false)
                 && (x?.TypeName?.Equals(y?.TypeName, StringComparison.OrdinalIgnoreCase) ?? false)
                 && (x?.Namespace?.Equals(y?.Namespace, StringComparison.OrdinalIgnoreCase) ?? false);
-            
-            public int GetHashCode(XSModelResultItem obj) => 
+
+            public int GetHashCode(XSModelResultItem obj) =>
                 obj.GetHashCode();
         }
 
@@ -199,7 +196,7 @@ namespace XSharpPowerTools
             }
         }
 
-        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetCodeSuggestionsAsync(string searchTerm, Filter filter, ListSortDirection direction, string orderBy, XSModelResultItem selectedTypeInfo, string currentFile = null, int caretPosition = -1) 
+        public async Task<(List<XSModelResultItem>, XSModelResultType)> GetCodeSuggestionsAsync(string searchTerm, Filter filter, ListSortDirection direction, string orderBy, XSModelResultItem selectedTypeInfo, string currentFile = null, int caretPosition = -1)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return (new(), 0);
@@ -242,7 +239,7 @@ namespace XSharpPowerTools
                 Connection.Close();
                 return resultsAndResultType;
             }
-            else 
+            else
             {
                 searchTerm = PrepareForSqlLike(searchTerm);
 
@@ -252,7 +249,7 @@ namespace XSharpPowerTools
                     typeName = string.Empty;
                     memberName = searchTerm;
                 }
-                else 
+                else
                 {
                     filter.Type = FilterType.Type;
                     typeName = searchTerm;
@@ -340,7 +337,7 @@ namespace XSharpPowerTools
                             else
                             {
                                 sql += " AND TRIM(TypeName) = $typeName AND TRIM(Namespace) = $namespace";
-                                command.Parameters.AddWithValue("$typeName", typeInfo.TypeName.Trim()); 
+                                command.Parameters.AddWithValue("$typeName", typeInfo.TypeName.Trim());
                                 command.Parameters.AddWithValue("$namespace", typeInfo.Namespace.Trim());
                             }
                         }
@@ -389,7 +386,7 @@ namespace XSharpPowerTools
                         ";
                 }
             }
-            else if (useGroupBy) 
+            else if (useGroupBy)
             {
                 groupByClause =
                     @"
@@ -487,14 +484,14 @@ namespace XSharpPowerTools
             return (results, resultType);
         }
 
-        private async Task<List<XSModelResultItem>> GetClassHierarchyInfosAsync(XSModelResultItem typeInfo) 
+        private async Task<List<XSModelResultItem>> GetClassHierarchyInfosAsync(XSModelResultItem typeInfo)
         {
             var nextTypeInfo = typeInfo;
             var typeInfos = new List<XSModelResultItem>();
             if (string.IsNullOrEmpty(typeInfo?.BaseTypeName))
                 nextTypeInfo = await GetTypeInfoAsync(typeInfo?.FullName) ?? typeInfo;
-            
-            if (string.IsNullOrEmpty(nextTypeInfo?.BaseTypeName)) 
+
+            if (string.IsNullOrEmpty(nextTypeInfo?.BaseTypeName))
             {
                 typeInfos.Add(nextTypeInfo);
                 return typeInfos;
@@ -513,7 +510,7 @@ namespace XSharpPowerTools
             }
             while (nextTypeInfo != null && !string.IsNullOrEmpty(nextTypeInfo.BaseTypeName));
 
-            if (nextTypeInfo == null && !string.IsNullOrEmpty(fullBaseName)) 
+            if (nextTypeInfo == null && !string.IsNullOrEmpty(fullBaseName))
             {
                 nextTypeInfo = await GetAssemblyTypeInfoAsync(fullBaseName);
                 if (nextTypeInfo != null)
@@ -738,7 +735,7 @@ namespace XSharpPowerTools
             return connection;
         }
 
-        private string PrepareForSqlLike(string value) => 
+        private string PrepareForSqlLike(string value) =>
             value.Contains('*')
                 ? value.Replace('*', '%')
                 : $"%{value}%";

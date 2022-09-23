@@ -2,9 +2,9 @@
 
 namespace XSharpPowerTools.View.Controls
 {
-    public class CodeBrowserHelpText : HelpTextControl 
+    public class CodeBrowserHelpText : HelpTextControl
     {
-        const string HelpText = 
+        const string HelpText =
 @"example      - searches for classes with names similar to 'example'
 ex1.ex2       - searches for members similar to 'ex2' within classes similar to 'ex1' (""."" equal to "":"")
 .example     - searches for members 'example' within all classes
@@ -18,7 +18,7 @@ Ctrl + 1,2,3,... to activate/deactivate filters";
         { }
     }
 
-    public class CodeSuggestionsHelpText : HelpTextControl 
+    public class CodeSuggestionsHelpText : HelpTextControl
     {
         const string HelpText =
 @"example      - searches for classes with names similar to 'example'

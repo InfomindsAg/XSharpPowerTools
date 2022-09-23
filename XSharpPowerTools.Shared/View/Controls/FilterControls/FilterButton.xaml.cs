@@ -42,10 +42,10 @@ namespace XSharpPowerTools.View.Controls
         public bool? IsChecked
         {
             get => Visibility == Visibility.Visible ? FilterToggleButton.IsChecked : false;
-            set 
-            { 
+            set
+            {
                 if (Visibility == Visibility.Visible)
-                    FilterToggleButton.IsChecked = value; 
+                    FilterToggleButton.IsChecked = value;
             }
         }
 

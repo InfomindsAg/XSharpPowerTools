@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Windows.Media;
 
 namespace XSharpPowerTools.Helpers
 {
@@ -13,21 +12,21 @@ namespace XSharpPowerTools.Helpers
         private class MemberComparer : IEqualityComparer<MemberInfo>
         {
             public bool Equals(MemberInfo x, MemberInfo y) =>
-                x?.GetType() == y?.GetType() 
-                && (x?.Name?.Equals(y?.Name, StringComparison.OrdinalIgnoreCase) ?? false); 
+                x?.GetType() == y?.GetType()
+                && (x?.Name?.Equals(y?.Name, StringComparison.OrdinalIgnoreCase) ?? false);
 
-            public int GetHashCode(MemberInfo obj) => 
+            public int GetHashCode(MemberInfo obj) =>
                 obj.GetHashCode();
         }
 
-        private static bool ContainsAllInOrder(this string stringToCheck, string[] keywords) 
+        private static bool ContainsAllInOrder(this string stringToCheck, string[] keywords)
         {
             if (string.IsNullOrEmpty(stringToCheck) || keywords == null || keywords.Length == 0)
                 return false;
 
             var searchIndex = 0;
-            foreach (var keyword in keywords) 
-            { 
+            foreach (var keyword in keywords)
+            {
                 var index = stringToCheck.IndexOf(keyword, searchIndex, StringComparison.OrdinalIgnoreCase);
                 if (index < 0)
                     return false;
@@ -40,16 +39,16 @@ namespace XSharpPowerTools.Helpers
         {
             if (!File.Exists(assemblyTypeInfo.ContainingFile))
                 return null;
-            
+
             var dummyDomain = AppDomain.CreateDomain("dummy"); //needed to unload assembly after use
             var assemblyName = new AssemblyName { CodeBase = assemblyTypeInfo.ContainingFile };
 
             Assembly assembly;
-            try 
+            try
             {
                 assembly = dummyDomain.Load(assemblyName);
             }
-            catch (FileNotFoundException) 
+            catch (FileNotFoundException)
             {
                 return null;
             }
