@@ -403,43 +403,37 @@ namespace XSharpPowerTools
                     AND LOWER(TRIM(ProjectFileName)) NOT LIKE '%.(orphanedfiles).xsproj'
                 ";
 
-            var externalMembersSql = string.Empty;
-            if (searchingForMember && searchInHierarchy && hierarchyTypeInfos != null && hierarchyTypeInfos.Any(q => (q?.IsExternal ?? false)))
+            var includeExternalsSql = string.Empty;
+            if (searchingForMember) 
             {
-                var assemblyTypeInfo = hierarchyTypeInfos.First(q => q.IsExternal);
-                externalMembersSql = ReflectionHelper.GetExternalMembersSql(assemblyTypeInfo, memberName.Split(new[] { '%' }, StringSplitOptions.RemoveEmptyEntries), searchingWithinClass) ?? string.Empty;
+                if (searchInHierarchy && hierarchyTypeInfos != null && hierarchyTypeInfos.Any(q => (q?.IsExternal ?? false)))
+                {
+                    var assemblyTypeInfo = hierarchyTypeInfos.First(q => q.IsExternal);
+                    includeExternalsSql = ReflectionHelper.GetExternalMembersSql(assemblyTypeInfo, memberName.Split(new[] { '%' }, StringSplitOptions.RemoveEmptyEntries), searchingWithinClass) ?? string.Empty;
+                }
+            }
+            else if (useGroupBy) //for Code Suggestions
+            {
+                includeExternalsSql =
+                    @"
+                        WHERE ((Kind = 1 AND TRIM(LOWER(Sourcecode)) NOT LIKE '(global scope)') OR Kind = 18 OR Kind = 16 OR Kind = 25)
+	                    UNION
+	                    SELECT Name, AssemblyFileName, 0, '', Kind, Namespace, FullName, COALESCE(BaseTypeName,''), true, '', 0
+	                    FROM AssemblyTypes
+	                    WHERE (Kind = 1 OR Kind = 18 OR Kind = 16 OR Kind = 25)
+                    ";
             }
 
-            string cte;
-            if (useGroupBy && !searchingForMember) //for Code Suggestions
-            {
-                cte =
-                    @"
-                        WITH cte(Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, IsExternal) AS 
-                        (
-	                        SELECT Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, false
-	                        FROM ProjectTypes
-	                        WHERE ((Kind = 1 AND TRIM(LOWER(Sourcecode)) NOT LIKE '(global scope)') OR Kind = 18 OR Kind = 16 OR Kind = 25)
-	                        UNION
-	                        SELECT Name, AssemblyFileName, 0, '', Kind, Namespace, FullName, COALESCE(BaseTypeName,''), true
-	                        FROM AssemblyTypes
-	                        WHERE (Kind = 1 OR Kind = 18 OR Kind = 16 OR Kind = 25)
-                        )
-                    ";
-            }
-            else
-            {
-                var kindSql = useGroupBy && searchingForMember ? "REPLACE(REPLACE(Kind, 6, 8), 7, 8) AS Kind" : "Kind";
-                cte =
-                    $@"
-                        WITH cte(Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, IsExternal, TypeName, Id) AS 
-                        (
-	                        SELECT Name, FileName, StartLine, ProjectFileName, {kindSql}, Namespace, Sourcecode, BaseTypeName, false, {(searchingForMember ? "TypeName" : "''")}, Id
-	                        FROM {filter.GetDbTable()}
-                            {externalMembersSql}
-                        )
-                    ";
-            }
+            var kindSql = useGroupBy && searchingForMember ? "REPLACE(REPLACE(Kind, 6, 8), 7, 8) AS Kind" : "Kind";
+            var cte =
+                $@"
+                    WITH cte(Name, FileName, StartLine, ProjectFileName, Kind, Namespace, Sourcecode, BaseTypeName, IsExternal, TypeName, Id) AS 
+                    (
+	                    SELECT Name, FileName, StartLine, ProjectFileName, {kindSql}, Namespace, Sourcecode, BaseTypeName, false, {(searchingForMember ? "TypeName" : "''")}, Id
+	                    FROM {filter.GetDbTable()}
+                        {includeExternalsSql}
+                    )
+                ";
 
             command.CommandText =
                 @$"
