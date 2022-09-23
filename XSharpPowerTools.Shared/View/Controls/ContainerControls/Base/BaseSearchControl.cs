@@ -11,17 +11,6 @@ namespace XSharpPowerTools.View.Controls
 {
     public abstract class BaseSearchControl : UserControl
     {
-
-        /* Unmerged change from project 'XSharpPowerTools.2022'
-        Before:
-                public XSModel XSModel { get; set; }
-
-                protected abstract ResultsDataGrid ResultsDataGrid { get; }
-        After:
-                public XSModel XSModel { get; set; }
-
-                protected abstract ResultsDataGrid ResultsDataGrid { get; }
-        */
         public XSModel XSModel { get; set; }
 
         protected abstract ResultsDataGrid ResultsDataGrid { get; }
@@ -44,9 +33,9 @@ namespace XSharpPowerTools.View.Controls
         {
             if (e.Key == Key.Return)
                 OnReturn(ResultsDataGrid?.SelectedItem);
-            else if (e.Key == Key.Down)
+            else if (e.Key == Key.Down || e.Key == Key.PageDown)
                 ResultsDataGrid.SelectNext();
-            else if (e.Key == Key.Up)
+            else if (e.Key == Key.Up || e.Key == Key.PageUp)
                 ResultsDataGrid.SelectPrevious();
         }
 
