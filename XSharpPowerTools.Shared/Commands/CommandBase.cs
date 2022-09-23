@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.Shell;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using XSharpPowerTools.Helpers;
 using XSharpPowerTools.View.Windows;
@@ -16,14 +15,14 @@ namespace XSharpPowerTools.Commands
     {
         const string FileReference = "vs/XSharpPowerTools/CommandBase/";
 
-        public static async Task ShowBaseWindowAsync(BaseWindow window)
+        public static async Task ShowDialogSearchWindowAsync(DialogSearchWindow window)
         {
             var solution = await VS.Solutions.GetCurrentSolutionAsync();
-            
+
             if (solution != null)
             {
                 var solutionDirectory = Path.GetDirectoryName(solution.FullPath);
-                var dbFile = solutionDirectory + @"\.vs\" + Path.GetFileNameWithoutExtension(solution.FullPath) + @"\X#Model.xsdb";
+                var dbFile = $@"{solutionDirectory}\.vs\{Path.GetFileNameWithoutExtension(solution.FullPath)}\X#Model.xsdb";
                 if (File.Exists(dbFile))
                 {
                     window.XSModel = new XSModel(dbFile);
@@ -40,12 +39,12 @@ namespace XSharpPowerTools.Commands
                 }
                 else
                 {
-                    await VS.MessageBox.ShowWarningAsync("X# Code Browser", "Waiting for solution to be fully loaded.");
+                    await VS.MessageBox.ShowWarningAsync("X# Power Tools", "Waiting for solution to be fully loaded.");
                 }
             }
             else
             {
-                await VS.MessageBox.ShowWarningAsync("X# Code Browser", "X# Code Browser is only available with an opened solution.");
+                await VS.MessageBox.ShowWarningAsync("X# Power Tools", "X# Power Tools is only available with an opened solution.");
             }
         }
 

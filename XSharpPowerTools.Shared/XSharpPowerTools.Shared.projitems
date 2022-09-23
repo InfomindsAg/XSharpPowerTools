@@ -9,11 +9,27 @@
     <Import_RootNamespace>XSharpPowerTools</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\CodeBrowserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\CodeSuggestionsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\FilterButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\FindNamespaceControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\MemberFilterControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -25,7 +41,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ToolWindowControl.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\ToolWindowControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\TypeFilterControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -33,51 +53,65 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)View\Windows\DialogSearchWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Commands\CodeBrowserCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\CodeSuggestionsCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\CommandBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\FindNamespaceCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Filter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\DocumentHelper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\FindNamespaceResultComparer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Helpers\CodeBrowserResultComparer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ReflectionHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\XSModelResultComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\LinqExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\SearchTermHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\WithWaitCursor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterButton.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\Base\BaseSearchControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\Base\CodeSearchControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\CodeBrowserControl.xaml.cs">
+      <DependentUpon>CodeBrowserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\Base\DialogSearchControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\CodeSuggestionsControl.xaml.cs">
+      <DependentUpon>CodeSuggestionsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\FilterButton.xaml.cs">
       <DependentUpon>FilterButton.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\FindNamespaceControl.xaml.cs">
+      <DependentUpon>FindNamespaceControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\FilterControl.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\HelpTextControl.xaml.cs">
       <DependentUpon>HelpTextControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\IResultsDataGridParent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\MemberFilterControl.xaml.cs">
+      <DependentUpon>MemberFilterControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ResultsDataGrid.xaml.cs">
       <DependentUpon>ResultsDataGrid.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\Controls\SearchTextBox.xaml.cs">
       <DependentUpon>SearchTextBox.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ToolWindowControl.xaml.cs">
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\ContainerControls\ToolWindowControl.xaml.cs">
       <DependentUpon>ToolWindowControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\BaseWindow.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserResultsToolWindow.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserWindow.xaml.cs">
-      <DependentUpon>CodeBrowserWindow.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\TypeFilterControl.xaml.cs">
+      <DependentUpon>TypeFilterControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\FindNamespaceWindow.xaml.cs">
-      <DependentUpon>FindNamespaceWindow.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\CodeBrowserResultsToolWindow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\Windows\DialogSearchWindow.xaml.cs">
+      <DependentUpon>DialogSearchWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)XSharpPowerToolsPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)XSModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)View\Controls\FilterControls\" />
   </ItemGroup>
 </Project>

@@ -1,50 +1,54 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows.Controls;
 
 namespace XSharpPowerTools.Helpers
 {
-    public class CodeBrowserResultComparer : IComparer
+    public class XSModelResultComparer : IComparer
     {
         private readonly ListSortDirection Direction;
         private readonly XSModelResultType ResultType;
-        private readonly ICodeBrowserCompareHelper CompareHelper;
+        private readonly ICompareHelper CompareHelper;
         private readonly string ColumnIdentifier;
 
         public string SqlOrderBy { get; }
 
-        public CodeBrowserResultComparer(ListSortDirection direction, DataGridColumn column, XSModelResultType resultType)
+        public XSModelResultComparer(ListSortDirection direction, DataGridColumn column) : this(direction, column, XSModelResultType.Type)
+        { }
+
+        public XSModelResultComparer(ListSortDirection direction, DataGridColumn column, XSModelResultType resultType)
         {
             Direction = direction;
             ResultType = resultType;
 
-            ColumnIdentifier = column.Header.ToString().Trim();
-            if (ColumnIdentifier.Equals("Type", StringComparison.OrdinalIgnoreCase)) 
+            ColumnIdentifier = column.SortMemberPath.Trim();
+            if (ColumnIdentifier.Equals("TypeName", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new TypeCompareHelper();
                 SqlOrderBy = ResultType == XSModelResultType.Type
                     ? "Name"
                     : "TypeName";
             }
-            else if (ColumnIdentifier.Equals("Member", StringComparison.OrdinalIgnoreCase))
+            else if (ColumnIdentifier.Equals("MemberName", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new MemberCompareHelper();
                 SqlOrderBy = "Name";
             }
-            else if (ColumnIdentifier.Equals("Kind", StringComparison.OrdinalIgnoreCase))
+            else if (ColumnIdentifier.Equals("KindName", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new KindCompareHelper();
                 SqlOrderBy = "Kind";
             }
-            else if (ColumnIdentifier.Equals("File", StringComparison.OrdinalIgnoreCase))
+            else if (ColumnIdentifier.Equals("RelativePath", StringComparison.OrdinalIgnoreCase))
             {
                 CompareHelper = new FileCompareHelper();
                 SqlOrderBy = "FileName";
+            }
+            else if (ColumnIdentifier.Equals("Namespace", StringComparison.OrdinalIgnoreCase))
+            {
+                CompareHelper = new NamespaceCompareHelper();
+                SqlOrderBy = "Namespace";
             }
             else
             {
@@ -55,7 +59,7 @@ namespace XSharpPowerTools.Helpers
             }
         }
 
-        public int Compare(object x, object y) 
+        public int Compare(object x, object y)
         {
             var retVal = 0;
             if (x == null && y == null)
@@ -64,7 +68,7 @@ namespace XSharpPowerTools.Helpers
                 retVal = -1;
             else if (y == null)
                 retVal = 1;
-            else if (x is XSModelResultItem a && y is XSModelResultItem b) 
+            else if (x is XSModelResultItem a && y is XSModelResultItem b)
                 retVal = CompareHelper.ExecuteComparison(a, b);
 
             if (Direction == ListSortDirection.Descending)
@@ -75,34 +79,39 @@ namespace XSharpPowerTools.Helpers
 
         #region CompareHelpers
 
-        private interface ICodeBrowserCompareHelper
+        private interface ICompareHelper
         {
             int ExecuteComparison(XSModelResultItem a, XSModelResultItem b);
         }
 
-        private class TypeCompareHelper : ICodeBrowserCompareHelper
+        private class TypeCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.TypeName.CompareTo(b.TypeName);
-
         }
 
-        private class MemberCompareHelper : ICodeBrowserCompareHelper
+        private class MemberCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.MemberName.CompareTo(b.MemberName);
         }
 
-        private class KindCompareHelper : ICodeBrowserCompareHelper
+        private class KindCompareHelper : ICompareHelper
         {
-            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) => 
+            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.Kind.CompareTo(b.Kind);
         }
 
-        private class FileCompareHelper : ICodeBrowserCompareHelper
+        private class FileCompareHelper : ICompareHelper
         {
             public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
                 a.ContainingFile.CompareTo(b.ContainingFile);
+        }
+
+        private class NamespaceCompareHelper : ICompareHelper
+        {
+            public int ExecuteComparison(XSModelResultItem a, XSModelResultItem b) =>
+                a.Namespace.CompareTo(b.Namespace);
         }
 
         #endregion

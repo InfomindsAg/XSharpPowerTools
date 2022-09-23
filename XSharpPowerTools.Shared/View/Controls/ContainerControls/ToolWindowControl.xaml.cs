@@ -1,10 +1,7 @@
-﻿using Microsoft.VisualStudio.Experimentation;
-using Microsoft.VisualStudio.Shell;
-using System;
+﻿using Microsoft.VisualStudio.Shell;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,28 +16,33 @@ namespace XSharpPowerTools.View.Controls
     /// <summary>
     /// Interaction logic for ToolWindowControl.xaml
     /// </summary>
-    public partial class ToolWindowControl : UserControl, IResultsDataGridParent
+    public partial class ToolWindowControl : BaseSearchControl
     {
-        const string FileReference = "vs/XSharpPowerTools/ToolWindowControl/";
-        private XSModel XSModel;
+        protected override string FileReference => "vs/XSharpPowerTools/ToolWindowControl/";
         private XSModelResultType DisplayedResultType;
-        private string SearchTerm;
+        private string LastSearchTerm;
         private string SolutionDirectory;
         private FilterType ActiveFilterGroup;
         private bool FiltersChanged = false;
 
-        private readonly Dictionary<TypeFilter, MenuItem> TypeMenuItems;
-        private readonly Dictionary<MemberFilter, MenuItem> MemberMenuItems;
-        private readonly MenuItem GroupingMenuItem;
+        private Dictionary<TypeFilter, MenuItem> TypeMenuItems;
+        private Dictionary<MemberFilter, MenuItem> MemberMenuItems;
+        private MenuItem GroupingMenuItem;
 
         volatile bool SearchActive = false;
         volatile bool ReDoSearch = false;
 
+        protected override ResultsDataGrid ResultsDataGrid => _resultsDataGrid;
+
         public ToolWindowControl()
         {
             InitializeComponent();
+            InitializeContextMenu();
             ResultsDataGrid.Parent = this;
+        }
 
+        private void InitializeContextMenu()
+        {
             var classFilterMenuItem = new MenuItem { Header = "Classes", IsCheckable = true, StaysOpenOnClick = true };
             var enumFilterMenuItem = new MenuItem { Header = "Enums", IsCheckable = true, StaysOpenOnClick = true };
             var interfaceFilterMenuItem = new MenuItem { Header = "Interfaces", IsCheckable = true, StaysOpenOnClick = true };
@@ -61,8 +63,8 @@ namespace XSharpPowerTools.View.Controls
             }
 
             var methodFilterMenuItem = new MenuItem { Header = "Methods", IsCheckable = true, StaysOpenOnClick = true };
-            var functionFilterMenuItem = new MenuItem { Header = "Properties", IsCheckable = true, StaysOpenOnClick = true };
-            var propertyFilterMenuItem = new MenuItem { Header = "Functions", IsCheckable = true, StaysOpenOnClick = true };
+            var propertyFilterMenuItem = new MenuItem { Header = "Properties", IsCheckable = true, StaysOpenOnClick = true };
+            var functionFilterMenuItem = new MenuItem { Header = "Functions", IsCheckable = true, StaysOpenOnClick = true };
             var variableFilterMenuItem = new MenuItem { Header = "Variables", IsCheckable = true, StaysOpenOnClick = true };
             var defineFilterMenuItem = new MenuItem { Header = "Defines", IsCheckable = true, StaysOpenOnClick = true };
             var enumValueFilterMenuItem = new MenuItem { Header = "Enum values", IsCheckable = true, StaysOpenOnClick = true };
@@ -106,8 +108,8 @@ namespace XSharpPowerTools.View.Controls
             ContextMenu.Items.Add(structFilterMenuItem);
             ContextMenu.Items.Add(new Separator());
             ContextMenu.Items.Add(methodFilterMenuItem);
-            ContextMenu.Items.Add(functionFilterMenuItem);
             ContextMenu.Items.Add(propertyFilterMenuItem);
+            ContextMenu.Items.Add(functionFilterMenuItem);
             ContextMenu.Items.Add(variableFilterMenuItem);
             ContextMenu.Items.Add(defineFilterMenuItem);
             ContextMenu.Items.Add(enumValueFilterMenuItem);
@@ -115,20 +117,20 @@ namespace XSharpPowerTools.View.Controls
             ContextMenu.Items.Add(applyChanges);
         }
 
-        private void SearchAgain_Click(object sender, RoutedEventArgs e) 
+        private void SearchAgain_Click(object sender, RoutedEventArgs e)
         {
             var filter = new Filter { Type = FilterType.Inactive };
             SetFilter(filter);
             ApplyChanges_ContextMenu_Click(sender, e);
         }
 
-        private void ContextMenu_Closed(object sender, RoutedEventArgs e) 
-        { 
+        private void ContextMenu_Closed(object sender, RoutedEventArgs e)
+        {
             if (FiltersChanged)
                 ApplyChanges_ContextMenu_Click(sender, e);
         }
 
-        public void OnReturn(object selectedItem)
+        public override void OnReturn(object selectedItem)
         {
             if (selectedItem == null)
                 return;
@@ -141,13 +143,13 @@ namespace XSharpPowerTools.View.Controls
         public async Task UpdateToolWindowContentsAsync(XSModel xsModel, Filter filter, string searchTerm, string solutionDirectory, List<XSModelResultItem> results, XSModelResultType resultType)
         {
             XSModel = xsModel;
-            SearchTerm = searchTerm;
+            LastSearchTerm = searchTerm;
             SolutionDirectory = solutionDirectory;
             SetFilter(filter);
 
-            if (results == null || results.Count >= 100 || results.Count < 1) 
+            if (results == null || results.Count >= 100 || results.Count < 1)
             {
-                if (SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::"))
+                if (LastSearchTerm.StartsWith("..") || LastSearchTerm.StartsWith("::"))
                 {
                     var currentFile = await DocumentHelper.GetCurrentFileAsync();
                     var caretPosition = await DocumentHelper.GetCaretPositionAsync();
@@ -188,17 +190,7 @@ namespace XSharpPowerTools.View.Controls
             ResultsDataGrid.Columns[1].Visibility = memberSpecificColumnsVisibility;
             ResultsDataGrid.Columns[2].Visibility = memberSpecificColumnsVisibility;
 
-            ResultsDataGrid.Columns[0].Width = 0;
-            ResultsDataGrid.Columns[1].Width = 0;
-            ResultsDataGrid.Columns[2].Width = 0;
-            ResultsDataGrid.Columns[3].Width = 0;
-            ResultsDataGrid.Columns[4].Width = 0;
-            ResultsDataGrid.UpdateLayout();
-            ResultsDataGrid.Columns[0].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
-            ResultsDataGrid.Columns[1].Width = new DataGridLength(4, DataGridLengthUnitType.Star);
-            ResultsDataGrid.Columns[2].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
-            ResultsDataGrid.Columns[3].Width = new DataGridLength(1, DataGridLengthUnitType.SizeToCells);
-            ResultsDataGrid.Columns[4].Width = new DataGridLength(7, DataGridLengthUnitType.Star);
+            ResultsDataGrid.RenderColumns();
         }
 
         public void SolutionEvents_OnBeforeCloseSolution()
@@ -209,30 +201,12 @@ namespace XSharpPowerTools.View.Controls
             _results.Clear();
         }
 
-        public void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e)
+        protected override XSModelResultComparer GetComparer(ListSortDirection direction, DataGridColumn column) =>
+            new(direction, column, DisplayedResultType);
+
+        protected override async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
         {
-            var column = e.Column;
-
-            var direction = (column.SortDirection != ListSortDirection.Ascending) ? ListSortDirection.Ascending : ListSortDirection.Descending;
-            var lcv = (ListCollectionView)CollectionViewSource.GetDefaultView(sender.ItemsSource);
-            var comparer = new CodeBrowserResultComparer(direction, column, DisplayedResultType);
-
-            if (lcv.Count < 2000)
-            {
-                lcv.CustomSort = comparer;
-                column.SortDirection = direction;
-            }
-            else
-            {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
-                column.SortDirection = direction;
-            }
-            e.Handled = true;
-        }
-
-        protected async Task SearchAsync(ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
-        {
-            if (string.IsNullOrWhiteSpace(SearchTerm))
+            if (string.IsNullOrWhiteSpace(LastSearchTerm))
                 return;
 
             if (SearchActive)
@@ -251,15 +225,15 @@ namespace XSharpPowerTools.View.Controls
 
                     List<XSModelResultItem> results;
                     XSModelResultType resultType;
-                    if (SearchTerm.StartsWith("..") || SearchTerm.StartsWith("::"))
+                    if (LastSearchTerm.StartsWith("..") || LastSearchTerm.StartsWith("::"))
                     {
                         var currentFile = await DocumentHelper.GetCurrentFileAsync();
                         var caretPosition = await DocumentHelper.GetCaretPositionAsync();
-                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
+                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(LastSearchTerm, GetFilter(), SolutionDirectory, currentFile, caretPosition, 2000, direction, orderBy); //aus DB, max 2000
                     }
                     else
                     {
-                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(SearchTerm, GetFilter(), SolutionDirectory, 2000, direction, orderBy);
+                        (results, resultType) = await XSModel.GetSearchTermMatchesAsync(LastSearchTerm, GetFilter(), SolutionDirectory, 2000, direction, orderBy);
                     }
 
                     SetTableColumns(resultType);
@@ -277,13 +251,13 @@ namespace XSharpPowerTools.View.Controls
                         }
                     }
 
-                    if (results.Count < 1) 
+                    if (results.Count < 1)
                     {
-                        NoResultsLabel.Visibility =  Visibility.Visible;
+                        NoResultsLabel.Visibility = Visibility.Visible;
                     }
-                    else 
+                    else
                     {
-                        NoResultsLabel.Visibility =  Visibility.Collapsed;
+                        NoResultsLabel.Visibility = Visibility.Collapsed;
                         ResultsDataGrid.SelectedItem = results.FirstOrDefault();
                     }
                 } while (ReDoSearch);
@@ -294,7 +268,7 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        public void Grouping_ContextMenu_Click(object sender, RoutedEventArgs e) 
+        public void Grouping_ContextMenu_Click(object sender, RoutedEventArgs e)
         {
             var cvResults = CollectionViewSource.GetDefaultView(ResultsDataGrid.ItemsSource);
             if (cvResults != null && cvResults.CanGroup)
@@ -348,7 +322,7 @@ namespace XSharpPowerTools.View.Controls
             return filter;
         }
 
-        private void SetFilter(Filter filter) 
+        private void SetFilter(Filter filter)
         {
             foreach (var typeMenuItem in TypeMenuItems.Values)
                 typeMenuItem.IsChecked = false;
@@ -370,7 +344,7 @@ namespace XSharpPowerTools.View.Controls
             }
         }
 
-        public void TypeFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
+        public void TypeFilter_ContextMenu_Checked(object sender, RoutedEventArgs e)
         {
             FiltersChanged = true;
             ActiveFilterGroup = FilterType.Type;
@@ -378,7 +352,7 @@ namespace XSharpPowerTools.View.Controls
                 memberMenuItem.IsChecked = false;
         }
 
-        public void MemberFilter_ContextMenu_Checked(object sender, RoutedEventArgs e) 
+        public void MemberFilter_ContextMenu_Checked(object sender, RoutedEventArgs e)
         {
             FiltersChanged = true;
             ActiveFilterGroup = FilterType.Member;
@@ -386,7 +360,7 @@ namespace XSharpPowerTools.View.Controls
                 typeMenuItem.IsChecked = false;
         }
 
-        public void Filter_ContextMenu_Unchecked(object sender, RoutedEventArgs e) 
+        public void Filter_ContextMenu_Unchecked(object sender, RoutedEventArgs e)
         {
             FiltersChanged = true;
             if (TypeMenuItems.All(q => !q.Value.IsChecked) && MemberMenuItems.All(q => !q.Value.IsChecked))

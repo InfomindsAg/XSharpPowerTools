@@ -1,5 +1,4 @@
 ﻿using Community.VisualStudio.Toolkit;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OperationProgress;
 using Microsoft.VisualStudio.Shell;
 using System;
@@ -29,8 +28,9 @@ namespace XSharpPowerTools
             using var waitCursor = new WithWaitCursor();
 
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
-            await CodeBrowserCommand.InitializeAsync(this);
+            await CodeSuggestionsCommand.InitializeAsync(this);
             await FindNamespaceCommand.InitializeAsync(this);
+            await CodeBrowserCommand.InitializeAsync(this);
             this.RegisterToolWindows();
             Instance = this;
 

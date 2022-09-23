@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Community.VisualStudio.Toolkit;
+using Microsoft.VisualStudio.Imaging;
+using Microsoft.VisualStudio.Shell;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using Community.VisualStudio.Toolkit;
-using Microsoft.VisualStudio.Imaging;
-using Microsoft.VisualStudio.Shell;
 using XSharpPowerTools.View.Controls;
 
 namespace XSharpPowerTools.View.Windows
@@ -16,7 +16,7 @@ namespace XSharpPowerTools.View.Windows
 
         public override Type PaneType => typeof(Pane);
 
-        public override Task<FrameworkElement> CreateAsync(int toolWindowId, CancellationToken cancellationToken) 
+        public override Task<FrameworkElement> CreateAsync(int toolWindowId, CancellationToken cancellationToken)
         {
             var toolWindowControl = new ToolWindowControl();
             VS.Events.SolutionEvents.OnBeforeCloseSolution += toolWindowControl.SolutionEvents_OnBeforeCloseSolution;

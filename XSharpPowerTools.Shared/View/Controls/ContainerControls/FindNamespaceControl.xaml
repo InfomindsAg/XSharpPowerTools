@@ -1,0 +1,79 @@
+﻿<controls:DialogSearchControl 
+    x:Class="XSharpPowerTools.View.Controls.FindNamespaceControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:controls="clr-namespace:XSharpPowerTools.View.Controls"
+    xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+    mc:Ignorable="d"
+    ui:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource self}, Converter={StaticResource BrushToColorConverter}}">
+    
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../VsThemeDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <ui:BrushToColorConverter x:Key="BrushToColorConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid 
+        x:Name="ContainingGrid"
+        Height="Auto"
+        Width="Auto"
+        HorizontalAlignment="Center" 
+        VerticalAlignment="Center">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="24" />
+            <RowDefinition Height="20" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="2"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2" />
+            <ColumnDefinition Width="640"/>
+            <ColumnDefinition Width="2" />
+        </Grid.ColumnDefinitions>
+        <TextBlock
+            Text="X# Find Namespace"
+            Grid.Row="0"
+            Grid.Column="1"
+            FontWeight="DemiBold"
+            VerticalAlignment="Center"
+            HorizontalAlignment="Left"/>
+        <controls:SearchTextBox
+            x:Name="_searchTextBox"
+            Grid.Row="1"
+            Grid.Column="1"
+            Height="20"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Top"
+            TextChanged="SearchTextBox_TextChanged"/>
+        <Label
+            x:Name="NoResultsLabel"
+            Grid.Column="1"
+            Grid.Row="2"
+            Content="No results found"
+            Visibility="Collapsed"
+            HorizontalAlignment="Center"/>
+        <controls:ResultsDataGrid
+            x:Name="_resultsDataGrid"
+            Grid.Row="3"
+            Grid.Column="1">
+            <DataGrid.Columns>
+                <DataGridTextColumn 
+                    Header=" Type"
+                    Width="*"
+                    Binding="{Binding TypeName}"
+                    SortMemberPath="TypeName"/>
+                <DataGridTextColumn
+                    Header=" Namespace"
+                    Width="*"
+                    Binding="{Binding Namespace}"
+                    SortMemberPath="Namespace"/>
+            </DataGrid.Columns>
+        </controls:ResultsDataGrid>
+    </Grid>
+</controls:DialogSearchControl>

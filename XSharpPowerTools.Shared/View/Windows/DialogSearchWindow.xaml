@@ -1,0 +1,32 @@
+﻿<ui:DialogWindow
+    x:Class="XSharpPowerTools.View.Windows.DialogSearchWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:XSharpPowerTools.View.Windows"
+    xmlns:controls="clr-namespace:XSharpPowerTools.View.Controls"
+    xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+    mc:Ignorable="d"
+    SizeToContent="WidthAndHeight"
+    WindowStyle="None"
+    ResizeMode="NoResize"
+    MouseDown="Window_MouseDown"
+    ui:ImageThemingUtilities.ImageBackgroundColor="{Binding Background, RelativeSource={RelativeSource self}, Converter={StaticResource BrushToColorConverter}}">
+
+    <ui:DialogWindow.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../VsThemeDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <ui:BrushToColorConverter x:Key="BrushToColorConverter"/>
+        </ResourceDictionary>
+    </ui:DialogWindow.Resources>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="0" CaptionHeight="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Border x:Name="WindowBorder" Style="{StaticResource ResourceKey=WindowBorder}"/>
+
+</ui:DialogWindow>

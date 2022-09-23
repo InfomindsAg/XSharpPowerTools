@@ -1,14 +1,13 @@
 ﻿using Community.VisualStudio.Toolkit;
 using Microsoft.VisualStudio.Shell;
-using System.IO;
 using XSharpPowerTools.View.Controls;
 using XSharpPowerTools.View.Windows;
 using Task = System.Threading.Tasks.Task;
 
 namespace XSharpPowerTools.Commands
 {
-    [Command(PackageIds.CodeBrowserCommand)]
-    internal sealed class CodeBrowserCommand : BaseCommand<CodeBrowserCommand>
+    [Command(PackageIds.CodeSuggestionsCommand)]
+    internal sealed class CodeSuggestionsCommand : BaseCommand<CodeSuggestionsCommand>
     {
         protected override async Task InitializeCompletedAsync()
         {
@@ -21,9 +20,8 @@ namespace XSharpPowerTools.Commands
             var solution = await VS.Solutions.GetCurrentSolutionAsync();
             if (solution != null)
             {
-                var solutionDirectory = Path.GetDirectoryName(solution.FullPath);
-                var window = new DialogSearchWindow("X# Code Browser");
-                var control = new CodeBrowserControl(solutionDirectory, window);
+                var window = new DialogSearchWindow("X# Code Suggestions");
+                var control = new CodeSuggestionsControl(window);
                 window.ShowControl(control);
                 await CommandBase.ShowDialogSearchWindowAsync(window);
             }

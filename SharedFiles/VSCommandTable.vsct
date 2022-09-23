@@ -27,7 +27,7 @@
         </Strings>
       </Menu>
     </Menus>
-    
+
     <!--This section defines the elements the user can interact with, like a menu command or a button
         or combo box in a toolbar. -->
     <Buttons>
@@ -51,6 +51,16 @@
           <LocCanonicalName>.XSharpPowerTools.FindNamespaceCommand</LocCanonicalName>
         </Strings>
       </Button>
+      <Button guid="XSharpPowerTools" id="CodeSuggestionsCommand" priority="0x0100" type="Button">
+        <Parent guid="XSharpPowerTools" id="MyContextMenuGroup" />
+        <Icon guid="ImageCatalogGuid" id="Search" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>X# Code Suggestions</ButtonText>
+          <LocCanonicalName>.XSharpPowerTools.CodeSuggestionsCommand</LocCanonicalName>
+        </Strings>
+      </Button>
       <Button guid="XSharpPowerTools" id="CodeBrowserCommand" priority="0x0100" type="Button">
         <Parent guid="XSharpPowerTools" id="MySubMenuGroup" />
         <Icon guid="ImageCatalogGuid" id="Search" />
@@ -71,6 +81,16 @@
           <LocCanonicalName>.XSharpPowerTools.FindNamespaceCommand</LocCanonicalName>
         </Strings>
       </Button>
+      <Button guid="XSharpPowerTools" id="CodeSuggestionsCommand" priority="0x0100" type="Button">
+        <Parent guid="XSharpPowerTools" id="MySubMenuGroup" />
+        <Icon guid="ImageCatalogGuid" id="Search" />
+        <CommandFlag>IconIsMoniker</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <ButtonText>X# Code Suggestions</ButtonText>
+          <LocCanonicalName>.XSharpPowerTools.CodeSuggestionsCommand</LocCanonicalName>
+        </Strings>
+      </Button>
     </Buttons>
   </Commands>
 
@@ -82,8 +102,9 @@
   <VisibilityConstraints>
     <VisibilityItem guid="XSharpPowerTools" id="CodeBrowserCommand"  context="UIContextGuid"/>
     <VisibilityItem guid="XSharpPowerTools" id="FindNamespaceCommand"  context="UIContextGuid"/>
+    <VisibilityItem guid="XSharpPowerTools" id="CodeSuggestionsCommand"  context="UIContextGuid"/>
   </VisibilityConstraints>
-    
+
   <Symbols>
     <GuidSymbol name="XSharpPowerTools" value="{24100142-dc8c-4a86-a29b-99bbaf6bab3c}">
       <IDSymbol name="MyMenuGroup" value="0x0001" />
@@ -92,6 +113,7 @@
       <IDSymbol name="MyContextMenuGroup" value="0x0004"/>
       <IDSymbol name="CodeBrowserCommand" value="0x0100" />
       <IDSymbol name="FindNamespaceCommand" value="0x0110" />
+      <IDSymbol name="CodeSuggestionsCommand" value="0x0120" />
     </GuidSymbol>
     <GuidSymbol name="UIContextGuid" value="{10534154-102D-46E2-ABA8-A6BFA25BA0BE}" />
     <GuidSymbol name="CodeBrowserResultsToolWindowGuid" value="{d3b3ebd9-87d1-41cd-bf84-268d88953417}" />

@@ -1,5 +1,6 @@
 ﻿using Community.VisualStudio.Toolkit;
 using Microsoft.VisualStudio.Shell;
+using XSharpPowerTools.View.Controls;
 using XSharpPowerTools.View.Windows;
 using Task = System.Threading.Tasks.Task;
 
@@ -16,8 +17,10 @@ namespace XSharpPowerTools.Commands
 
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
-            var window = new FindNamespaceWindow();
-            await CommandBase.ShowBaseWindowAsync(window);
+            var window = new DialogSearchWindow("X# Find Namespace");
+            var control = new FindNamespaceControl(window);
+            window.ShowControl(control);
+            await CommandBase.ShowDialogSearchWindowAsync(window);
         }
     }
 }
