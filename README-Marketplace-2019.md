@@ -6,8 +6,8 @@ A set of Visual Studio 2019 tools for [X#](https://www.xsharp.eu) developers
 
 ## Getting started
 
-Get the extension on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=InfomindsAG.XSharpPowerTools2022).
-Installation requires a minimum Visual Studio Version of 17.3 and a minimum X# Version of 2.9.
+Get the extension on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=InfomindsAG.XSharpPowerTools).
+Installation requires a minimum Visual Studio Version of 16.10 and a minimum X# Version of 2.9.
 
 ## Features
 
@@ -17,8 +17,9 @@ Installation requires a minimum Visual Studio Version of 17.3 and a minimum X# V
 The tools can be found under **Tools > X# Power Tools** or in the editors context menu.
 
 ![X# Power Tools Commands](https://raw.githubusercontent.com/InfomindsAg/XSharpPowerTools/master/Images/ToolsMenu.PNG)
+![X# Power Tools Commands](https://raw.githubusercontent.com/InfomindsAg/XSharpPowerTools/master/Images/ContextMenu.PNG)
 
-There are no default shortcuts assigned, but you can easily assign shortcuts  yourself by following this [tutorial](https://docs.microsoft.com/en-us/visualstudio/ide/identifying-and-customizing-keyboard-shortcuts-in-visual-studio?view=vs-2022)
+There are no default shortcuts assigned, but you can easily assign shortcuts  yourself by following this [tutorial](https://docs.microsoft.com/en-us/visualstudio/ide/identifying-and-customizing-keyboard-shortcuts-in-visual-studio?view=vs-2019)
 
 ### Code Browser
 
@@ -56,11 +57,3 @@ Find and insert Namespaces makes it easy to find the containing Namespace of a t
 There is also the possibility of inserting the namespace reference with the type directly into your code when pressing Ctrl + Return.
 
 ![X# Find Namespace](https://raw.githubusercontent.com/InfomindsAg/XSharpPowerTools/master/Images/FindNamespace.PNG)
-
-### Code Suggestions
-
-Code suggestions allow to quickly search for types and members available and insert their name into your code. As soon as the dialog has opened, you can search for types and either insert a type's name into your code by pressing Return or go on to search for members within the selected type by pressing Ctrl + Return. 
-
-Filters similar to the ones you can find in the Code Browser are available, which will also allow to search and insert members that aren't contained in a type (i.e. functions, defines). It offers also some of the wildcards available with the Code Browser.
-
-![X# Code Suggestions](https://raw.githubusercontent.com/InfomindsAg/XSharpPowerTools/master/Images/CodeSuggestions.PNG)
