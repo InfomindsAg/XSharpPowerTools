@@ -28,13 +28,9 @@
 
 - BugFix for crash when searching in current document (.. prefix)
 
-## 1.10 
+## 1.6 
 
 - Completely reworked Code Browser, now including filtering, user sorting, additional kinds of types and members
 - New inserting functionalities for Find Namespace
-
-## 1.11
-
-- Code Suggestions
 
 see README.md for further details

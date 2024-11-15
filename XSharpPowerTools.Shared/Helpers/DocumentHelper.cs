@@ -114,9 +114,10 @@ namespace XSharpPowerTools.Helpers
             }
         }
 
-        public static async Task InsertNamespaceReferenceAsync(string namespaceRef, string type)
+        public static async Task InsertNamespaceReferenceAsync(string namespaceRef, string type) 
         {
             var documentView = await VS.Documents.GetActiveDocumentViewAsync();
+            var fileName = documentView?.FilePath;
             var textView = documentView?.TextView;
 
             if (textView == null)
@@ -151,44 +152,6 @@ namespace XSharpPowerTools.Helpers
             }
         }
 
-        public static async Task InsertCodeSuggestionAsync(string codeSuggestion)
-        {
-            var documentView = await VS.Documents.GetActiveDocumentViewAsync();
-            var textView = documentView?.TextView;
-
-            if (textView == null)
-                return;
-
-            ITextEdit edit;
-            try
-            {
-                edit = textView.TextBuffer?.CreateEdit();
-            }
-            catch (InvalidOperationException)
-            {
-                return;
-            }
-
-            var lines = textView.TextBuffer?.CurrentSnapshot?.Lines;
-            var caretPosition = textView.Caret.Position.BufferPosition.Position;
-            var caretLine = lines?.FirstOrDefault(q => q.Start.Position <= caretPosition && q.End.Position >= caretPosition);
-            var relativeCaretWordPosition = GetRelativeCaretWordPosition(caretLine, caretPosition);
-
-            try
-            {
-                var spanToReplace = textView.Selection.IsEmpty
-                    ? new Span(caretLine.Start + relativeCaretWordPosition, GetCaretWord(lines, caretPosition).Length)
-                    : textView.Selection.SelectedSpans.FirstOrDefault();
-
-                edit.Replace(spanToReplace, codeSuggestion);
-                edit.Apply();
-            }
-            catch (Exception)
-            {
-                edit.Cancel();
-            }
-        }
-
         public static string GetCaretWord(IEnumerable<ITextSnapshotLine> lines, int? position)
         {
             if (!position.HasValue)
@@ -207,8 +170,8 @@ namespace XSharpPowerTools.Helpers
 
             var lengthSum = 0;
             var caretWord = string.Empty;
-            foreach (var word in words)
-            {
+            foreach (var word in words) 
+            { 
                 if (lengthSum <= relativeCaretPosition && lengthSum + word.Length >= relativeCaretPosition && !Regex.IsMatch(word, @"\W"))
                 {
                     caretWord = word;
@@ -220,11 +183,11 @@ namespace XSharpPowerTools.Helpers
             return caretWord;
         }
 
-        private static int GetRelativeCaretWordPosition(ITextSnapshotLine caretLine, int caretPosition)
+        private static int GetRelativeCaretWordPosition(ITextSnapshotLine caretLine, int caretPosition) 
         {
             var lineText = caretLine?.GetText();
 
-            if (string.IsNullOrEmpty(lineText))
+            if (string.IsNullOrWhiteSpace(lineText))
                 return 0;
 
             var relativeCaretPosition = caretPosition - caretLine.Start.Position;

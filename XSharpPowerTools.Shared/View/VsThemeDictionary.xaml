@@ -240,7 +240,7 @@
         </Setter>
     </Style>
     <Style x:Key="GenericDataGridRow" TargetType="{x:Type DataGridRow}">
-        <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Item.SourceCodeDisplay}"/>
+        <Setter Property="ToolTip" Value="{Binding RelativeSource={RelativeSource Self},Path=Item.SourceCode}"/>
         <Setter Property="ToolTipService.ShowDuration" Value="5000"/>
         <Setter Property="ToolTipService.BetweenShowDelay" Value="1500"/>
         <Setter Property="ToolTipService.InitialShowDelay" Value="1500"/>

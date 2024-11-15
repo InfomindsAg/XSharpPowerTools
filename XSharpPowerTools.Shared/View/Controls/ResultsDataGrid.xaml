@@ -17,8 +17,7 @@
     HorizontalScrollBarVisibility="Hidden"
     KeyboardNavigation.TabNavigation="None"
     Sorting="SortHandler"
-    CopyingRowClipboardContent="CopyRowClipboardContentHandler"
-    Margin="0,2,0,0">
+    CopyingRowClipboardContent="CopyRowClipboardContentHandler">
 
     <DataGrid.Resources>
         <ResourceDictionary Source="../VsThemeDictionary.xaml"/>

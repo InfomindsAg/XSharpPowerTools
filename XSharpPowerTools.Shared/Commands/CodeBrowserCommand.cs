@@ -1,7 +1,6 @@
 ﻿using Community.VisualStudio.Toolkit;
 using Microsoft.VisualStudio.Shell;
 using System.IO;
-using XSharpPowerTools.View.Controls;
 using XSharpPowerTools.View.Windows;
 using Task = System.Threading.Tasks.Task;
 
@@ -22,10 +21,8 @@ namespace XSharpPowerTools.Commands
             if (solution != null)
             {
                 var solutionDirectory = Path.GetDirectoryName(solution.FullPath);
-                var window = new DialogSearchWindow("X# Code Browser");
-                var control = new CodeBrowserControl(solutionDirectory, window);
-                window.ShowControl(control);
-                await CommandBase.ShowDialogSearchWindowAsync(window);
+                var window = new CodeBrowserWindow(solutionDirectory);
+                await CommandBase.ShowBaseWindowAsync(window);
             }
         }
     }
