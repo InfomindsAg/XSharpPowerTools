@@ -57,7 +57,7 @@ namespace XSharpPowerTools
                 if (memberName.Equals("%"))
                     sb.Append("Kind = 3 OR Kind = 4");
                 else
-                    sb.Length = sb.Length - 4;
+                    sb.Length -= 4;
             }
             else if (Type == FilterType.Type) 
             {
@@ -66,7 +66,7 @@ namespace XSharpPowerTools
                     sb.Append(GetFilterSqlConditions(filter));
                     sb.Append(" OR ");
                 }
-                sb.Length = sb.Length - 4;
+                sb.Length -= 4;
             }
 
             return sb.Append(')').ToString();

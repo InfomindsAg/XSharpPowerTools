@@ -28,6 +28,7 @@ namespace XSharpPowerTools
         {
             using var waitCursor = new WithWaitCursor();
 
+            SQLitePCL.Batteries.Init();
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             await CodeBrowserCommand.InitializeAsync(this);
             await FindNamespaceCommand.InitializeAsync(this);

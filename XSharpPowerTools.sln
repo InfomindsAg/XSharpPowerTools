@@ -9,6 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSharpPowerTools.2019", "XS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XSharpPowerTools.2022", "XSharpPowerTools.2022\XSharpPowerTools.2022.csproj", "{045EF8C2-6206-4B2E-9470-BDDBA203258D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docs", "Docs", "{EA6E6221-340B-4108-8AA0-2E8AE9F7A2AB}"
+	ProjectSection(SolutionItems) = preProject
+		README-Marketplace-2019.md = README-Marketplace-2019.md
+		README-Marketplace-2022.md = README-Marketplace-2022.md
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
