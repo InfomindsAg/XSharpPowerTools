@@ -33,4 +33,7 @@
 - Completely reworked Code Browser, now including filtering, user sorting, additional kinds of types and members
 - New inserting functionalities for Find Namespace
 
+## 1.14
+- Fixed search with ".." for members of partial classes
+
 see README.md for further details

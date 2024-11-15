@@ -205,7 +205,7 @@ namespace XSharpPowerTools
                 orderBy = $"TRIM({orderBy}) {sqlSortDirection}";
             }
 
-            var command = Connection.CreateCommand();
+            using var command = Connection.CreateCommand();
 
             command.CommandText =
                 @$"
@@ -255,7 +255,7 @@ namespace XSharpPowerTools
                     LIMIT {limit}
                 ";
 
-            var reader = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync();
 
             var results = new List<XSModelResultItem>();
             var resultType = searchingForMember ? XSModelResultType.Member : XSModelResultType.Type;
@@ -318,9 +318,9 @@ namespace XSharpPowerTools
                     return result;
 
                 // there is only one record
-                idProject = (long)currentClassReader["idProject"];
-                name = (string)currentClassReader["Name"];
-                @namespace = (string)currentClassReader["Namespace"];
+                name = currentClassReader.GetString(0);
+                @namespace = currentClassReader.GetString(1);
+                idProject = currentClassReader.GetInt64(2);
             }
             command.CommandText =
                 @"
@@ -337,7 +337,7 @@ namespace XSharpPowerTools
             using var types = await command.ExecuteReaderAsync();
             while (await types.ReadAsync())
             {
-                result.Add((long)types["id"]);
+                result.Add(types.GetInt64(0));
             }
             
             return result;
@@ -355,7 +355,7 @@ namespace XSharpPowerTools
 
             await Connection.OpenAsync();
             searchTerm = searchTerm.Replace("_", @"\_");
-            var command = Connection.CreateCommand();
+            using var command = Connection.CreateCommand();
             command.CommandText =
                 @$"
                     SELECT *
@@ -376,7 +376,7 @@ namespace XSharpPowerTools
                 ";
             command.Parameters.AddWithValue("$typeName", $"%{searchTerm.Trim().ToLower()}%");
 
-            var reader = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync();
             var results = new List<NamespaceResultItem>();
             while (await reader.ReadAsync())
             {
@@ -398,7 +398,7 @@ namespace XSharpPowerTools
                 return false;
 
             await Connection.OpenAsync();
-            var command = Connection.CreateCommand();
+            using var command = Connection.CreateCommand();
             command.CommandText =
                 @"
                     SELECT Usings
