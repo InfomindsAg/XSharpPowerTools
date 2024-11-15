@@ -7,11 +7,11 @@ namespace XSharpPowerTools
 {
     internal sealed partial class Vsix
     {
-        public const string Id = "XSharpPowerTools.821a9ef3-feda-412d-b004-767f380c7336";
-        public const string Name = "XSharpPowerTools";
-        public const string Description = @"A set of tools for XSharp Developers";
+        public const string Id = "XSharpPowerTools{1BDABBCB-67EC-4260-981D-E88D773490E3";
+        public const string Name = "XSharpPowerTools.2022";
+        public const string Description = @"A set of Visual Studio 2022 Tools for XSharp Developers";
         public const string Language = "en-US";
-        public const string Version = "1.4";
+        public const string Version = "2.10";
         public const string Author = "Infominds Ag";
         public const string Tags = "";
     }

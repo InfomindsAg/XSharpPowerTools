@@ -87,10 +87,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Community.VisualStudio.Toolkit.17">
-      <Version>17.0.394</Version>
+      <Version>17.0.527</Version>
     </PackageReference>
     <PackageReference Include="Community.VisualStudio.Toolkit.Analyzers">
-      <Version>1.0.394</Version>
+      <Version>1.0.527</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -100,29 +100,29 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Data.Sqlite">
-      <Version>5.0.14</Version>
+      <Version>7.0.20</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.ImageCatalog">
-      <Version>17.3.32804.24</Version>
+      <Version>17.12.40391</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Imaging">
-      <Version>17.3.32804.24</Version>
+      <Version>17.12.40391</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers">
-      <Version>16.10.10</Version>
+      <Version>17.7.47</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0">
-      <Version>17.3.32804.24</Version>
+      <Version>17.12.40392</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools">
-      <Version>17.1.4054</Version>
+      <Version>17.12.2069</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Reactive">
-      <Version>5.0.0</Version>
+      <Version>6.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

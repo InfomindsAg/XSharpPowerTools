@@ -89,7 +89,7 @@
     </PackageReference>
     <PackageReference Include="Community.VisualStudio.VSCT" Version="16.0.29.6" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Data.Sqlite">
-      <Version>5.0.8</Version>
+      <Version>7.0.20</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.ImageCatalog">
       <Version>16.10.31320.204</Version>
@@ -104,15 +104,15 @@
       <Version>16.10.31321.278</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Validation">
-      <Version>16.10.35</Version>
+      <Version>17.8.8</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools">
-      <Version>16.11.65</Version>
+      <Version>17.12.2069</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Reactive">
-      <Version>5.0.0</Version>
+      <Version>6.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

@@ -229,10 +229,10 @@ namespace XSharpPowerTools
                     }
                     else 
                     {
-                        var idType = await GetContaingClassAsync(currentFile, caretPosition);
-                        if (idType > 0)
+                        var idsType = await GetContaingClassAsync(currentFile, caretPosition);
+                        if (idsType.Count > 0)
                         {
-                            command.CommandText += @$" AND IdType = {idType}";
+                            command.CommandText += @$" AND IdType IN (" + string.Join(",", idsType) + ")";
                         }
                         else 
                         {
@@ -289,15 +289,16 @@ namespace XSharpPowerTools
             return (results, resultType);
         }
 
-        private async Task<int> GetContaingClassAsync(string currentFile, int caretPosition)
+        private async Task<List<long>> GetContaingClassAsync(string currentFile, int caretPosition)
         {
+            var result = new List<long>();
             if (string.IsNullOrWhiteSpace(currentFile))
-                return 0;
+                return result;
 
-            var command = Connection.CreateCommand();
+            using var command = Connection.CreateCommand();
             command.CommandText =
                 @"
-                    SELECT Id
+                    SELECT Name, Namespace, idProject
 					FROM ProjectTypes
 					WHERE Kind = 1
                     AND LOWER(TRIM(Sourcecode)) LIKE ""%class%""
@@ -308,9 +309,38 @@ namespace XSharpPowerTools
             command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
             command.Parameters.AddWithValue("$caretPos", caretPosition);
 
-            var idTypeResult = await command.ExecuteScalarAsync();
-            idTypeResult = idTypeResult == DBNull.Value ? null : idTypeResult;
-            return Convert.ToInt32(idTypeResult);
+            long idProject = 0;
+            string name = string.Empty;
+            string @namespace = string.Empty;
+            using (var currentClassReader = await command.ExecuteReaderAsync())
+            {
+                if (!await currentClassReader.ReadAsync())
+                    return result;
+
+                // there is only one record
+                idProject = (long)currentClassReader["idProject"];
+                name = (string)currentClassReader["Name"];
+                @namespace = (string)currentClassReader["Namespace"];
+            }
+            command.CommandText =
+                @"
+                    SELECT id
+					FROM ProjectTypes
+					WHERE Kind = 1 AND LOWER(Name) = $name AND LOWER(Namespace) = $namespace AND idProject = $idProject
+                ";
+
+            command.Parameters.Clear();
+            command.Parameters.AddWithValue("$name", name.ToLower());
+            command.Parameters.AddWithValue("$namespace", @namespace.ToLower());
+            command.Parameters.AddWithValue("$idProject", idProject);
+
+            using var types = await command.ExecuteReaderAsync();
+            while (await types.ReadAsync())
+            {
+                result.Add((long)types["id"]);
+            }
+            
+            return result;
         }
 
         public async Task<List<NamespaceResultItem>> GetContainingNamespaceAsync(string searchTerm, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null)
