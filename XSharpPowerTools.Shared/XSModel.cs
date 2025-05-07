@@ -1,10 +1,11 @@
-﻿using Microsoft.Data.Sqlite;
-using Microsoft.VisualStudio.PlatformUI.OleComponentSupport;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
+using System.Data.Common;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -106,10 +107,10 @@ namespace XSharpPowerTools
 
     public class XSModel
     {
-        private readonly SqliteConnection Connection;
+        private readonly DbConnection Connection;
 
-        public XSModel(string dbFile) =>
-            Connection = GetConnection(dbFile) ?? throw new ArgumentNullException();
+        public XSModel() =>
+            Connection = GetConnection() ?? throw new ArgumentNullException();
 
         public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, Filter filter, string solutionDirectory, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
             await GetSearchTermMatchesAsync(searchTerm, filter, solutionDirectory, null, direction, orderBy, limit, -1);
@@ -124,8 +125,6 @@ namespace XSharpPowerTools
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
                 return (new(), 0);
-
-            await Connection.OpenAsync();
 
             var sqlSortDirection = direction == ListSortDirection.Ascending ? "ASC" : "DESC";
 
@@ -153,8 +152,6 @@ namespace XSharpPowerTools
 
                 var resultsAndResultType = await BuildAndExecuteSqlAsync(null, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit, currentFile, caretPostion);
 
-                Connection.Close();
-
                 return resultsAndResultType;
             }
             else
@@ -176,7 +173,6 @@ namespace XSharpPowerTools
                     filter.Type = FilterType.Member;
                     (results, resultType) = await BuildAndExecuteSqlAsync(typeName, memberName, filter, orderBy, sqlSortDirection, solutionDirectory, limit);
                 }
-                Connection.Close();
                 return (results, resultType);
             }
         }
@@ -214,9 +210,11 @@ namespace XSharpPowerTools
                     WHERE {filter.GetFilterSql(memberName)}
                     AND LOWER(TRIM(Name)) LIKE $name ESCAPE '\'
                 ";
-            command.Parameters.AddWithValue("$name", searchingForMember
-                ? memberName.Trim().ToLower()
-                : typeName.Trim().ToLower());
+
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = "$name";
+            parameter.Value = searchingForMember ? memberName.Trim().ToLower() : typeName?.Trim().ToLower();
+            command.Parameters.Add(parameter);
 
             if (searchingForMember)
             {
@@ -225,7 +223,10 @@ namespace XSharpPowerTools
                     if (caretPosition < 0) 
                     {
                         command.CommandText += @$" AND LOWER(TRIM(FileName)) = $fileName";
-                        command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
+                        parameter = command.CreateParameter();
+                        parameter.ParameterName = "$fileName";
+                        parameter.Value = currentFile.Trim().ToLower();
+                        command.Parameters.Add(parameter);
                     }
                     else 
                     {
@@ -237,14 +238,20 @@ namespace XSharpPowerTools
                         else 
                         {
                             command.CommandText += @$" AND LOWER(TRIM(FileName)) = $fileName";
-                            command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
+                            parameter = command.CreateParameter();
+                            parameter.ParameterName = "$fileName";
+                            parameter.Value = currentFile.Trim().ToLower();
+                            command.Parameters.Add(parameter);
                         }
                     }
                 }
                 else if (!string.IsNullOrWhiteSpace(typeName)) 
                 {
                     command.CommandText += @" AND LOWER(TRIM(TypeName)) LIKE $typeName  ESCAPE '\'";
-                    command.Parameters.AddWithValue("$typeName", typeName.Trim().ToLower());
+                    parameter = command.CreateParameter();
+                    parameter.ParameterName = "$typeName";
+                    parameter.Value = typeName.Trim().ToLower();
+                    command.Parameters.Add(parameter);
                 }
             }
             command.CommandText +=
@@ -261,7 +268,7 @@ namespace XSharpPowerTools
             var resultType = searchingForMember ? XSModelResultType.Member : XSModelResultType.Type;
             while (await reader.ReadAsync())
             {
-                if (!reader.GetString(4).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
+                if (!reader.GetString(3).Trim().EndsWith("(OrphanedFiles).xsproj") && !reader.GetString(1).Trim().Contains($"{Path.DirectorySeparatorChar}.vs{Path.DirectorySeparatorChar}"))
                 {
                     var resultItem = new XSModelResultItem
                     {
@@ -289,6 +296,14 @@ namespace XSharpPowerTools
             return (results, resultType);
         }
 
+        private static void AddWithValue(DbCommand command, string name, object value)
+        {
+            var parameter = command.CreateParameter();
+            parameter.ParameterName = name;
+            parameter.Value = value;
+            command.Parameters.Add(parameter);
+        }
+
         private async Task<List<long>> GetContaingClassAsync(string currentFile, int caretPosition)
         {
             var result = new List<long>();
@@ -306,8 +321,8 @@ namespace XSharpPowerTools
                     AND Start < $caretPos AND Stop > $caretPos
                     ORDER BY Stop - Start ASC LIMIT 1
                 ";
-            command.Parameters.AddWithValue("$fileName", currentFile.Trim().ToLower());
-            command.Parameters.AddWithValue("$caretPos", caretPosition);
+            AddWithValue(command, "$fileName", currentFile.Trim().ToLower());
+            AddWithValue(command, "$caretPos", caretPosition);
 
             long idProject = 0;
             string name = string.Empty;
@@ -330,9 +345,9 @@ namespace XSharpPowerTools
                 ";
 
             command.Parameters.Clear();
-            command.Parameters.AddWithValue("$name", name.ToLower());
-            command.Parameters.AddWithValue("$namespace", @namespace.ToLower());
-            command.Parameters.AddWithValue("$idProject", idProject);
+            AddWithValue(command, "$name", name.ToLower());
+            AddWithValue(command, "$namespace", @namespace.ToLower());
+            AddWithValue(command, "$idProject", idProject);
 
             using var types = await command.ExecuteReaderAsync();
             while (await types.ReadAsync())
@@ -374,7 +389,7 @@ namespace XSharpPowerTools
                     ORDER BY LENGTH(TRIM({orderBy})) {sqlSortDirection}, TRIM({orderBy}) {sqlSortDirection}
                     LIMIT 100
                 ";
-            command.Parameters.AddWithValue("$typeName", $"%{searchTerm.Trim().ToLower()}%");
+            AddWithValue(command, "$typeName", $"%{searchTerm.Trim().ToLower()}%");
 
             using var reader = await command.ExecuteReaderAsync();
             var results = new List<NamespaceResultItem>();
@@ -388,7 +403,6 @@ namespace XSharpPowerTools
                 results.Add(result);
             }
 
-            Connection.Close();
             return results;
         }
 
@@ -405,28 +419,26 @@ namespace XSharpPowerTools
 					FROM Files
 					WHERE TRIM(LOWER(FileName)) = $fileName
                 ";
-            command.Parameters.AddWithValue("$fileName", file.Trim().ToLower());
+            AddWithValue(command, "$fileName", file.Trim().ToLower());
 
             var result = await command.ExecuteScalarAsync() as string;
             var usings = result?.Split(new[] { '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
             return usings?.Contains(usingToInsert) == true;
         }
 
-        public void CloseConnection()
-        {
-            if (Connection?.State != System.Data.ConnectionState.Closed)
-                Connection?.Close();
-        }
+        private static FieldInfo _connectionField;
 
-        public static SqliteConnection GetConnection(string dbFile)
+        public static DbConnection GetConnection()
         {
-            var connectionSB = new SqliteConnectionStringBuilder
+            if (_connectionField == null)
             {
-                DataSource = dbFile,
-                Mode = SqliteOpenMode.ReadOnly
-            };
-            var connection = new SqliteConnection(connectionSB.ConnectionString);
-            return connection;
+                var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(q => q.GetType("XSharpModel.XDatabase", false) != null);
+                var dbTypeXSharp = assembly?.GetType("XSharpModel.XDatabase");
+                // get the static field with reflection from the type obj
+                _connectionField = dbTypeXSharp?.GetField("oConn", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+            }
+
+            return _connectionField?.GetValue(null) as DbConnection;
         }
     }
 }

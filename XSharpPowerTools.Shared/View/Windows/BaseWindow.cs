@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.PlatformUI;
 using System;
+using System.Linq;
 using System.Windows.Input;
 using XSharpPowerTools.Helpers;
 
@@ -26,7 +27,13 @@ namespace XSharpPowerTools.View.Windows
             base.OnDeactivated(e);
             try
             {
-                //Close();
+                //var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(q => q.GetType("XSharpModel.XDatabase", false) != null);
+                //var obj = assembly?.GetType("XSharpModel.XDatabase");
+                //// get the static field with reflection from the type obj
+                //var field = obj?.GetField("Instance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+
+                
+
             }
             catch (InvalidOperationException)
             { }

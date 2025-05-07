@@ -22,25 +22,15 @@ namespace XSharpPowerTools.Commands
             
             if (solution != null)
             {
-                var solutionDirectory = Path.GetDirectoryName(solution.FullPath);
-                var dbFile = solutionDirectory + @"\.vs\" + Path.GetFileNameWithoutExtension(solution.FullPath) + @"\X#Model.xsdb";
-                if (File.Exists(dbFile))
+                window.XSModel = new XSModel();
+                window.SearchTerm = await DocumentHelper.GetEditorSearchTermAsync();
+                try
                 {
-                    window.XSModel = new XSModel(dbFile);
-                    window.SearchTerm = await DocumentHelper.GetEditorSearchTermAsync();
-                    try
-                    {
-                        await VS.Windows.ShowDialogAsync(window);
-                    }
-                    finally
-                    {
-                        window.XSModel.CloseConnection();
-                        window.Close();
-                    }
+                    await VS.Windows.ShowDialogAsync(window);
                 }
-                else
+                finally
                 {
-                    await VS.MessageBox.ShowWarningAsync("X# Code Browser", "Waiting for solution to be fully loaded.");
+                    window.Close();
                 }
             }
             else
