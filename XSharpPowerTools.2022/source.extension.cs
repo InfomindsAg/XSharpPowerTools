@@ -12,7 +12,7 @@ namespace XSharpPowerTools
         public const string Name = "XSharpPowerTools.2022";
         public const string Description = @"A set of Visual Studio 2022 Tools for XSharp Developers";
         public const string Language = "en-US";
-        public const string Version = "2.12";
+        public const string Version = "2.13";
         public const string Author = "Infominds Ag";
         public const string Tags = "";
         public const bool IsPreview = false;
