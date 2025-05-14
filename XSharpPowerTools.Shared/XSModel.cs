@@ -368,7 +368,6 @@ namespace XSharpPowerTools
             if (string.IsNullOrWhiteSpace(orderBy))
                 orderBy = "Name";
 
-            await Connection.OpenAsync();
             searchTerm = searchTerm.Replace("_", @"\_");
             using var command = Connection.CreateCommand();
             command.CommandText =
@@ -411,7 +410,6 @@ namespace XSharpPowerTools
             if (string.IsNullOrWhiteSpace(file) || string.IsNullOrWhiteSpace(usingToInsert))
                 return false;
 
-            await Connection.OpenAsync();
             using var command = Connection.CreateCommand();
             command.CommandText =
                 @"
