@@ -36,4 +36,9 @@
 ## 1.14
 - Fixed search with ".." for members of partial classes
 
+## 1.17
+- Fixed Find Namespace: inserting a using did nothing at all, without any error message
+- Existing usings are now also found below a file header (comments, preprocessor directives), and a new using is inserted after that header instead of always at the very top of the file
+- Access to the X# database now uses the public XDatabase.Connection property instead of an internal field, which makes the extension less dependent on X# internals
+
 see README.md for further details

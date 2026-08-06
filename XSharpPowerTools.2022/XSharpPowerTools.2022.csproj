@@ -88,25 +88,25 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Community.VisualStudio.Toolkit.17">
-      <Version>17.0.533</Version>
+      <Version>17.0.551</Version>
     </PackageReference>
     <PackageReference Include="Community.VisualStudio.Toolkit.Analyzers">
-      <Version>1.0.533</Version>
+      <Version>1.0.551</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Community.VisualStudio.VSCT">
-      <Version>16.0.29.6</Version>
+      <Version>16.0.29.14</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VSSDK.BuildTools">
-      <Version>17.13.2126</Version>
+      <Version>17.14.2142</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Reactive">
-      <Version>6.0.1</Version>
+      <Version>6.1.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,8 @@ namespace XSharpPowerTools.Helpers
 {
     public static class DocumentHelper
     {
+        private static readonly Regex UsingLineRegex = new(@"^\s*using\s+(?:static\s+)?(?<ns>[^\s/]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
         public static async Task OpenProjectItemAtAsync(string file, int lineIndex, string sourceCode, string keyWord)
         {
             if (string.IsNullOrEmpty(file))
@@ -52,38 +54,19 @@ namespace XSharpPowerTools.Helpers
             textView.VisualElement.Focus();
         }
 
-        public static async Task InsertUsingAsync(string namespaceRef, string type, XSModel xsModel)
+        public static async Task InsertUsingAsync(string namespaceRef, string type)
         {
-            var documentView = await VS.Documents.GetActiveDocumentViewAsync();
-            var fileName = documentView?.FilePath;
-            var textView = documentView?.TextView;
-            var usings = new List<ITextSnapshotLine>();
+            var textView = (await VS.Documents.GetActiveDocumentViewAsync())?.TextView;
 
             if (textView == null)
                 return;
 
-            if (await xsModel.FileContainsUsingAsync(fileName, namespaceRef))
+            var insertion = GetUsingInsertion(textView.TextSnapshot, namespaceRef);
+
+            if (insertion == null)
             {
                 await VS.MessageBox.ShowAsync("Using with given namespace already found in current document.");
                 return;
-            }
-
-            foreach (var line in textView.TextSnapshot.Lines)
-            {
-                var lineText = line.GetText().Trim();
-                if (lineText.StartsWith("using"))
-                {
-                    if (lineText.Split(' ').ElementAtOrDefault(1) == namespaceRef)
-                    {
-                        await VS.MessageBox.ShowAsync("Using with given namespace already found in current document.");
-                        return;
-                    }
-                    usings.Add(line);
-                }
-                else
-                {
-                    break;
-                }
             }
 
             ITextEdit edit;
@@ -98,20 +81,91 @@ namespace XSharpPowerTools.Helpers
 
             try
             {
-                var insertPos = usings.LastOrDefault()?.EndIncludingLineBreak.Position ?? 0;
-                var paddingNum = usings.LastOrDefault()?.GetText().TakeWhile(char.IsWhiteSpace).Count();
-                var padding = paddingNum.HasValue ? new string(' ', paddingNum.Value) : string.Empty;
-
                 if (!textView.Selection.IsEmpty)
                     edit.Replace(textView.Selection.SelectedSpans.FirstOrDefault(), type);
 
-                edit.Insert(insertPos, $"{padding}using {namespaceRef}{Environment.NewLine}");
+                edit.Insert(insertion.Value.Position, insertion.Value.Text);
                 edit.Apply();
             }
             catch (Exception)
             {
                 edit.Cancel();
             }
+        }
+
+        /// <summary>
+        /// Determines where a new using has to be inserted. The file header (blank lines, comments
+        /// and preprocessor directives) is skipped, so usings are found even when they do not start
+        /// on the very first line. Returns null when the namespace is already used.
+        /// </summary>
+        private static (int Position, string Text)? GetUsingInsertion(ITextSnapshot snapshot, string namespaceRef)
+        {
+            ITextSnapshotLine lastUsing = null;
+            ITextSnapshotLine firstCode = null;
+            var inBlockComment = false;
+
+            foreach (var line in snapshot.Lines)
+            {
+                var text = line.GetText().Trim();
+
+                if (inBlockComment)
+                {
+                    var commentEnd = text.IndexOf("*/");
+                    if (commentEnd < 0)
+                        continue;
+                    text = text.Substring(commentEnd + 2).Trim();
+                    inBlockComment = false;
+                }
+
+                while (text.StartsWith("/*"))
+                {
+                    var commentEnd = text.IndexOf("*/", 2);
+                    if (commentEnd < 0)
+                    {
+                        inBlockComment = true;
+                        text = string.Empty;
+                        break;
+                    }
+                    text = text.Substring(commentEnd + 2).Trim();
+                }
+
+                if (text.Length == 0 || text.StartsWith("//") || text.StartsWith("&&") || text.StartsWith("*") || text.StartsWith("#"))
+                    continue;
+
+                var match = UsingLineRegex.Match(text);
+                if (!match.Success)
+                {
+                    firstCode = line;
+                    break;
+                }
+
+                if (string.Equals(match.Groups["ns"].Value.TrimEnd(';'), namespaceRef, StringComparison.OrdinalIgnoreCase))
+                    return null;
+
+                lastUsing = line;
+            }
+
+            var firstLine = snapshot.GetLineFromLineNumber(0);
+            var lineBreak = firstLine.LineBreakLength > 0 ? firstLine.GetLineBreakText() : Environment.NewLine;
+
+            if (lastUsing != null)
+            {
+                var lead = lastUsing.LineBreakLength > 0 ? string.Empty : lineBreak;
+                return (lastUsing.EndIncludingLineBreak.Position, $"{lead}{GetIndent(lastUsing)}using {namespaceRef}{lineBreak}");
+            }
+
+            if (firstCode != null)
+                return (firstCode.Start.Position, $"{GetIndent(firstCode)}using {namespaceRef}{lineBreak}{lineBreak}");
+
+            var lastLine = snapshot.GetLineFromLineNumber(snapshot.LineCount - 1);
+            var separator = lastLine.Length > 0 && lastLine.LineBreakLength == 0 ? lineBreak : string.Empty;
+            return (snapshot.Length, $"{separator}using {namespaceRef}{lineBreak}");
+        }
+
+        private static string GetIndent(ITextSnapshotLine line)
+        {
+            var text = line.GetText();
+            return text.Substring(0, text.Length - text.TrimStart().Length);
         }
 
         public static async Task InsertNamespaceReferenceAsync(string namespaceRef, string type) 

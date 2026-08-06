@@ -405,38 +405,37 @@ namespace XSharpPowerTools
             return results;
         }
 
-        public async Task<bool> FileContainsUsingAsync(string file, string usingToInsert) 
-        {
-            if (string.IsNullOrWhiteSpace(file) || string.IsNullOrWhiteSpace(usingToInsert))
-                return false;
-
-            using var command = Connection.CreateCommand();
-            command.CommandText =
-                @"
-                    SELECT Usings
-					FROM Files
-					WHERE TRIM(LOWER(FileName)) = $fileName
-                ";
-            AddWithValue(command, "$fileName", file.Trim().ToLower());
-
-            var result = await command.ExecuteScalarAsync() as string;
-            var usings = result?.Split(new[] { '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
-            return usings?.Contains(usingToInsert) == true;
-        }
-
-        private static FieldInfo _connectionField;
+        private static Func<DbConnection> _connectionAccessor;
 
         public static DbConnection GetConnection()
         {
-            if (_connectionField == null)
-            {
-                var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(q => q.GetType("XSharpModel.XDatabase", false) != null);
-                var dbTypeXSharp = assembly?.GetType("XSharpModel.XDatabase");
-                // get the static field with reflection from the type obj
-                _connectionField = dbTypeXSharp?.GetField("oConn", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-            }
+            // stays null until X# has loaded its model assembly, so keep retrying until it resolves
+            _connectionAccessor ??= CreateConnectionAccessor();
+            return _connectionAccessor?.Invoke();
+        }
 
-            return _connectionField?.GetValue(null) as DbConnection;
+        /// <summary>
+        /// Resolves X#'s in memory database connection. The public XDatabase.Connection property is
+        /// preferred over the private oConn field, which is only used as a fallback for X# versions
+        /// that do not expose the property yet.
+        /// </summary>
+        private static Func<DbConnection> CreateConnectionAccessor()
+        {
+            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(q => q.GetType("XSharpModel.XDatabase", false) != null);
+            var dbTypeXSharp = assembly?.GetType("XSharpModel.XDatabase");
+
+            if (dbTypeXSharp == null)
+                return null;
+
+            var property = dbTypeXSharp.GetProperty("Connection", BindingFlags.Static | BindingFlags.Public);
+            if (property?.GetGetMethod() != null && typeof(DbConnection).IsAssignableFrom(property.PropertyType))
+                return () => property.GetValue(null) as DbConnection;
+
+            var field = dbTypeXSharp.GetField("oConn", BindingFlags.Static | BindingFlags.NonPublic);
+            if (field != null)
+                return () => field.GetValue(null) as DbConnection;
+
+            return null;
         }
     }
 }
