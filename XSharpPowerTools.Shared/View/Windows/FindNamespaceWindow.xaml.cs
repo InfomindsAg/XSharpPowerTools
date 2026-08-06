@@ -79,7 +79,7 @@ namespace XSharpPowerTools.View.Windows
         {
             if (item == null)
                 return;
-            await DocumentHelper.InsertUsingAsync(item.Namespace, item.TypeName, XSModel);
+            await DocumentHelper.InsertUsingAsync(item.Namespace, item.TypeName);
             Close();
         }
 
@@ -148,10 +148,7 @@ namespace XSharpPowerTools.View.Windows
             if (AllowReturn)
             {
                 var item = selectedItem as NamespaceResultItem;
-                _ = XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    await InsertUsingAsync(item);
-                });
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertUsingAsync(item)).FileAndForget($"{FileReference}OnReturn");
             }
         }
 
@@ -170,7 +167,7 @@ namespace XSharpPowerTools.View.Windows
             }
             else
             {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnReturn");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
                 column.SortDirection = direction;
             }
             e.Handled = true;
