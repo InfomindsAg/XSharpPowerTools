@@ -170,7 +170,7 @@ namespace XSharpPowerTools.View.Windows
                         await OpenItemAsync(item);
                     else
                         await SearchAsync();
-                }).FileAndForget($"{FileReference}Window_PreviewKeyDown");
+                }).LogAndForget($"{FileReference}Window_PreviewKeyDown");
             }
             else if (e.Key == Key.Down)
             {
@@ -238,7 +238,7 @@ namespace XSharpPowerTools.View.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}Window_Loaded");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).LogAndForget($"{FileReference}Window_Loaded");
             SearchTextBox.CaretIndex = int.MaxValue;
             try
             {
@@ -262,7 +262,7 @@ namespace XSharpPowerTools.View.Windows
             HelpControl.Visibility = HelpControl.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
 
         protected override void OnTextChanged() => 
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).LogAndForget($"{FileReference}OnTextChanged");
 
         private async Task DoSearchAsync()
         {
@@ -284,7 +284,7 @@ namespace XSharpPowerTools.View.Windows
             if (AllowReturn)
             {
                 var item = selectedItem as XSModelResultItem;
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await OpenItemAsync(item)).FileAndForget($"{FileReference}OnReturn");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await OpenItemAsync(item)).LogAndForget($"{FileReference}OnReturn");
             }
         }
 
@@ -310,7 +310,7 @@ namespace XSharpPowerTools.View.Windows
                 var items = ResultsDataGrid.ItemsSource as List<XSModelResultItem>;
                 await (toolWindowPane.Content as ToolWindowControl).UpdateToolWindowContentsAsync(XSModel, GetFilter(), LastSearchTerm, SolutionDirectory, items, DisplayedResultType);
 
-            }).FileAndForget($"{FileReference}SaveResultsToToolWindow");
+            }).LogAndForget($"{FileReference}SaveResultsToToolWindow");
         }
 
         public void OnSort(ResultsDataGrid sender, DataGridSortingEventArgs e) 
@@ -328,7 +328,7 @@ namespace XSharpPowerTools.View.Windows
             }
             else
             {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).LogAndForget($"{FileReference}OnSort");
                 column.SortDirection = direction;
             }
             e.Handled = true;
@@ -398,7 +398,7 @@ namespace XSharpPowerTools.View.Windows
                 filterButton.IsChecked = false;
 
             SearchTextBox.Focus();
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}FilterButton_Click");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).LogAndForget($"{FileReference}FilterButton_Click");
         }
 
         private void RefreshButton_Click(object sender, RoutedEventArgs e) 
@@ -416,7 +416,7 @@ namespace XSharpPowerTools.View.Windows
 
             ActiveFilterGroup = FilterType.Inactive;
 
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}RefreshButton_Click");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).LogAndForget($"{FileReference}RefreshButton_Click");
         }
     }
 }
