@@ -22,7 +22,17 @@ namespace XSharpPowerTools.Commands
             
             if (solution != null)
             {
-                window.XSModel = new XSModel();
+                try
+                {
+                    window.XSModel = new XSModel();
+                }
+                catch (InvalidOperationException ex)
+                {
+                    await DiagnosticLog.ErrorAsync($"{FileReference}ShowBaseWindow", ex);
+                    await VS.MessageBox.ShowErrorAsync("X# Power Tools", ex.Message);
+                    return;
+                }
+
                 window.SearchTerm = await DocumentHelper.GetEditorSearchTermAsync();
                 try
                 {
@@ -42,7 +52,7 @@ namespace XSharpPowerTools.Commands
         public static void BeforeQueryStatus(object sender, EventArgs e)
         {
             if (sender is OleMenuCommand menuCommand)
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => menuCommand.Enabled = await ActiveSolutionContainsXsProjectAsync()).FileAndForget($"{FileReference}BeforeQueryStatus");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => menuCommand.Enabled = await ActiveSolutionContainsXsProjectAsync()).LogAndForget($"{FileReference}BeforeQueryStatus");
         }
 
         private static async Task<bool> ActiveSolutionContainsXsProjectAsync()
