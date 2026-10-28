@@ -19,6 +19,13 @@ namespace XSharpPowerTools
         Member
     }
 
+    public enum XSModelConnectionState
+    {
+        Available,
+        ModelAssemblyMissing,
+        DatabaseClosed
+    }
+
     public class XSModelResultItem
     {
         private static readonly List<int> KindsWithParams = new() { 3, 5, 9, 10 };
@@ -109,8 +116,13 @@ namespace XSharpPowerTools
     {
         private readonly DbConnection Connection;
 
-        public XSModel() =>
-            Connection = GetConnection() ?? throw new ArgumentNullException();
+        public XSModel()
+        {
+            Connection = GetConnection(out var state);
+
+            if (Connection == null)
+                throw new InvalidOperationException(DescribeConnectionState(state));
+        }
 
         public async Task<(List<XSModelResultItem>, XSModelResultType)> GetSearchTermMatchesAsync(string searchTerm, Filter filter, string solutionDirectory, int limit, ListSortDirection direction = ListSortDirection.Ascending, string orderBy = null) =>
             await GetSearchTermMatchesAsync(searchTerm, filter, solutionDirectory, null, direction, orderBy, limit, -1);
@@ -406,12 +418,29 @@ namespace XSharpPowerTools
         }
 
         private static Func<DbConnection> _connectionAccessor;
+        private static Type _dbTypeXSharp;
 
-        public static DbConnection GetConnection()
+        public static DbConnection GetConnection() =>
+            GetConnection(out _);
+
+        /// <summary>
+        /// Resolves X#'s in memory database connection and reports why it is unavailable, so a missing
+        /// model assembly can be told apart from a solution X# has not opened a database for.
+        /// </summary>
+        public static DbConnection GetConnection(out XSModelConnectionState state)
         {
             // stays null until X# has loaded its model assembly, so keep retrying until it resolves
             _connectionAccessor ??= CreateConnectionAccessor();
-            return _connectionAccessor?.Invoke();
+
+            if (_connectionAccessor == null)
+            {
+                state = XSModelConnectionState.ModelAssemblyMissing;
+                return null;
+            }
+
+            var connection = _connectionAccessor();
+            state = connection == null ? XSModelConnectionState.DatabaseClosed : XSModelConnectionState.Available;
+            return connection;
         }
 
         /// <summary>
@@ -421,21 +450,86 @@ namespace XSharpPowerTools
         /// </summary>
         private static Func<DbConnection> CreateConnectionAccessor()
         {
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(q => q.GetType("XSharpModel.XDatabase", false) != null);
-            var dbTypeXSharp = assembly?.GetType("XSharpModel.XDatabase");
+            _dbTypeXSharp = ResolveDbType();
 
-            if (dbTypeXSharp == null)
+            if (_dbTypeXSharp == null)
                 return null;
 
-            var property = dbTypeXSharp.GetProperty("Connection", BindingFlags.Static | BindingFlags.Public);
+            var property = _dbTypeXSharp.GetProperty("Connection", BindingFlags.Static | BindingFlags.Public);
             if (property?.GetGetMethod() != null && typeof(DbConnection).IsAssignableFrom(property.PropertyType))
                 return () => property.GetValue(null) as DbConnection;
 
-            var field = dbTypeXSharp.GetField("oConn", BindingFlags.Static | BindingFlags.NonPublic);
+            var field = _dbTypeXSharp.GetField("oConn", BindingFlags.Static | BindingFlags.NonPublic);
             if (field != null)
                 return () => field.GetValue(null) as DbConnection;
 
             return null;
+        }
+
+        /// <summary>
+        /// X# 3.0 renamed XSharpModel.dll to XSharp.CodeModel.dll but kept the type name, so the lookup
+        /// goes by type and only falls back to loading an assembly by name when nothing pulled it in yet.
+        /// </summary>
+        private static Type ResolveDbType()
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var type = TryGetDbType(() => assembly.GetType("XSharpModel.XDatabase", false));
+                if (type != null)
+                    return type;
+            }
+
+            foreach (var assemblyName in new[] { "XSharp.CodeModel", "XSharpModel" })
+            {
+                var type = TryGetDbType(() => Assembly.Load(assemblyName).GetType("XSharpModel.XDatabase", false));
+                if (type != null)
+                    return type;
+            }
+
+            return null;
+        }
+
+        private static Type TryGetDbType(Func<Type> resolve)
+        {
+            try
+            {
+                return resolve();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Message shown instead of failing silently when no connection can be obtained.
+        /// </summary>
+        public static string DescribeConnectionState(XSModelConnectionState state)
+        {
+            if (state == XSModelConnectionState.ModelAssemblyMissing)
+                return "The X# code model (XSharp.CodeModel) is not loaded in this Visual Studio session. "
+                    + "Open an X# project and wait until X# has finished parsing it, then try again.";
+
+            var databaseFile = ReadDbProperty("FileName");
+            var modelAssembly = _dbTypeXSharp?.Assembly?.Location;
+
+            return "X# has not opened its code model database for this solution. "
+                + "Wait until X# has finished parsing, then try again."
+                + (string.IsNullOrEmpty(databaseFile) ? string.Empty : $"{Environment.NewLine}Database: {databaseFile}")
+                + (string.IsNullOrEmpty(modelAssembly) ? string.Empty : $"{Environment.NewLine}X# code model: {modelAssembly}");
+        }
+
+        private static string ReadDbProperty(string name)
+        {
+            try
+            {
+                var property = _dbTypeXSharp?.GetProperty(name, BindingFlags.Static | BindingFlags.Public);
+                return property?.GetValue(null)?.ToString();
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

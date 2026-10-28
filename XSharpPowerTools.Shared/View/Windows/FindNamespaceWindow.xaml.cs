@@ -98,9 +98,9 @@ namespace XSharpPowerTools.View.Windows
                 var item = ResultsDataGrid.SelectedItem as NamespaceResultItem;
 
                 if (Keyboard.Modifiers == ModifierKeys.Control)
-                    XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertNamespaceReferenceAsync(item)).FileAndForget($"{FileReference}Window_PreviewKeyDown");
+                    XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertNamespaceReferenceAsync(item)).LogAndForget($"{FileReference}Window_PreviewKeyDown");
                 else
-                    XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertUsingAsync(item)).FileAndForget($"{FileReference}Window_PreviewKeyDown");
+                    XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertUsingAsync(item)).LogAndForget($"{FileReference}Window_PreviewKeyDown");
             }
             else if (e.Key == Key.Down)
             {
@@ -113,7 +113,7 @@ namespace XSharpPowerTools.View.Windows
         }
 
         protected override void OnTextChanged() => 
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).FileAndForget($"{FileReference}OnTextChanged");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DoSearchAsync()).LogAndForget($"{FileReference}OnTextChanged");
 
         private async Task DoSearchAsync()
         {
@@ -123,7 +123,7 @@ namespace XSharpPowerTools.View.Windows
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}Window_Loaded");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).LogAndForget($"{FileReference}Window_Loaded");
             SearchTextBox.CaretIndex = int.MaxValue;
             try
             {
@@ -148,7 +148,7 @@ namespace XSharpPowerTools.View.Windows
             if (AllowReturn)
             {
                 var item = selectedItem as NamespaceResultItem;
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertUsingAsync(item)).FileAndForget($"{FileReference}OnReturn");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await InsertUsingAsync(item)).LogAndForget($"{FileReference}OnReturn");
             }
         }
 
@@ -167,7 +167,7 @@ namespace XSharpPowerTools.View.Windows
             }
             else
             {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).LogAndForget($"{FileReference}OnSort");
                 column.SortDirection = direction;
             }
             e.Handled = true;

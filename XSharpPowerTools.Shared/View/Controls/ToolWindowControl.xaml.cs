@@ -135,7 +135,7 @@ namespace XSharpPowerTools.View.Controls
             var item = selectedItem as XSModelResultItem;
             using var waitCursor = new WithWaitCursor();
             var keyword = item.ResultType == XSModelResultType.Member ? item.MemberName : item.TypeName;
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line, item.SourceCode, keyword)).FileAndForget($"{FileReference}OnReturn");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await DocumentHelper.OpenProjectItemAtAsync(item.ContainingFile, item.Line, item.SourceCode, keyword)).LogAndForget($"{FileReference}OnReturn");
         }
 
         public async Task UpdateToolWindowContentsAsync(XSModel xsModel, Filter filter, string searchTerm, string solutionDirectory, List<XSModelResultItem> results, XSModelResultType resultType)
@@ -224,7 +224,7 @@ namespace XSharpPowerTools.View.Controls
             }
             else
             {
-                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).FileAndForget($"{FileReference}OnSort");
+                XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync(direction, comparer.SqlOrderBy)).LogAndForget($"{FileReference}OnSort");
                 column.SortDirection = direction;
             }
             e.Handled = true;
@@ -307,7 +307,7 @@ namespace XSharpPowerTools.View.Controls
 
         public void ApplyChanges_ContextMenu_Click(object sender, RoutedEventArgs e)
         {
-            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).FileAndForget($"{FileReference}RefreshResults_ContextMenu_Click");
+            XSharpPowerToolsPackage.Instance.JoinableTaskFactory.RunAsync(async () => await SearchAsync()).LogAndForget($"{FileReference}RefreshResults_ContextMenu_Click");
             FiltersChanged = false;
         }
 
