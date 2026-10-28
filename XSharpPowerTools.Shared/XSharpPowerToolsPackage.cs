@@ -22,21 +22,41 @@ namespace XSharpPowerTools
     {
         public const string XSharpProjectTypeGuid = "{aa6c8d78-22ff-423a-9c7c-5f2393824e04}";
 
+        const string FileReference = "vs/XSharpPowerTools/XSharpPowerToolsPackage/";
+
         public static XSharpPowerToolsPackage Instance { get; private set; }
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            using var waitCursor = new WithWaitCursor();
-
             await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
             await CodeBrowserCommand.InitializeAsync(this);
             await FindNamespaceCommand.InitializeAsync(this);
             this.RegisterToolWindows();
             Instance = this;
 
-            var operationProgress = await VS.GetServiceAsync<SVsOperationProgress, IVsOperationProgressStatusService>();
-            IVsOperationProgressStageStatus intellisenseStatus = operationProgress.GetStageStatus(CommonOperationProgressStageIds.Intellisense);
-            await intellisenseStatus.WaitForCompletionAsync();
+            await WaitForIntellisenseAsync();
+        }
+
+        /// <summary>
+        /// Waiting for the IntelliSense stage is the one part of initialization that is not needed to
+        /// make the commands work, so a failure of it is logged rather than escaping. Anything escaping
+        /// from InitializeAsync makes Visual Studio fail SetSite and drop the package for the rest of
+        /// the session, which leaves the menu entries in place with no command behind them.
+        /// </summary>
+        private async Task WaitForIntellisenseAsync()
+        {
+            try
+            {
+                var operationProgress = await VS.GetServiceAsync<SVsOperationProgress, IVsOperationProgressStatusService>();
+                IVsOperationProgressStageStatus intellisenseStatus = operationProgress.GetStageStatus(CommonOperationProgressStageIds.Intellisense);
+                await intellisenseStatus.WaitForCompletionAsync();
+            }
+            catch (OperationCanceledException)
+            { }
+            catch (Exception ex)
+            {
+                await DiagnosticLog.ErrorAsync($"{FileReference}WaitForIntellisense", ex);
+            }
         }
     }
 }
